@@ -1690,9 +1690,9 @@ const PHOTO_BY_KEYWORD = [
   // ── Éphémères — SPÉCIFIQUES EN PREMIER (longs avant courts) ──
   { k:['salon de l\'apéro','salon apéro','salon de l apéro'],       p:'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['salon du vin','salon des vins','salon gastronomie','salon bière','salon de la bière'], p:'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['brocante artisanat','artisanat brocante','foire artisanat','artisanat local'], p:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format' },
-  { k:['marché aux puces','vide grenier','vide-grenier','braderie'], p:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format' },
-  { k:['brocante','antiquités','puces','chine'],                    p:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format' },
+  { k:['brocante artisanat','artisanat brocante','foire artisanat','artisanat local'], p:'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
+  { k:['marché aux puces','vide grenier','vide-grenier','braderie'], p:'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
+  { k:['brocante','antiquités','puces','chine'],                    p:'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['bande dessinée','festival bd','festival comics','rayon vert'], p:'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['rassemblement moto','rallye moto','concentr moto','harley','bikers','motard'], p:'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['rassemblement auto','voitures anciennes','voitures de collection','us car','oldtimer'], p:'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
@@ -1703,7 +1703,7 @@ const PHOTO_BY_KEYWORD = [
   { k:['fête du village','fête communale','fête locale','fête de quartier'], p:'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['carnaval','défilé','cortège','parade'],                     p:'https://images.pexels.com/photos/3171837/pexels-photo-3171837.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['marché de noël','marché noel'],                             p:'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['marché','foire'],                                            p:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format' },
+  { k:['marché','foire'],                                            p:'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
 
   // ── Culture & Spectacles ──
   { k:['bd','comics','manga'],                                       p:'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
@@ -1743,7 +1743,7 @@ const PHOTO_BY_CATEGORY = {
   'Gastronomie':'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'Bien-être':'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'Divertissement':'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Éphémère':'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format',
+  'Éphémère':'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'Nocturne':'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'Food':'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'Wellness':'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
@@ -1789,11 +1789,11 @@ function photoUrl(type, titre) {
     if (t.includes('marché de producteurs') || t.includes('marché fermier') || t.includes('marché alimentaire') || t.includes('marché village') || t.includes('marché hebdo') || t.includes('marché du terroir'))
       return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
     if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces') || t.includes('antiquités') || t.includes('braderie') || t.includes('artisanat'))
-      return 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format';
+      return 'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
     if (t.includes('marché') || t.includes('foire'))
       return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
     // Tous les autres éphémères → photo marché/brocante par défaut
-    return 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format';
+    return 'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
   }
 
   // ── ÉTAPE 2 : Activités non-éphémères via mots-clés ──
