@@ -1766,8 +1766,12 @@ function photoUrl(type, titre) {
   // ── ÉTAPE 1 : Si type Éphémère, on force une photo de marché/événement ──
   // sauf si c'est un type spécifique connu
   if (type === 'Éphémère' || type === 'Ephemeral') {
-    if (t.includes('apéro') || t.includes('apero') || t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation'))
+    if (t.includes('apéro') || t.includes('apero') || t.includes('dégustation') || t.includes('spiritueux') || t.includes('cocktail'))
       return 'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('vignoble') || t.includes('cave'))
+      return 'https://images.pexels.com/photos/1407846/pexels-photo-1407846.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('marche') || t.includes('randonnée groupe') || t.includes('sortie pédestre') || t.includes('trail collectif') || t.includes('marche populaire') || t.includes('marche nordique'))
+      return 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
     if (t.includes('moto') || t.includes('harley') || t.includes('motard'))
       return 'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
     if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer'))
@@ -1782,8 +1786,14 @@ function photoUrl(type, titre) {
       return 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
     if (t.includes('noël') || t.includes('noel'))
       return 'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('marché de producteurs') || t.includes('marché fermier') || t.includes('marché alimentaire') || t.includes('marché village') || t.includes('marché hebdo') || t.includes('marché du terroir'))
+      return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces') || t.includes('antiquités') || t.includes('braderie') || t.includes('artisanat'))
+      return 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format';
+    if (t.includes('marché') || t.includes('foire'))
+      return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
     // Tous les autres éphémères → photo marché/brocante par défaut
-    return 'https://images.unsplash.com/photo-1582407947304-fd86f28f8a17?w=600&h=280&fit=crop&auto=format';
+    return 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=280&fit=crop&auto=format';
   }
 
   // ── ÉTAPE 2 : Activités non-éphémères via mots-clés ──
