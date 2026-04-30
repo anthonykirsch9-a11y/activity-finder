@@ -1762,14 +1762,20 @@ PHOTO_BY_KEYWORD.sort((a, b) => {
 function photoUrl(type, titre) {
   const t = (titre || '').toLowerCase();
 
-  // ── ÉPHÉMÈRES EN TOUT PREMIER (avant tout autre test) ──
-  if (t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('vide grenier'))
+  // ── PRIORITÉ ABSOLUE — mots qui doivent toujours gagner ──
+  if (t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('vide-greniers') || t.includes('vide greniers'))
     return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('brocante') || t.includes('artisanat') || t.includes('antiquité') || t.includes('braderie'))
+  if (t.includes('puces'))
+    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('brocante'))
+    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('artisanat'))
+    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('braderie'))
     return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
   if (t.includes('apéro') || t.includes('apero'))
     return 'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('puces'))
+  if (t.includes('marché aux puces') || t.includes('marche aux puces'))
     return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
   if (t.includes('marché') || t.includes('marche'))
     return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
@@ -2264,12 +2270,8 @@ function renderResults(activities, location, radius, budget, group, ages) {
     // Lien site officiel depuis Google Places si disponible
     const gPlace = _lastGooglePlaces.find(p => p.id === a.placeId);
     const websiteUrl = gPlace?.websiteUri || a.website || null;
-    const isOpenNow = gPlace?.regularOpeningHours?.openNow;
-    const openBadge = isOpenNow === true
-      ? `<span style="background:#2E7D32;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px">✓ OUVERT</span>`
-      : isOpenNow === false
-      ? `<span style="background:#c0392b;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px">✗ FERMÉ</span>`
-      : '';
+    // Ne pas afficher ouvert/fermé — trompeur car dépend de l'heure actuelle pas du weekend demandé
+    const openBadge = '';
 
     return `<div class="rc-card" style="animation-delay:${idx*0.08}s">
       <div class="rc-photo-wrap">
