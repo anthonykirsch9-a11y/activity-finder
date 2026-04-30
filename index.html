@@ -1680,7 +1680,10 @@ const PHOTO_BY_KEYWORD = [
   { k:['escape','énigme','mystère'],                               p:'https://images.pexels.com/photos/1432942/pexels-photo-1432942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['trampoline','saut','jump'],                                 p:'https://images.pexels.com/photos/1104666/pexels-photo-1104666.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['théâtre','theater','spectacle','comédie'],                 p:'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['concert','festival','live','rock','jazz'],                 p:'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
+  { k:['bd','bande dessinée','comics','manga','rayon vert','bulle en seine'], p:'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
+  { k:['festival arts de rue','arts de rue','rue','fanfare','parade','euphoryques'], p:'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
+  { k:['marché aux puces','puces','antiquités','brocante','vide-grenier','braderie'], p:'https://images.pexels.com/photos/2736499/pexels-photo-2736499.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
+  { k:['concert','festival','live','rock','jazz','euphoryques'],                 p:'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['opéra','philharmon','classique','orchestre'],              p:'https://images.pexels.com/photos/167491/pexels-photo-167491.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['cocktail','bar','pub','lounge'],                           p:'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
   { k:['discothèque','club','boîte','dj','nightclub'],            p:'https://images.pexels.com/photos/1267338/pexels-photo-1267338.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
@@ -2115,23 +2118,27 @@ async function runSearch(fromMap) {
       else window._pendingMarkers = activities;
     }, 500);
 
-    // Photos Google Places — utilise les données déjà reçues (pas de 2ème appel API)
+    // Photos Google Places — essai depuis cache local, puis API si besoin
     setTimeout(() => {
       document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
         const placeId = img.dataset.placeid;
         if (!placeId || placeId === 'null' || placeId === '') return;
-        // Chercher ce lieu dans les données Google Places déjà récupérées
+        // 1. Chercher dans les données Google Places déjà récupérées
         const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
         if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
           const photoName = gPlace.photos[0].name;
           if (photoName) {
-            const photoUrl = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+            const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
             const testImg = new Image();
-            testImg.onload = () => { img.src = photoUrl; };
-            testImg.src = photoUrl;
+            testImg.onload = () => { img.src = photoUrlG; };
+            // Si l'image locale échoue, essayer via Edge Function
+            testImg.onerror = () => { loadGooglePhoto(img, placeId); };
+            testImg.src = photoUrlG;
+          } else {
+            loadGooglePhoto(img, placeId);
           }
         } else {
-          // Fallback: appel API pour la photo
+          // Pas dans le cache local → appel API direct
           loadGooglePhoto(img, placeId);
         }
       });
