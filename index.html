@@ -1762,48 +1762,35 @@ PHOTO_BY_KEYWORD.sort((a, b) => {
 function photoUrl(type, titre) {
   const t = (titre || '').toLowerCase();
 
-  // ── PRIORITÉ ABSOLUE — mots qui doivent toujours gagner ──
-  if (t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('vide-greniers') || t.includes('vide greniers'))
+  // ── ÉTAPE 1 : Si type Éphémère, on force une photo de marché/événement ──
+  // sauf si c'est un type spécifique connu
+  if (type === 'Éphémère' || type === 'Ephemeral') {
+    if (t.includes('apéro') || t.includes('apero') || t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation'))
+      return 'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('moto') || t.includes('harley') || t.includes('motard'))
+      return 'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer'))
+      return 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('gastronomique'))
+      return 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('bd') || t.includes('comics') || t.includes('manga') || t.includes('dessin'))
+      return 'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('concert') || t.includes('festival') || t.includes('musique') || t.includes('rock') || t.includes('jazz'))
+      return 'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('rue') || t.includes('fanfare') || t.includes('parade') || t.includes('carnaval') || t.includes('défilé'))
+      return 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    if (t.includes('noël') || t.includes('noel'))
+      return 'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+    // Tous les autres éphémères → photo marché/brocante par défaut
     return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('puces'))
-    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('brocante'))
-    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('artisanat'))
-    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('braderie'))
-    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('apéro') || t.includes('apero'))
-    return 'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('marché aux puces') || t.includes('marche aux puces'))
-    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('marché') || t.includes('marche'))
-    return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('moto') || t.includes('harley') || t.includes('motard') || t.includes('bikers'))
-    return 'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('voiture') || t.includes('oldtimer') || t.includes('us car'))
-    return 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('burger') || t.includes('barbecue') || t.includes('bbq') || t.includes('food truck') || t.includes('street food') || t.includes('food festival'))
-    return 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('bande dessinée') || t.includes('festival bd') || t.includes('comics') || t.includes('manga') || t.includes('rayon vert'))
-    return 'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('arts de rue') || t.includes('fanfare') || t.includes('parade') || t.includes('euphoryques'))
-    return 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('carnaval') || t.includes('défilé') || t.includes('cortège'))
-    return 'https://images.pexels.com/photos/3171837/pexels-photo-3171837.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('dinatoire') || t.includes('dîner spectacle'))
-    return 'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('muguet') || t.includes('fête du travail') || t.includes('1er mai'))
-    return 'https://images.pexels.com/photos/931177/pexels-photo-931177.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('fête') || t.includes('fete') || t.includes('festival'))
-    return 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-  if (t.includes('rassemblement') || t.includes('salon') || t.includes('foire'))
-    return 'https://images.pexels.com/photos/1587014/pexels-photo-1587014.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  }
 
-  // ── Reste via tableau ──
+  // ── ÉTAPE 2 : Activités non-éphémères via mots-clés ──
   for (const entry of PHOTO_BY_KEYWORD) {
     if (entry.k.some(k => t.includes(k.toLowerCase()))) return entry.p;
   }
+
+  // ── ÉTAPE 3 : Fallback par catégorie ──
   return PHOTO_BY_CATEGORY[type] || PHOTO_BY_CATEGORY['default'];
 }
 
