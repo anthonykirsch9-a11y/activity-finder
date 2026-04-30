@@ -1667,142 +1667,201 @@ function formatPlacesForPrompt(places) {
     "\n\nCRUCIAL: Utilise CES lieux dans tes suggestions. Au moins 4 parmi cette liste. lieu_certain:true pour eux. GPS exacts fournis. Si escape game, karting ou bowling dans la liste, inclus-les obligatoirement.";
 }
 
-// ---- PHOTOS PAR ACTIVITÉ (Pexels) ----
-// IMPORTANT: les mots-clés longs doivent être AVANT les courts
-// La fonction trie automatiquement par longueur décroissante
-const PHOTO_BY_KEYWORD = [
-  // ── Sport & Activités physiques ──
-  { k:['randonn','hiking','trekking','sentier','trail','balade'],   p:'https://images.pexels.com/photos/1547813/pexels-photo-1547813.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['vélo','vtt','cycl','bike'],                                 p:'https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['escalad','via ferrata','grimpe','acrobranch'],              p:'https://images.pexels.com/photos/449609/pexels-photo-449609.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['kayak','canoë','canoe','paddle','rafting'],                 p:'https://images.pexels.com/photos/1497938/pexels-photo-1497938.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['ski','snowboard','luge','neige'],                           p:'https://images.pexels.com/photos/848599/pexels-photo-848599.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['piscine','natation','baignade','aqua'],                     p:'https://images.pexels.com/photos/1263348/pexels-photo-1263348.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['bowling','quille'],                                          p:'https://images.pexels.com/photos/4691363/pexels-photo-4691363.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['karting','kart','circuit'],                                  p:'https://images.pexels.com/photos/12801/pexels-photo-12801.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['escape','énigme','mystère'],                                p:'https://images.pexels.com/photos/1432942/pexels-photo-1432942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['trampoline','saut','jump'],                                  p:'https://images.pexels.com/photos/1104666/pexels-photo-1104666.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['football','basket','tennis','badminton'],                   p:'https://images.pexels.com/photos/46798/the-ball-stadion-football-the-pitch-46798.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['fitness','gym','musculation','running'],                    p:'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['yoga','méditation','pilates'],                               p:'https://images.pexels.com/photos/3822906/pexels-photo-3822906.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['équitation','cheval','horse'],                              p:'https://images.pexels.com/photos/1996333/pexels-photo-1996333.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-
-  // ── Éphémères — SPÉCIFIQUES EN PREMIER (longs avant courts) ──
-  { k:['salon de l\'apéro','salon apéro','salon de l apéro'],       p:'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['salon du vin','salon des vins','salon gastronomie','salon bière','salon de la bière'], p:'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['brocante artisanat','artisanat brocante','foire artisanat','artisanat local'], p:'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['marché aux puces','vide grenier','vide-grenier','braderie'], p:'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['brocante','antiquités','puces','chine'],                    p:'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['bande dessinée','festival bd','festival comics','rayon vert'], p:'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['rassemblement moto','rallye moto','concentr moto','harley','bikers','motard'], p:'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['rassemblement auto','voitures anciennes','voitures de collection','us car','oldtimer'], p:'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['fête gastronomique','festival gastronomique','fête du burger','food festival','street food','food truck'], p:'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['festival arts de rue','arts de rue','fanfare','euphoryques'], p:'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['spectacle dinatoire','dîner spectacle','soirée dinatoire'], p:'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['fête du travail','1er mai','muguet'],                       p:'https://images.pexels.com/photos/931177/pexels-photo-931177.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['fête du village','fête communale','fête locale','fête de quartier'], p:'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['carnaval','défilé','cortège','parade'],                     p:'https://images.pexels.com/photos/3171837/pexels-photo-3171837.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['marché de noël','marché noel'],                             p:'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['marché','foire'],                                            p:'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-
-  // ── Culture & Spectacles ──
-  { k:['bd','comics','manga'],                                       p:'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['théâtre','theater','comédie'],                              p:'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['concert','festival','live','rock','jazz'],                  p:'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['opéra','philharmon','classique','orchestre'],               p:'https://images.pexels.com/photos/167491/pexels-photo-167491.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['musée','museum','expo','galerie'],                          p:'https://images.pexels.com/photos/109629/pexels-photo-109629.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['château','abbaye','cathédrale','basilique','église'],       p:'https://images.pexels.com/photos/161901/versailles-chateau-de-versailles-paris-france-161901.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['visite','patrimoine','histor','vieille ville'],             p:'https://images.pexels.com/photos/532263/pexels-photo-532263.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['cinéma','cinema','film'],                                   p:'https://images.pexels.com/photos/33129/popcorn-movie-party-entertainment.jpg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['atelier','peinture','poterie','céramique'],                 p:'https://images.pexels.com/photos/1153895/pexels-photo-1153895.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-
-  // ── Gastronomie & Sorties ──
-  { k:['dégustation','cave','vignoble'],                            p:'https://images.pexels.com/photos/1407846/pexels-photo-1407846.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['restaurant','gastronomie','chef','étoilé','brunch'],       p:'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['burger','barbecue','bbq'],                                   p:'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['cocktail','bar','pub','lounge'],                            p:'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['discothèque','club','boîte','dj','nightclub'],             p:'https://images.pexels.com/photos/1267338/pexels-photo-1267338.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['casino'],                                                    p:'https://images.pexels.com/photos/1871508/pexels-photo-1871508.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['karaoké','karaoke'],                                        p:'https://images.pexels.com/photos/1699161/pexels-photo-1699161.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-
-  // ── Bien-être & Nature ──
-  { k:['thermes','thermal','bain','jacuzzi'],                       p:'https://images.pexels.com/photos/2104152/pexels-photo-2104152.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['spa','massage','hammam','sauna','bien-être'],               p:'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['zoo','aquarium','animal','faune'],                          p:'https://images.pexels.com/photos/247502/pexels-photo-247502.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['jardin','botanique','fleur'],                               p:'https://images.pexels.com/photos/158780/pexels-photo-158780.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['parc','attraction','manège','loisir'],                      p:'https://images.pexels.com/photos/1308624/pexels-photo-1308624.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['pique-nique','picnic'],                                     p:'https://images.pexels.com/photos/1128797/pexels-photo-1128797.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['coucher de soleil','panorama','belvédère','vue'],           p:'https://images.pexels.com/photos/36717/amazing-animal-beautiful-beautifull.jpg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-  { k:['shopping','boutique','centre commercial'],                   p:'https://images.pexels.com/photos/1884581/pexels-photo-1884581.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop' },
-];
-
-const PHOTO_BY_CATEGORY = {
-  'Nature':'https://images.pexels.com/photos/775201/pexels-photo-775201.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Culture':'https://images.pexels.com/photos/109629/pexels-photo-109629.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Sport':'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Gastronomie':'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Bien-être':'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Divertissement':'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Éphémère':'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Nocturne':'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Food':'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Wellness':'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Nightlife':'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'Entertainment':'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'default':'https://images.pexels.com/photos/1051073/pexels-photo-1051073.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop'
+// ══════════════════════════════════════════════════════════════
+// PHOTOS — SVG thématiques inline (aucune dépendance externe)
+// + Google Places photos quand disponibles
+// ══════════════════════════════════════════════════════════════
+const PHOTO_THEMES = {
+  // Éphémères
+  'brocante':    { bg:'#8B6914', bg2:'#C4974A', emoji:'🛍️', label:'Brocante' },
+  'vide-grenier':{ bg:'#8B6914', bg2:'#C4974A', emoji:'📦', label:'Vide-grenier' },
+  'marche-groupe':{ bg:'#2E6B3E', bg2:'#5C9E6A', emoji:'🚶', label:'Marche' },
+  'marche':      { bg:'#5C7A2A', bg2:'#8BAA4A', emoji:'🛒', label:'Marché' },
+  'apero':       { bg:'#8B3A2A', bg2:'#C4614A', emoji:'🍻', label:'Apéro' },
+  'vin':         { bg:'#6B1A3E', bg2:'#9E4A6E', emoji:'🍷', label:'Dégustation' },
+  'moto':        { bg:'#1A1A2E', bg2:'#3A3A5E', emoji:'🏍️', label:'Moto' },
+  'voiture':     { bg:'#1A2E3E', bg2:'#2E4E6E', emoji:'🚗', label:'Auto' },
+  'food':        { bg:'#8B3A1A', bg2:'#C4614A', emoji:'🍔', label:'Food' },
+  'concert':     { bg:'#1A0A3E', bg2:'#4A2A7E', emoji:'🎵', label:'Concert' },
+  'bd':          { bg:'#1A3E6B', bg2:'#2A6EAB', emoji:'📚', label:'BD' },
+  'parade':      { bg:'#6B1A6B', bg2:'#AB4AAB', emoji:'🎪', label:'Fête' },
+  'noel':        { bg:'#1A4A1A', bg2:'#2A7A2A', emoji:'🎄', label:'Noël' },
+  // Activités fixes
+  'randonnee':   { bg:'#2E5C2E', bg2:'#4E8C4E', emoji:'🥾', label:'Randonnée' },
+  'velo':        { bg:'#1A3E5C', bg2:'#2A6E8C', emoji:'🚵', label:'Vélo' },
+  'escalade':    { bg:'#4E2E1A', bg2:'#8E5E3A', emoji:'🧗', label:'Escalade' },
+  'kayak':       { bg:'#1A4E6E', bg2:'#2A7EAE', emoji:'🛶', label:'Kayak' },
+  'ski':         { bg:'#2E4E6E', bg2:'#4E7EAE', emoji:'⛷️', label:'Ski' },
+  'piscine':     { bg:'#1A4E6E', bg2:'#2A8EBE', emoji:'🏊', label:'Piscine' },
+  'bowling':     { bg:'#3E1A4E', bg2:'#6E3A8E', emoji:'🎳', label:'Bowling' },
+  'karting':     { bg:'#4E1A1A', bg2:'#8E3A3A', emoji:'🏎️', label:'Karting' },
+  'escape':      { bg:'#1A1A4E', bg2:'#3A3A8E', emoji:'🔐', label:'Escape' },
+  'trampoline':  { bg:'#4E3A1A', bg2:'#8E6A3A', emoji:'🤸', label:'Trampoline' },
+  'museum':      { bg:'#3E3E2E', bg2:'#6E6E4E', emoji:'🏛️', label:'Musée' },
+  'chateau':     { bg:'#4E4E3E', bg2:'#7E7E5E', emoji:'🏰', label:'Château' },
+  'cinema':      { bg:'#1A1A1A', bg2:'#3A3A3A', emoji:'🎬', label:'Cinéma' },
+  'theatre':     { bg:'#3E1A3E', bg2:'#6E3A6E', emoji:'🎭', label:'Théâtre' },
+  'spa':         { bg:'#2E4E4E', bg2:'#4E7E7E', emoji:'🧖', label:'Spa' },
+  'thermes':     { bg:'#2E4E5E', bg2:'#4E7E9E', emoji:'♨️', label:'Thermes' },
+  'restaurant':  { bg:'#4E2E1A', bg2:'#8E5E3A', emoji:'🍽️', label:'Restaurant' },
+  'bar':         { bg:'#2E1A3E', bg2:'#5E3A7E', emoji:'🍺', label:'Bar' },
+  'casino':      { bg:'#1A3E1A', bg2:'#2A7E2A', emoji:'🎰', label:'Casino' },
+  'zoo':         { bg:'#2E4E1A', bg2:'#5E8E3A', emoji:'🦁', label:'Zoo' },
+  'parc':        { bg:'#2E5E2E', bg2:'#4E8E4E', emoji:'🎡', label:'Parc' },
+  'nature':      { bg:'#2E5C2E', bg2:'#4E8C4E', emoji:'🌿', label:'Nature' },
+  'default':     { bg:'#3E4E3E', bg2:'#5E7E5E', emoji:'📍', label:'Activité' },
 };
 
-// Trier par longueur du mot-clé le plus long (spécifiques avant génériques)
-PHOTO_BY_KEYWORD.sort((a, b) => {
-  const maxA = Math.max(...a.k.map(k => k.length));
-  const maxB = Math.max(...b.k.map(k => k.length));
-  return maxB - maxA;
-});
+function makePhotoSvg(theme) {
+  const th = PHOTO_THEMES[theme] || PHOTO_THEMES['default'];
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="280" viewBox="0 0 600 280">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:${th.bg}"/>
+      <stop offset="100%" style="stop-color:${th.bg2}"/>
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <rect width="600" height="280" fill="url(#g)"/>
+  <circle cx="480" cy="60" r="120" fill="rgba(255,255,255,0.06)" filter="url(#blur)"/>
+  <circle cx="80" cy="220" r="90" fill="rgba(255,255,255,0.04)" filter="url(#blur)"/>
+  <text x="300" y="130" text-anchor="middle" font-size="72" opacity="0.9">${th.emoji}</text>
+  <text x="300" y="178" text-anchor="middle" font-size="18" font-family="Georgia,serif" font-weight="bold" fill="rgba(255,255,255,0.85)" letter-spacing="1">${th.label}</text>
+</svg>`)}`;
+}
+
+function getPhotoTheme(type, titre) {
+  const t = (titre || '').toLowerCase();
+
+  // Éphémères — détection par titre
+  if (type === 'Éphémère' || type === 'Ephemeral') {
+    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail') || t.includes('spiritueux')) return 'apero';
+    if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation') || t.includes('cave') || t.includes('vignoble')) return 'vin';
+    if (t.includes('marche') && (t.includes('groupe') || t.includes('populaire') || t.includes('nordique') || t.includes('rochonvillers') || t.includes('pedestre'))) return 'marche-groupe';
+    if (t.includes('moto') || t.includes('harley') || t.includes('motard') || t.includes('bikers')) return 'moto';
+    if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer') || t.includes('collection')) return 'voiture';
+    if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('gastronomique') || t.includes('street food')) return 'food';
+    if (t.includes('concert') || t.includes('festival') || t.includes('musique') || t.includes('rock') || t.includes('jazz')) return 'concert';
+    if (t.includes('bd') || t.includes('comics') || t.includes('manga') || t.includes('bande dessinée')) return 'bd';
+    if (t.includes('parade') || t.includes('fanfare') || t.includes('carnaval') || t.includes('défilé') || t.includes('arts de rue')) return 'parade';
+    if (t.includes('noël') || t.includes('noel')) return 'noel';
+    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces') || t.includes('antiquités') || t.includes('braderie')) return 'brocante';
+    return 'marche'; // marché par défaut pour les éphémères
+  }
+
+  // Activités fixes — détection par titre
+  if (t.includes('randonnée') || t.includes('randonn') || t.includes('hiking') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
+  if (t.includes('vélo') || t.includes('vtt') || t.includes('cycl') || t.includes('bike')) return 'velo';
+  if (t.includes('escalad') || t.includes('grimpe') || t.includes('via ferrata')) return 'escalade';
+  if (t.includes('kayak') || t.includes('canoë') || t.includes('paddle') || t.includes('rafting')) return 'kayak';
+  if (t.includes('ski') || t.includes('snowboard') || t.includes('luge')) return 'ski';
+  if (t.includes('piscine') || t.includes('natation') || t.includes('baignade') || t.includes('thermes') || t.includes('thermal')) return 'thermes';
+  if (t.includes('bowling')) return 'bowling';
+  if (t.includes('karting') || t.includes('kart')) return 'karting';
+  if (t.includes('escape') || t.includes('énigme')) return 'escape';
+  if (t.includes('trampoline') || t.includes('saut')) return 'trampoline';
+  if (t.includes('musée') || t.includes('museum') || t.includes('galerie') || t.includes('expo')) return 'museum';
+  if (t.includes('château') || t.includes('abbaye') || t.includes('cathédrale') || t.includes('fort') || t.includes('ouvrage') || t.includes('maginot')) return 'chateau';
+  if (t.includes('cinéma') || t.includes('cinema') || t.includes('film')) return 'cinema';
+  if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
+  if (t.includes('spa') || t.includes('massage') || t.includes('hammam') || t.includes('sauna') || t.includes('bien-être')) return 'spa';
+  if (t.includes('thermes') || t.includes('thermal') || t.includes('mondorf') || t.includes('bain')) return 'thermes';
+  if (t.includes('bar') || t.includes('pub') || t.includes('brasserie') || t.includes('beaux jours') || t.includes('cocktail') || t.includes('bière')) return 'bar';
+  if (t.includes('casino')) return 'casino';
+  if (t.includes('concert') || t.includes('festival') || t.includes('musique')) return 'concert';
+  if (t.includes('restaurant') || t.includes('gastronomie') || t.includes('chef') || t.includes('étoilé') || t.includes('dîner') || t.includes('diner')) return 'restaurant';
+  if (t.includes('zoo') || t.includes('aquarium') || t.includes('animal')) return 'zoo';
+  if (t.includes('parc') || t.includes('attraction') || t.includes('amusement') || t.includes('walygator') || t.includes('amnéville')) return 'parc';
+  if (t.includes('nature') || t.includes('lac') || t.includes('forêt') || t.includes('promenade') || t.includes('balade')) return 'nature';
+
+  // Fallback par type
+  const typeMap = {
+    'Nature': 'nature', 'Culture': 'museum', 'Sport': 'randonnee',
+    'Gastronomie': 'restaurant', 'Bien-être': 'spa', 'Divertissement': 'parc',
+    'Nocturne': 'bar', 'Nightlife': 'bar', 'Food': 'restaurant',
+    'Wellness': 'spa', 'Entertainment': 'parc'
+  };
+  return typeMap[type] || 'default';
+}
 
 function photoUrl(type, titre) {
-  const t = (titre || '').toLowerCase();
-  console.log('📸 photoUrl — type:"' + type + '" titre:"' + titre + '"');
+  const theme = getPhotoTheme(type, titre);
+  return makePhotoSvg(theme);
+}
+// ══════════════════════════════════════════════════════════════
+// PEXELS API — vraies photos dynamiques
+// ══════════════════════════════════════════════════════════════
+const PEXELS_KEY = 'OjOWZuQpato1V2fXEnpR4jIWnH4qsUmgxMImacQcY4vj0ZJNAAnPsolg';
+const _pexelsCache = {};
 
-  // ── ÉTAPE 1 : Si type Éphémère, on force une photo de marché/événement ──
-  // sauf si c'est un type spécifique connu
-  if (type === 'Éphémère' || type === 'Ephemeral') {
-    if (t.includes('apéro') || t.includes('apero') || t.includes('dégustation') || t.includes('spiritueux') || t.includes('cocktail'))
-      return 'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('vignoble') || t.includes('cave'))
-      return 'https://images.pexels.com/photos/1407846/pexels-photo-1407846.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('marche') || t.includes('randonnée groupe') || t.includes('sortie pédestre') || t.includes('trail collectif') || t.includes('marche populaire') || t.includes('marche nordique'))
-      return 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('moto') || t.includes('harley') || t.includes('motard'))
-      return 'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer'))
-      return 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('gastronomique'))
-      return 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('bd') || t.includes('comics') || t.includes('manga') || t.includes('dessin'))
-      return 'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('concert') || t.includes('festival') || t.includes('musique') || t.includes('rock') || t.includes('jazz'))
-      return 'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('rue') || t.includes('fanfare') || t.includes('parade') || t.includes('carnaval') || t.includes('défilé'))
-      return 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('noël') || t.includes('noel'))
-      return 'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('marché de producteurs') || t.includes('marché fermier') || t.includes('marché alimentaire') || t.includes('marché village') || t.includes('marché hebdo') || t.includes('marché du terroir'))
-      return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces') || t.includes('antiquités') || t.includes('braderie') || t.includes('artisanat'))
-      return 'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    if (t.includes('marché') || t.includes('foire'))
-      return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
-    // Tous les autres éphémères → photo marché/brocante par défaut
-    return 'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+// Mots-clés de recherche Pexels par thème
+const PEXELS_QUERIES = {
+  'brocante':      'flea market antiques',
+  'vide-grenier':  'flea market secondhand',
+  'marche-groupe': 'group hiking people walking',
+  'marche':        'outdoor market stalls',
+  'apero':         'aperitif drinks party',
+  'vin':           'wine tasting vineyard',
+  'moto':          'motorcycle rally bikers',
+  'voiture':       'classic cars vintage automobile',
+  'food':          'food festival street food',
+  'concert':       'live concert music festival',
+  'bd':            'comic books illustration',
+  'parade':        'street festival parade',
+  'noel':          'christmas market lights',
+  'randonnee':     'hiking trail nature walk',
+  'velo':          'mountain biking cycling',
+  'escalade':      'rock climbing',
+  'kayak':         'kayaking river water',
+  'ski':           'skiing snow mountain',
+  'piscine':       'swimming pool water',
+  'thermes':       'thermal spa pool wellness',
+  'bowling':       'bowling alley pins',
+  'karting':       'go kart racing',
+  'escape':        'escape room mystery puzzle',
+  'trampoline':    'trampoline jumping',
+  'museum':        'museum art gallery',
+  'chateau':       'castle medieval architecture',
+  'cinema':        'movie theater popcorn',
+  'theatre':       'theater stage performance',
+  'spa':           'spa massage relaxation',
+  'bar':           'bar beer drinks nightlife',
+  'casino':        'casino cards gambling',
+  'concert':       'concert music stage',
+  'restaurant':    'restaurant fine dining food',
+  'zoo':           'zoo animals wildlife',
+  'parc':          'amusement park rides',
+  'nature':        'nature forest lake landscape',
+  'default':       'leisure activity weekend'
+};
+
+async function fetchPexelsPhoto(theme) {
+  if (_pexelsCache[theme]) return _pexelsCache[theme];
+  const query = PEXELS_QUERIES[theme] || PEXELS_QUERIES['default'];
+  try {
+    const res = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape`,
+      { headers: { Authorization: PEXELS_KEY } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const photos = data.photos || [];
+    if (!photos.length) return null;
+    // Prendre une photo aléatoire parmi les 5 premiers résultats
+    const photo = photos[Math.floor(Math.random() * photos.length)];
+    const url = photo.src.landscape || photo.src.large;
+    _pexelsCache[theme] = url;
+    return url;
+  } catch(e) {
+    return null;
   }
+}
 
-  // ── ÉTAPE 2 : Activités non-éphémères via mots-clés ──
-  for (const entry of PHOTO_BY_KEYWORD) {
-    if (entry.k.some(k => t.includes(k.toLowerCase()))) return entry.p;
-  }
-
-  // ── ÉTAPE 3 : Fallback par catégorie ──
-  return PHOTO_BY_CATEGORY[type] || PHOTO_BY_CATEGORY['default'];
+async function loadPexelsPhoto(imgEl, type, titre) {
+  const theme = getPhotoTheme(type, titre);
+  const url = await fetchPexelsPhoto(theme);
+  if (url) imgEl.src = url;
+  // Si pas d'URL Pexels → le SVG reste affiché, c'est le fallback
 }
 
 
@@ -2224,7 +2283,11 @@ async function runSearch(fromMap) {
     setTimeout(() => {
       document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
         const placeId = img.dataset.placeid;
-        if (!placeId || placeId === 'null' || placeId === '') return;
+        if (!placeId || placeId === 'null' || placeId === '') {
+          // Pas de placeId → charger via Pexels
+          loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+          return;
+        }
         // 1. Chercher dans les données Google Places déjà récupérées
         const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
         if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
@@ -2233,15 +2296,14 @@ async function runSearch(fromMap) {
             const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
             const testImg = new Image();
             testImg.onload = () => { img.src = photoUrlG; };
-            // Si l'image locale échoue, essayer via Edge Function
             testImg.onerror = () => { loadGooglePhoto(img, placeId); };
             testImg.src = photoUrlG;
           } else {
             loadGooglePhoto(img, placeId);
           }
         } else {
-          // Pas dans le cache local → appel API direct
-          loadGooglePhoto(img, placeId);
+          // Pas dans le cache local → essayer Google puis Pexels
+          loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
         }
       });
     }, 300);
