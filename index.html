@@ -1761,6 +1761,38 @@ PHOTO_BY_KEYWORD.sort((a, b) => {
 
 function photoUrl(type, titre) {
   const t = (titre || '').toLowerCase();
+
+  // ── Éphémères — test mot à mot sur le titre complet ──
+  if (t.includes('apéro') || t.includes('apero'))
+    return 'https://images.pexels.com/photos/3407777/pexels-photo-3407777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('brocante') || t.includes('artisanat') || t.includes('antiquité') || t.includes('foire') || t.includes('braderie'))
+    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces'))
+    return 'https://images.pexels.com/photos/2827374/pexels-photo-2827374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('marché') || t.includes('marche'))
+    return 'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('moto') || t.includes('harley') || t.includes('motard') || t.includes('bikers'))
+    return 'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer') || t.includes('us car'))
+    return 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('burger') || t.includes('barbecue') || t.includes('bbq') || t.includes('food truck') || t.includes('street food') || t.includes('food festival') || t.includes('gastronomique'))
+    return 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('bande dessinée') || t.includes('festival bd') || t.includes('comics') || t.includes('manga') || t.includes('rayon vert'))
+    return 'https://images.pexels.com/photos/1560932/pexels-photo-1560932.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('arts de rue') || t.includes('fanfare') || t.includes('parade') || t.includes('euphoryques'))
+    return 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('carnaval') || t.includes('défilé') || t.includes('cortège'))
+    return 'https://images.pexels.com/photos/3171837/pexels-photo-3171837.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('spectacle dinatoire') || t.includes('dîner spectacle') || t.includes('dinatoire'))
+    return 'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('muguet') || t.includes('fête du travail') || t.includes('1er mai'))
+    return 'https://images.pexels.com/photos/931177/pexels-photo-931177.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('fête') || t.includes('festival') || t.includes('fete'))
+    return 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+  if (t.includes('rassemblement') || t.includes('salon') || t.includes('foire'))
+    return 'https://images.pexels.com/photos/1587014/pexels-photo-1587014.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop';
+
+  // ── Reste via tableau ──
   for (const entry of PHOTO_BY_KEYWORD) {
     if (entry.k.some(k => t.includes(k.toLowerCase()))) return entry.p;
   }
