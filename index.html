@@ -1796,43 +1796,42 @@ const _pexelsCache = {};
 
 // Mots-clés de recherche Pexels par thème
 const PEXELS_QUERIES = {
-  'brocante':      'flea market antiques',
-  'vide-grenier':  'flea market secondhand',
-  'marche-groupe': 'group hiking people walking',
-  'marche':        'outdoor market stalls',
-  'apero':         'aperitif drinks party',
-  'vin':           'wine tasting vineyard',
-  'moto':          'motorcycle rally bikers',
-  'voiture':       'classic cars vintage automobile',
-  'food':          'food festival street food',
-  'concert':       'live concert music festival',
-  'bd':            'comic books illustration',
-  'parade':        'street festival parade',
-  'noel':          'christmas market lights',
-  'randonnee':     'hiking trail nature walk',
-  'velo':          'mountain biking cycling',
-  'escalade':      'rock climbing',
-  'kayak':         'kayaking river water',
-  'ski':           'skiing snow mountain',
-  'piscine':       'swimming pool water',
-  'thermes':       'thermal spa pool wellness',
-  'bowling':       'bowling alley pins',
-  'karting':       'go kart racing',
-  'escape':        'escape room mystery puzzle',
-  'trampoline':    'trampoline jumping',
-  'museum':        'museum art gallery',
-  'chateau':       'castle medieval architecture',
-  'cinema':        'movie theater popcorn',
-  'theatre':       'theater stage performance',
-  'spa':           'spa massage relaxation',
-  'bar':           'bar beer drinks nightlife',
-  'casino':        'casino cards gambling',
-  'concert':       'concert music stage',
-  'restaurant':    'restaurant fine dining food',
-  'zoo':           'zoo animals wildlife',
-  'parc':          'amusement park rides',
-  'nature':        'nature forest lake landscape',
-  'default':       'leisure activity weekend'
+  'brocante':      'brocante marché antiquités objets vintage',
+  'vide-grenier':  'vide grenier stands objets occasion',
+  'marche-groupe': 'groupe personnes randonnée marche forêt',
+  'marche':        'marché producteurs stands légumes colorés',
+  'apero':         'plateau charcuterie fromage vin apéritif festif',
+  'vin':           'dégustation vin cave bouteilles verre',
+  'moto':          'rassemblement motos route harley davidson',
+  'voiture':       'voitures anciennes collection exposition',
+  'food':          'food festival stands gastronomie rue',
+  'concert':       'concert foule scène festival musique',
+  'bd':            'bande dessinée livres comics illustration',
+  'parade':        'fête rue défilé animations fanfare',
+  'noel':          'marché noël lumières guirlandes hiver',
+  'randonnee':     'randonnée sentier nature montagne forêt',
+  'velo':          'vélo piste cyclable nature VTT',
+  'escalade':      'escalade rocher grimpe paroi',
+  'kayak':         'kayak rivière eau paddle nature',
+  'ski':           'ski neige montagne piste station',
+  'piscine':       'piscine eau natation baignade',
+  'thermes':       'thermes piscine intérieure spa bien-être',
+  'bowling':       'bowling quilles piste jeu',
+  'karting':       'karting circuit course vitesse',
+  'escape':        'escape game salle énigme mystère',
+  'trampoline':    'trampoline saut rebond sport',
+  'museum':        'musée exposition salle art patrimoine',
+  'chateau':       'château médiéval remparts histoire architecture',
+  'cinema':        'cinéma salle écran film popcorn',
+  'theatre':       'théâtre scène spectacle rideau lumières',
+  'spa':           'spa massage détente relaxation bien-être',
+  'bar':           'bar ambiance soir bières cocktails comptoir',
+  'casino':        'casino jeux cartes roulette lumières',
+  'restaurant':    'restaurant gastronomie assiette chef cuisine',
+  'zoo':           'zoo animaux nature faune parc',
+  'parc':          'parc attraction manèges loisirs familles',
+  'nature':        'nature lac forêt paysage verdure',
+  'default':       'activité loisirs sortie weekend groupe'
 };
 
 async function fetchPexelsPhoto(theme) {
@@ -1840,19 +1839,20 @@ async function fetchPexelsPhoto(theme) {
   const query = PEXELS_QUERIES[theme] || PEXELS_QUERIES['default'];
   try {
     const res = await fetch(
-      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape`,
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=10&orientation=landscape&locale=fr-FR`,
       { headers: { Authorization: PEXELS_KEY } }
     );
     if (!res.ok) return null;
     const data = await res.json();
     const photos = data.photos || [];
     if (!photos.length) return null;
-    // Prendre une photo aléatoire parmi les 5 premiers résultats
-    const photo = photos[Math.floor(Math.random() * photos.length)];
-    const url = photo.src.landscape || photo.src.large;
+    // Photo aléatoire parmi les résultats pour varier
+    const photo = photos[Math.floor(Math.random() * Math.min(photos.length, 5))];
+    const url = photo.src.landscape || photo.src.large2x || photo.src.large;
     _pexelsCache[theme] = url;
     return url;
   } catch(e) {
+    console.warn('Pexels error:', e.message);
     return null;
   }
 }
