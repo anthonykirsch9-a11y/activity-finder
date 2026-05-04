@@ -1796,10 +1796,10 @@ const _pexelsCache = {};
 
 // Mots-clés de recherche Pexels par thème
 const PEXELS_QUERIES = {
-  'brocante':      'brocante marché antiquités objets vintage',
-  'vide-grenier':  'vide grenier stands objets occasion',
-  'marche-groupe': 'groupe personnes randonnée marche forêt',
-  'marche':        'marché producteurs stands légumes colorés',
+  'brocante':      'brocante marché puces antiquités stands',
+  'vide-grenier':  'vide grenier brocante objets occasion',
+  'marche-groupe': 'personnes marchent groupe chemin promenade',
+  'marche':        'marché alimentaire stands légumes fruits',
   'apero':         'plateau charcuterie fromage vin apéritif festif',
   'vin':           'dégustation vin cave bouteilles verre',
   'moto':          'rassemblement motos route harley davidson',
@@ -1834,8 +1834,21 @@ const PEXELS_QUERIES = {
   'default':       'activité loisirs sortie weekend groupe'
 };
 
+// IDs Pexels garantis pour les thèmes critiques (évite les résultats aléatoires)
+const PEXELS_DIRECT = {
+  'brocante':      'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vide-grenier':  'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'marche-groupe': 'https://images.pexels.com/photos/1586298/pexels-photo-1586298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'marche':        'https://images.pexels.com/photos/3731256/pexels-photo-3731256.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+};
+
 async function fetchPexelsPhoto(theme) {
   if (_pexelsCache[theme]) return _pexelsCache[theme];
+  // Photo directe garantie pour les thèmes critiques
+  if (PEXELS_DIRECT[theme]) {
+    _pexelsCache[theme] = PEXELS_DIRECT[theme];
+    return PEXELS_DIRECT[theme];
+  }
   const query = PEXELS_QUERIES[theme] || PEXELS_QUERIES['default'];
   try {
     const res = await fetch(
