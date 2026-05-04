@@ -771,15 +771,16 @@ html { -webkit-text-size-adjust: 100%; }
     <button class="auth-close" onclick="closeUpgrade()">×</button>
     <div style="font-size:36px">✦</div>
     <h2>Activity Finder Pro</h2>
-    <div class="price">4,99 € <small>/ mois</small></div>
+    <div class="price">2,99 € <small>/mois</small></div>
     <div class="pro-features">
+      <div class="pro-feature"><span class="pro-feature-icon">🧠</span><span><strong>IA Premium (Claude Sonnet)</strong> — résultats plus détaillés et créatifs</span></div>
       <div class="pro-feature"><span class="pro-feature-icon">♾️</span><span>Recherches illimitées</span></div>
       <div class="pro-feature"><span class="pro-feature-icon">📚</span><span>Historique complet de tes recherches</span></div>
       <div class="pro-feature"><span class="pro-feature-icon">⭐</span><span>Notes & étoiles sur chaque activité</span></div>
-      <div class="pro-feature"><span class="pro-feature-icon">🧠</span><span>L'IA mémorise tes activités déjà faites</span></div>
+      <div class="pro-feature"><span class="pro-feature-icon">🔁</span><span>L'IA ne repropose pas les activités déjà faites</span></div>
       <div class="pro-feature"><span class="pro-feature-icon">🚫</span><span>Sans publicité</span></div>
     </div>
-    <button class="checkout-btn" onclick="startCheckout()">Commencer l'essai — 4,99 € / mois</button>
+    <button class="checkout-btn" onclick="startCheckout()">Commencer — 2,99 € / mois</button>
     <p style="font-size:11px;color:var(--muted);margin-top:.8rem">Résiliable à tout moment · Paiement sécurisé par Stripe</p>
   </div>
 </div>
@@ -2254,7 +2255,9 @@ async function runSearch(fromMap) {
         const res = await fetch(EDGE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-          body: JSON.stringify({ prompt, model: 'claude-sonnet-4-6' })
+          // Pro → Sonnet (meilleure qualité), Gratuit → Haiku (économique)
+          const model = (currentUser && userPlan === 'pro') ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001';
+          body: JSON.stringify({ prompt, model })
         });
 
         if (!res.ok) {
