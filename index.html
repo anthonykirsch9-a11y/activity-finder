@@ -2250,14 +2250,15 @@ async function runSearch(fromMap) {
           : '';
         const prompt = placesHeader + dateHeader + weatherHeader + strictRules + '\n\n' + rawPrompt;
 
+        // Pro → Sonnet (meilleure qualité), Gratuit → Haiku (économique)
+        const selectedModel = (currentUser && userPlan === 'pro') ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001';
+
         // Appel Claude via Supabase Edge Function
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
         const res = await fetch(EDGE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-          // Pro → Sonnet (meilleure qualité), Gratuit → Haiku (économique)
-          const model = (currentUser && userPlan === 'pro') ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001';
-          body: JSON.stringify({ prompt, model })
+          body: JSON.stringify({ prompt, model: selectedModel })
         });
 
         if (!res.ok) {
