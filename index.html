@@ -2250,8 +2250,8 @@ async function runSearch(fromMap) {
           : '';
         const prompt = placesHeader + dateHeader + weatherHeader + strictRules + '\n\n' + rawPrompt;
 
-        // Pro → Sonnet (meilleure qualité), Gratuit → Haiku (économique)
-        const selectedModel = (currentUser && userPlan === 'pro') ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001';
+        // Sonnet pour tous — Haiku trop peu fiable pour le JSON complexe
+        const selectedModel = 'claude-sonnet-4-6';
 
         // Appel Claude via Supabase Edge Function
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
