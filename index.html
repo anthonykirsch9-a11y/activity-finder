@@ -2280,7 +2280,14 @@ async function runSearch(fromMap) {
     }
 
     const text = _claudeData.content.map(i => i.text || '').filter(Boolean).join('');
-    const jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+
+    // Parsing robuste — Haiku peut entourer le JSON de texte
+    let jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (!jsonMatch) {
+      // Essayer d'extraire depuis des backticks
+      const backtickMatch = text.match(/```(?:json)?\s*(\[[\s\S]*\])\s*```/);
+      if (backtickMatch) jsonMatch = [backtickMatch[1]];
+    }
     if (!jsonMatch) throw new Error('Pas de JSON dans la reponse');
 
     const activities = JSON.parse(jsonMatch[0]);
