@@ -552,8 +552,8 @@ html { -webkit-text-size-adjust: 100%; }
 
 <header class="hero">
   <div class="hero-badge">✦ Activity Finder</div>
-  <h1 id="hero-title">Trouve ton<br><em>activité idéale</em></h1>
-  <p id="hero-sub">Renseigne tes critères et découvre des activités parfaitement adaptées à ton groupe, ta localisation et ton budget.</p>
+  <h1 id="hero-title">Qu'est-ce qu'on fait<br><em>ce week-end ?</em></h1>
+  <p id="hero-sub">Découvre les meilleures activités près de chez toi — adaptées à ton groupe, ta météo et ton budget.</p>
 </header>
 
 <div class="view-tabs">
@@ -828,8 +828,8 @@ let _selectedCityCoords = null;
 // ---- TRANSLATIONS ----
 const LANGS = {
   fr: {
-    heroTitle: 'Trouve ton<br><em>activité idéale</em>',
-    heroSub: 'Renseigne tes critères et découvre des activités parfaitement adaptées à ton groupe, ta localisation et ton budget.',
+    heroTitle: 'Qu'est-ce qu'on fait<br><em>ce week-end ?</em>',
+    heroSub: 'Découvre les meilleures activités près de chez toi — adaptées à ton groupe, ta météo et ton budget.',
     tabForm:'Formulaire', tabMap:'Recherche sur carte',
     lblGroup:'Configuration du groupe', lblAges:'Âges des participants',
     lblBudget:'Budget global du week-end', lblLocation:'Localisation',
@@ -2061,6 +2061,38 @@ function formatGooglePlacesForPrompt(places) {
     "\n\nCRUCIAL: Utilise CES lieux. Au moins 4 parmi cette liste. lieu_certain:true. GPS exacts fournis. Pour chaque lieu utilisé, copie exactement son placeId dans le champ \"placeId\" du JSON. Si escape game, karting ou bowling dans la liste, inclus-les.";
 }
 
+// ── Couleurs et icônes par type d'activité ──
+const TYPE_COLORS = {
+  'Nature':        '#4A8C52',
+  'Culture':       '#8B6914',
+  'Sport':         '#1A6BAB',
+  'Gastronomie':   '#C4714A',
+  'Bien-être':     '#7A5C9E',
+  'Divertissement':'#C4400A',
+  'Éphémère':      '#D4522A',
+  'Nocturne':      '#2A1A6B',
+  'Food':          '#C4714A',
+  'Wellness':      '#7A5C9E',
+  'Nightlife':     '#2A1A6B',
+  'Entertainment': '#C4400A',
+  'default':       '#5C7A5A',
+};
+const TYPE_ICONS = {
+  'Nature':        '🌿',
+  'Culture':       '🏛️',
+  'Sport':         '⚡',
+  'Gastronomie':   '🍽️',
+  'Bien-être':     '🧖',
+  'Divertissement':'🎡',
+  'Éphémère':      '🗓️',
+  'Nocturne':      '🌙',
+  'Food':          '🍔',
+  'Wellness':      '🧖',
+  'Nightlife':     '🌙',
+  'Entertainment': '🎭',
+  'default':       '📍',
+};
+
 let activityMarkers = [];
 let _lastGooglePlaces = []; // Store Google Places data for photo lookup
 
@@ -2239,6 +2271,8 @@ async function runSearch(fromMap) {
         }
 
         const locForRules = fromMap && mapSearchCoords ? (mapSearchName||location) : location;
+        const LANG_NAMES: Record<string,string> = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
+        const langInstruction = `LANGUE: Réponds OBLIGATOIREMENT en ${LANG_NAMES[lang] || 'français'}. Tous les textes (titre, description, infos_pratiques, pourquoi_adapte) doivent être en ${LANG_NAMES[lang] || 'français'}.\n`;
         const strictRules = "REGLES CRITIQUES:\n1. LIEUX VERIFIES EN PRIORITE: Si des lieux certifies sont fournis, utilise-les en priorite. lieu_certain:true pour eux.\n2. LIEUX INVENTES INTERDITS: Bars/restos sans certitude = description generique sans nom invente. lieu_certain:false.\n3. BROCANTES/MARCHES: Ville exacte obligatoire.\n4. DATE: Chaque activite realisable le jour demande.\n5. METEO: Respecter strictement.\n6. GPS: lat/lng precis, jamais 0.0.";
 
         const rawPrompt = fromMap && mapSearchCoords
@@ -2248,7 +2282,7 @@ async function runSearch(fromMap) {
         const placesHeader = realPlacesContext ?
           '=== LIEUX REELS GOOGLE MAPS A UTILISER OBLIGATOIREMENT ===\n' + realPlacesContext + '\n=== FIN LIEUX REELS ===\n\n'
           : '';
-        const prompt = placesHeader + dateHeader + weatherHeader + strictRules + '\n\n' + rawPrompt;
+        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + '\n\n' + rawPrompt;
 
         // Sonnet pour tous — Haiku trop peu fiable pour le JSON complexe
         const selectedModel = 'claude-sonnet-4-6';
@@ -2423,7 +2457,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
     </div>
     <div class="results-header">${t.resultsTitle(activities.length)}</div>
     <div class="rc-grid">${cards}</div>
-    <div style="text-align:center;padding:.8rem 0 .2rem;font-size:12px;color:var(--muted);">⚠️ Suggestions IA — vérifie l'existence et les horaires avant de partir.</div>
+    
     <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
 }
 
