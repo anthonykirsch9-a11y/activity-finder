@@ -2848,7 +2848,7 @@ function renderAuthUI() {
   const loginBtn = document.getElementById('login-btn');
   const userBadge = document.getElementById('user-badge');
   if (!currentUser) {
-    if (loginBtn) loginBtn.style.display = '';
+    if (loginBtn) { loginBtn.style.display = ''; loginBtn.textContent = apt().loginBtn || 'Connexion'; }
     if (userBadge) userBadge.style.display = 'none';
     document.getElementById('ad-banner')?.classList.remove('show');
     document.getElementById('history-panel')?.classList.remove('show');
@@ -2856,10 +2856,10 @@ function renderAuthUI() {
     if (loginBtn) loginBtn.style.display = 'none';
     if (userBadge) userBadge.style.display = 'flex';
     const av = document.getElementById('user-avatar');
-    if (av) av.textContent = (currentUser.email || '?')[0].toUpperCase();
+    if (av) av.textContent = currentUser.id === 'beta-user' ? '✦' : (currentUser.email||'?')[0].toUpperCase();
     const planBadge = document.getElementById('user-plan-badge');
     if (planBadge) {
-      planBadge.textContent = userPlan === 'pro' ? 'Pro ✦' : 'Free';
+      planBadge.textContent = userPlan === 'pro' ? (apt().badgePro||'Pro ✦') : (apt().badgeFree||'Free');
       planBadge.className = 'user-plan ' + (userPlan === 'pro' ? 'plan-pro' : 'plan-free');
     }
     if (userPlan === 'free') {
@@ -3363,21 +3363,24 @@ function checkBetaCode() {
 
 function hideBetaScreen() {
   document.getElementById('beta-screen').classList.remove('show');
-  // Beta users get pro access automatically without login
   userPlan = 'pro';
-  // Simuler un "user" beta pour activer les features Pro sans Supabase
   if (!currentUser) {
     currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' };
   }
-  renderAuthUI && renderAuthUI();
+  renderAuthUI();
+  updateLimitBanner();
 }
 
 function initBetaGate() {
   let passed = false;
   try { passed = localStorage.getItem(BETA_STORAGE_KEY) === '1'; } catch(e) {}
   if (passed) {
-    // Already validated — grant pro silently
     userPlan = 'pro';
+    if (!currentUser) {
+      currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' };
+    }
+    // renderAuthUI sera appelé après le chargement complet
+    setTimeout(() => { renderAuthUI(); updateLimitBanner(); }, 100);
   } else {
     document.getElementById('beta-screen').classList.add('show');
   }
