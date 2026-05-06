@@ -538,7 +538,7 @@ html { -webkit-text-size-adjust: 100%; }
       </div>
     </div>
     <!-- Auth: logged out -->
-    <button class="login-btn" id="login-btn" onclick="openAuth('login')">Connexion</button>
+    <button class="login-btn" id="login-btn" onclick="openAuth('login')" id="login-btn-text">Connexion</button>
     <!-- Auth: logged in -->
     <div class="user-badge" id="user-badge">
       <div class="user-avatar" id="user-avatar">?</div>
@@ -851,6 +851,12 @@ const LANGS = {
     seeOnMap:'🗺 Voir sur la carte',
     seeOnGMaps:'Voir sur Google Maps',
     seeOfficialSite:'Site officiel',
+    loginBtn:'Connexion',
+    perPerson:'/pers.',
+    totalLabel:'total',
+    agesUnit:'ans',
+    radiusLabel:(r)=>`rayon ${r} km`,
+    totalGroup:'Total groupe',
     costLabels:{low:'💰 Économique',mid:'💳 Modéré',high:'💎 Premium'},
     resultsNote:"Envie d'autres suggestions ? Modifie tes critères et relance la recherche.",
     loadingTitle:'Recherche en cours…',
@@ -890,6 +896,12 @@ const LANGS = {
     seeOnMap:'🗺 See on map',
     seeOnGMaps:'View on Google Maps',
     seeOfficialSite:'Official website',
+    loginBtn:'Login',
+    perPerson:'/pers.',
+    totalLabel:'total',
+    agesUnit:'yrs',
+    radiusLabel:(r)=>`${r}km radius`,
+    totalGroup:'Group total',
     costLabels:{low:'💰 Budget',mid:'💳 Moderate',high:'💎 Premium'},
     resultsNote:'Want more suggestions? Change your criteria and search again.',
     loadingTitle:'Searching…',
@@ -929,6 +941,12 @@ const LANGS = {
     seeOnMap:'🗺 Ver en mapa',
     seeOnGMaps:'Ver en Google Maps',
     seeOfficialSite:'Sitio oficial',
+    loginBtn:'Conexión',
+    perPerson:'/pers.',
+    totalLabel:'total',
+    agesUnit:'años',
+    radiusLabel:(r)=>`radio ${r} km`,
+    totalGroup:'Total grupo',
     costLabels:{low:'💰 Económico',mid:'💳 Moderado',high:'💎 Premium'},
     resultsNote:'¿Más sugerencias? Cambia tus criterios.',
     loadingTitle:'Buscando…',
@@ -968,6 +986,12 @@ const LANGS = {
     seeOnMap:'🗺 Auf Karte anzeigen',
     seeOnGMaps:'Auf Google Maps anzeigen',
     seeOfficialSite:'Offizielle Website',
+    loginBtn:'Anmelden',
+    perPerson:'/Pers.',
+    totalLabel:'gesamt',
+    agesUnit:'J.',
+    radiusLabel:(r)=>`${r} km Radius`,
+    totalGroup:'Gruppengesamt',
     costLabels:{low:'💰 Günstig',mid:'💳 Mittel',high:'💎 Premium'},
     resultsNote:'Mehr Vorschläge? Ändere deine Kriterien.',
     loadingTitle:'Suche läuft…',
@@ -1007,6 +1031,12 @@ const LANGS = {
     seeOnMap:'🗺 Vedi sulla mappa',
     seeOnGMaps:'Vedi su Google Maps',
     seeOfficialSite:'Sito ufficiale',
+    loginBtn:'Accedi',
+    perPerson:'/pers.',
+    totalLabel:'totale',
+    agesUnit:'anni',
+    radiusLabel:(r)=>`raggio ${r} km`,
+    totalGroup:'Totale gruppo',
     costLabels:{low:'💰 Economico',mid:'💳 Moderato',high:'💎 Premium'},
     resultsNote:'Vuoi altri suggerimenti? Modifica i criteri.',
     loadingTitle:'Ricerca in corso…',
@@ -1046,6 +1076,12 @@ const LANGS = {
     seeOnMap:'🗺 Ver no mapa',
     seeOnGMaps:'Ver no Google Maps',
     seeOfficialSite:'Site oficial',
+    loginBtn:'Entrar',
+    perPerson:'/pes.',
+    totalLabel:'total',
+    agesUnit:'anos',
+    radiusLabel:(r)=>`raio ${r} km`,
+    totalGroup:'Total grupo',
     costLabels:{low:'💰 Económico',mid:'💳 Moderado',high:'💎 Premium'},
     resultsNote:'Queres mais sugestões? Altera os critérios.',
     loadingTitle:'A pesquisar…',
@@ -1149,6 +1185,10 @@ function setLang(l) {
   document.getElementById('map-btn-label').textContent = t.mapBtn;
   const mapImportLbl = document.getElementById('map-import-label');
   if (mapImportLbl) mapImportLbl.textContent = t.mapImportLabel || 'Reprendre le formulaire';
+  const loginBtnEl = document.getElementById('login-btn');
+  if (loginBtnEl) loginBtnEl.textContent = t.loginBtn || 'Connexion';
+  const totalGroupEl = document.getElementById('budget-total-line');
+  if (totalGroupEl) totalGroupEl.innerHTML = (t.totalGroup||'Total groupe') + ' : <strong id="budget-total">100 €</strong>';
   // Date section
   if (t.lblDate) {
     const lblDate = document.getElementById('lbl-date');
@@ -2489,11 +2529,11 @@ function renderResults(activities, location, radius, budget, group, ages) {
     </div>`;
   }).join('');
 
-  const radLabel = radius==='0' ? (LANGS[lang]?.radCity||'Ville uniquement') : `rayon ${radius} km`;
-  const agesNote = ages.length ? ` · ${ages.join(', ')} ans` : '';
+  const radLabel = radius==='0' ? (t.radCity||'Ville uniquement') : (t.radiusLabel ? t.radiusLabel(radius) : `rayon ${radius} km`);
+  const agesNote = ages.length ? ` · ${ages.join(', ')} ${t.agesUnit||'ans'}` : '';
   const budgetPerP = parseInt(budget);
   const nbP = Math.max(1, persons.length);
-  const budgetRecap = nbP > 1 ? budgetPerP + ' €/pers. · ' + (budgetPerP*nbP) + ' € total' : budgetPerP + ' €';
+  const budgetRecap = nbP > 1 ? budgetPerP + ' €' + (t.perPerson||'/pers.') + ' · ' + (budgetPerP*nbP) + ' € ' + (t.totalLabel||'total') : budgetPerP + ' €';
 
   document.getElementById('results-section').innerHTML = `
     <div class="rc-summary" style="flex-wrap:wrap;gap:8px">
