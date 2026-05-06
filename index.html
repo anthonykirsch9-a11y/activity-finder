@@ -914,18 +914,11 @@ html { -webkit-text-size-adjust: 100%; }
   <div class="upgrade-card">
     <button class="auth-close" onclick="closeUpgrade()">×</button>
     <div style="font-size:36px">✦</div>
-    <h2>Activity Finder Pro</h2>
-    <div class="price">2,99 € <small>/mois</small></div>
-    <div class="pro-features">
-      <div class="pro-feature"><span class="pro-feature-icon">🧠</span><span><strong>IA Premium (Claude Sonnet)</strong> — résultats plus détaillés et créatifs</span></div>
-      <div class="pro-feature"><span class="pro-feature-icon">♾️</span><span>Recherches illimitées</span></div>
-      <div class="pro-feature"><span class="pro-feature-icon">📚</span><span>Historique complet de tes recherches</span></div>
-      <div class="pro-feature"><span class="pro-feature-icon">⭐</span><span>Notes & étoiles sur chaque activité</span></div>
-      <div class="pro-feature"><span class="pro-feature-icon">🔁</span><span>L'IA ne repropose pas les activités déjà faites</span></div>
-      <div class="pro-feature"><span class="pro-feature-icon">🚫</span><span>Sans publicité</span></div>
-    </div>
-    <button class="checkout-btn" onclick="startCheckout()">Commencer — 2,99 € / mois</button>
-    <p style="font-size:11px;color:var(--muted);margin-top:.8rem">Résiliable à tout moment · Paiement sécurisé par Stripe</p>
+    <h2 id="upgrade-title">Activity Finder Pro</h2>
+    <div class="price"><span id="upgrade-price">2,99 €</span> <small id="upgrade-period">/mois</small></div>
+    <div class="pro-features" id="upgrade-features"></div>
+    <button class="checkout-btn" onclick="startCheckout()" id="upgrade-btn">Commencer — 2,99 € / mois</button>
+    <p style="font-size:11px;color:var(--muted);margin-top:.8rem" id="upgrade-note">Résiliable à tout moment · Paiement sécurisé par Stripe</p>
   </div>
 </div>
 
@@ -2941,7 +2934,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
-    proFeatures:['🧠 IA Premium — résultats plus riches','♾️ Recherches illimitées','🕐 Historique de tes recherches','⭐ Notes & activités déjà faites','🔁 L\'IA ne repropose pas les activités faites','🚫 Sans publicité'],
+    proFeatures:['✨ Suggestions plus riches et détaillées','♾️ Recherches illimitées','🕐 Historique de tes recherches','⭐ Notes & activités déjà faites','🔁 Ne repropose plus les activités déjà faites','🚫 Sans publicité'],
     proBtn:'Passer Pro — 2,99 € / mois',
     loginBtn:'Se connecter',
     signOutBtn:'Déconnexion',
@@ -2960,7 +2953,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected',
     proTitle:'Activity Finder Pro', proPrice:'€2.99', proPerMonth:'/month',
-    proFeatures:['🧠 Premium AI — richer results','♾️ Unlimited searches','🕐 Search history','⭐ Ratings & done activities','🔁 AI won\'t suggest done activities','🚫 Ad-free'],
+    proFeatures:['✨ Richer and more detailed suggestions','♾️ Unlimited searches','🕐 Search history','⭐ Ratings & done activities','🔁 Won't suggest already done activities','🚫 Ad-free'],
     proBtn:'Go Pro — €2.99 / month',
     loginBtn:'Sign in',
     signOutBtn:'Sign out',
@@ -2979,7 +2972,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mes',
-    proFeatures:['🧠 IA Premium — resultados más ricos','♾️ Búsquedas ilimitadas','🕐 Historial de búsquedas','⭐ Notas y actividades realizadas','🔁 La IA no repropone actividades hechas','🚫 Sin publicidad'],
+    proFeatures:['✨ Sugerencias más ricas y detalladas','♾️ Búsquedas ilimitadas','🕐 Historial de búsquedas','⭐ Notas y actividades realizadas','🔁 No repropone actividades ya realizadas','🚫 Sin publicidad'],
     proBtn:'Pasar a Pro — 2,99 € / mes',
     loginBtn:'Iniciar sesión',
     signOutBtn:'Cerrar sesión',
@@ -2998,7 +2991,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
-    proFeatures:['🧠 Premium KI — reichhaltigere Ergebnisse','♾️ Unbegrenzte Suchen','🕐 Suchverlauf','⭐ Bewertungen & erledigte Aktivitäten','🔁 KI schlägt erledigte Aktivitäten nicht vor','🚫 Werbefrei'],
+    proFeatures:['✨ Reichhaltigere Vorschläge','♾️ Unbegrenzte Suchen','🕐 Suchverlauf','⭐ Bewertungen & erledigte Aktivitäten','🔁 Erledigte Aktivitäten werden nicht mehr vorgeschlagen','🚫 Werbefrei'],
     proBtn:'Pro werden — 2,99 € / Monat',
     loginBtn:'Anmelden',
     signOutBtn:'Abmelden',
@@ -3017,7 +3010,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connesso',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mese',
-    proFeatures:['🧠 IA Premium — risultati più ricchi','♾️ Ricerche illimitate','🕐 Cronologia ricerche','⭐ Valutazioni e attività svolte','🔁 L\'IA non ripropone attività già fatte','🚫 Senza pubblicità'],
+    proFeatures:['✨ Suggerimenti più ricchi e dettagliati','♾️ Ricerche illimitate','🕐 Cronologia ricerche','⭐ Valutazioni e attività svolte','🔁 Non ripropone attività già svolte','🚫 Senza pubblicità'],
     proBtn:'Passa a Pro — 2,99 € / mese',
     loginBtn:'Accedi',
     signOutBtn:'Disconnetti',
@@ -3036,7 +3029,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Não conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mês',
-    proFeatures:['🧠 IA Premium — resultados mais ricos','♾️ Pesquisas ilimitadas','🕐 Histórico de pesquisas','⭐ Notas e atividades feitas','🔁 A IA não repropõe atividades feitas','🚫 Sem publicidade'],
+    proFeatures:['✨ Sugestões mais ricas e detalhadas','♾️ Pesquisas ilimitadas','🕐 Histórico de pesquisas','⭐ Notas e atividades feitas','🔁 Não repropõe atividades já feitas','🚫 Sem publicidade'],
     proBtn:'Ir para Pro — 2,99 € / mês',
     loginBtn:'Entrar',
     signOutBtn:'Sair',
@@ -3214,7 +3207,28 @@ async function confirmDeleteAccount() {
 function openUserMenu() { openAccountPanel(); }
 
 // ── Upgrade modal ──
-function openUpgrade() { document.getElementById('upgrade-modal').classList.add('open'); }
+function openUpgrade() {
+  const t = apt();
+  // Traduire la modal
+  const featuresIcons = ['✨','♾️','🕐','⭐','🔁','🚫'];
+  document.getElementById('upgrade-title').textContent = t.proTitle || 'Activity Finder Pro';
+  document.getElementById('upgrade-price').textContent = t.proPrice || '2,99 €';
+  document.getElementById('upgrade-period').textContent = t.proPerMonth || '/mois';
+  document.getElementById('upgrade-features').innerHTML = t.proFeatures.map((f,i) =>
+    `<div class="pro-feature"><span class="pro-feature-icon">${featuresIcons[i]||'✦'}</span><span>${f.replace(/^[^\s]+\s/,'')}</span></div>`
+  ).join('');
+  document.getElementById('upgrade-btn').textContent = t.proBtn || 'Commencer — 2,99 € / mois';
+  const noteTexts = {
+    fr:'Résiliable à tout moment · Paiement sécurisé par Stripe',
+    en:'Cancel anytime · Secure payment by Stripe',
+    es:'Cancela cuando quieras · Pago seguro por Stripe',
+    de:'Jederzeit kündbar · Sichere Zahlung per Stripe',
+    it:'Annullabile in qualsiasi momento · Pagamento sicuro con Stripe',
+    pt:'Cancela quando quiseres · Pagamento seguro por Stripe'
+  };
+  document.getElementById('upgrade-note').textContent = noteTexts[lang] || noteTexts.fr;
+  document.getElementById('upgrade-modal').classList.add('open');
+}
 function closeUpgrade() { document.getElementById('upgrade-modal').classList.remove('open'); }
 async function startCheckout() {
   if (!currentUser) { closeUpgrade(); openAuth('signup'); return; }
@@ -3349,8 +3363,12 @@ function checkBetaCode() {
 
 function hideBetaScreen() {
   document.getElementById('beta-screen').classList.remove('show');
-  // Beta users get pro access automatically
+  // Beta users get pro access automatically without login
   userPlan = 'pro';
+  // Simuler un "user" beta pour activer les features Pro sans Supabase
+  if (!currentUser) {
+    currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' };
+  }
   renderAuthUI && renderAuthUI();
 }
 
