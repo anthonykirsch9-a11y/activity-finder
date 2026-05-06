@@ -696,7 +696,7 @@ html { -webkit-text-size-adjust: 100%; }
 
 <header class="hero">
   <div class="hero-badge">✦ Activity Finder</div>
-  <h1 id="hero-title">Qu'est-ce qu'on fait<br><em>ce week-end ?</em></h1>
+  <h1 id="hero-title">On fait quoi<br><em>ce week-end ?</em></h1>
   <p id="hero-sub">Découvre les meilleures activités près de chez toi — adaptées à ton groupe, ta météo et ton budget.</p>
 </header>
 
@@ -1051,7 +1051,7 @@ let _selectedCityCoords = null;
 // ---- TRANSLATIONS ----
 const LANGS = {
   fr: {
-    heroTitle: 'Qu\'est-ce qu\'on fait<br><em>ce week-end ?</em>',
+    heroTitle: 'On fait quoi<br><em>ce week-end ?</em>',
     heroSub: 'Découvre les meilleures activités près de chez toi — adaptées à ton groupe, ta météo et ton budget.',
     tabForm:'Formulaire', tabMap:'Recherche sur carte',
     lblGroup:'Configuration du groupe', lblAges:'Âges des participants',
@@ -1098,7 +1098,7 @@ const LANGS = {
       `Expert loisirs. 6 activités autour de lat:${lat},lng:${lng}${radius==='0' ? ' (ville)' : ', rayon ' + radius + 'km'}.\nGroupe:${group}, ${agesStr}, Budget:${budget}€, ${moods}\nJSON valide sans backticks:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases.","pourquoi_adapte":"1 phrase.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
   en: {
-    heroTitle: 'What are we doing<br><em>this weekend?</em>',
+    heroTitle: 'So what are we doing<br><em>this weekend?</em>',
     heroSub: 'Enter your criteria and discover activities perfectly suited to your group, location and budget.',
     tabForm:'Form', tabMap:'Search on map',
     lblGroup:'Group setup', lblAges:'Participants ages',
@@ -1145,7 +1145,7 @@ const LANGS = {
       `Leisure expert. 6 activities near lat:${lat},lng:${lng}${radius==='0' ? ' (city only)' : ', ' + radius + 'km radius'}.\nGroup:${group}, ${agesStr}, Budget:€${budget}, ${moods}\nOnly valid JSON:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 sentences.","pourquoi_adapte":"1 sentence.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
   es: {
-    heroTitle:'¿Qué hacemos<br><em>este fin de semana?</em>',
+    heroTitle:'¿Y qué hacemos<br><em>este fin de semana?</em>',
     heroSub:'Introduce tus criterios y descubre actividades perfectamente adaptadas a tu grupo, ubicación y presupuesto.',
     tabForm:'Formulario',tabMap:'Buscar en mapa',
     lblGroup:'Configuración del grupo',lblAges:'Edades de los participantes',
@@ -2882,7 +2882,14 @@ function renderAuthUI() {
     if (loginBtn) loginBtn.style.display = 'none';
     if (userBadge) userBadge.style.display = 'flex';
     const av = document.getElementById('user-avatar');
-    if (av) av.firstChild.textContent = currentUser.id === 'beta-user' ? '✦' : (currentUser.email||'?')[0].toUpperCase();
+    if (av) {
+      // Mettre à jour seulement le noeud texte, pas le badge enfant
+      const initial = currentUser.id === 'beta-user' ? '✦' : (currentUser.email||'?')[0].toUpperCase();
+      av.childNodes.forEach(n => { if(n.nodeType === 3) n.textContent = initial; });
+      if (!av.childNodes.length || !Array.from(av.childNodes).find(n=>n.nodeType===3)) {
+        av.insertBefore(document.createTextNode(initial), av.firstChild);
+      }
+    }
     const planBadge = document.getElementById('user-plan-badge');
     if (planBadge) {
       planBadge.textContent = userPlan === 'pro' ? (apt().badgePro||'Pro ✦') : (apt().badgeFree||'Free');
@@ -3322,6 +3329,8 @@ Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}
     msgEl.innerHTML = `<div style="background:#FDECEA;border:1px solid #F5C6C3;border-radius:8px;padding:8px 12px;font-size:13px;color:#7A1F1A;margin-bottom:12px">${t.addEventError}</div>`;
   }
 }
+
+async function markActivityDone(titleEncoded, activityId) {
   if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
   await _sb.from('notes').upsert({
     user_id: currentUser.id,
