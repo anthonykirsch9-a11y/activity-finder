@@ -861,7 +861,7 @@ const LANGS = {
       `Expert loisirs. 6 activités autour de lat:${lat},lng:${lng}${radius==='0' ? ' (ville)' : ', rayon ' + radius + 'km'}.\nGroupe:${group}, ${agesStr}, Budget:${budget}€, ${moods}\nJSON valide sans backticks:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases.","pourquoi_adapte":"1 phrase.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
   en: {
-    heroTitle: 'Find your<br><em>perfect activity</em>',
+    heroTitle: 'What are we doing<br><em>this weekend?</em>',
     heroSub: 'Enter your criteria and discover activities perfectly suited to your group, location and budget.',
     tabForm:'Form', tabMap:'Search on map',
     lblGroup:'Group setup', lblAges:'Participants ages',
@@ -894,7 +894,7 @@ const LANGS = {
       `Leisure expert. 6 activities near lat:${lat},lng:${lng}${radius==='0' ? ' (city only)' : ', ' + radius + 'km radius'}.\nGroup:${group}, ${agesStr}, Budget:€${budget}, ${moods}\nOnly valid JSON:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 sentences.","pourquoi_adapte":"1 sentence.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
   es: {
-    heroTitle:'Encuentra tu<br><em>fin de semana ideal</em>',
+    heroTitle:'¿Qué hacemos<br><em>este fin de semana?</em>',
     heroSub:'Introduce tus criterios y descubre actividades perfectamente adaptadas a tu grupo, ubicación y presupuesto.',
     tabForm:'Formulario',tabMap:'Buscar en mapa',
     lblGroup:'Configuración del grupo',lblAges:'Edades de los participantes',
@@ -927,7 +927,7 @@ const LANGS = {
       `Experto ocio. 6 actividades en lat:${lat},lng:${lng}${radius==='0' ? ' (ciudad)' : ', radio ' + radius + 'km'}.\n${group},${agesStr},€${budget},${moods}. Solo JSON:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"...","pourquoi_adapte":"...","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
   de: {
-    heroTitle:'Finde dein<br><em>perfektes Wochenende</em>',
+    heroTitle:'Was machen wir<br><em>dieses Wochenende?</em>',
     heroSub:'Gib deine Kriterien ein und entdecke Aktivitäten für deine Gruppe, deinen Standort und dein Budget.',
     tabForm:'Formular',tabMap:'Kartensuche',
     lblGroup:'Gruppenkonfiguration',lblAges:'Alter der Teilnehmer',
@@ -960,7 +960,7 @@ const LANGS = {
       `Freizeitexperte. 6 Aktivitäten bei lat:${lat},lng:${lng}${radius==='0' ? ' (Stadt)' : ', Radius ' + radius + 'km'}.\n${group},${agesStr},€${budget},${moods}. Nur JSON:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"...","pourquoi_adapte":"...","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
   it: {
-    heroTitle:'Trova il tuo<br><em>weekend ideale</em>',
+    heroTitle:'Cosa facciamo<br><em>questo weekend?</em>',
     heroSub:'Inserisci i tuoi criteri e scopri attività perfette per il tuo gruppo, posizione e budget.',
     tabForm:'Modulo',tabMap:'Cerca sulla mappa',
     lblGroup:'Configurazione del gruppo',lblAges:'Età dei partecipanti',
@@ -993,7 +993,7 @@ const LANGS = {
       `Esperto. 6 attività a lat:${lat},lng:${lng}${radius==='0' ? ' (città)' : ', raggio ' + radius + 'km'}.\n${group},${agesStr},€${budget}. Solo JSON:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"...","pourquoi_adapte":"...","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
   pt: {
-    heroTitle:'Encontra o teu<br><em>fim de semana ideal</em>',
+    heroTitle:'O que fazemos<br><em>neste fim de semana?</em>',
     heroSub:'Introduz os teus critérios e descobre atividades perfeitas para o teu grupo, localização e orçamento.',
     tabForm:'Formulário',tabMap:'Pesquisar no mapa',
     lblGroup:'Configuração do grupo',lblAges:'Idades dos participantes',
@@ -2187,7 +2187,15 @@ async function runSearch(fromMap) {
   if (sb) { sb.disabled = true; document.getElementById('submit-label').textContent = t.submitLoading || 'Recherche en cours…'; }
   rs.style.display = '';
   rs.innerHTML = '<div class="loading-state"><div class="spinner"></div><strong>' + (t.loadingTitle || 'Recherche en cours…') + '</strong><p>' + (t.loadingText ? t.loadingText(location) : 'Recherche en cours…') + '</p></div>';
-  switchView('results');
+  // Si recherche depuis la carte → rester sur la vue carte
+  // Si recherche depuis le formulaire → basculer vers résultats
+  if (!fromMap) switchView('results');
+  else {
+    // Afficher la section résultats sous la carte
+    const rs = document.getElementById('results-section');
+    rs.style.display = '';
+    document.getElementById('map-view').after(rs);
+  }
 
   try {
     const group = document.querySelector('#group-type .pill.selected')?.dataset.val || 'amis';
