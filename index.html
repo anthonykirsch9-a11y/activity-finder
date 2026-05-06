@@ -845,6 +845,12 @@ const LANGS = {
     locPlaceholder:'Tape une ville ou un code postal…',
     mapHint:'Cherche une ville ou clique sur la carte pour placer le point de recherche.',
     mapBtn:'Rechercher ici', alertCity:"Merci d'entrer une localisation !",
+    mapImportLabel:'Reprendre le formulaire',
+    mapImportTitle:'Données du formulaire importées ✓',
+    mapImportBudget:'Budget',
+    seeOnMap:'🗺 Voir sur la carte',
+    seeOnGMaps:'Voir sur Google Maps',
+    seeOfficialSite:'Site officiel',
     costLabels:{low:'💰 Économique',mid:'💳 Modéré',high:'💎 Premium'},
     resultsNote:"Envie d'autres suggestions ? Modifie tes critères et relance la recherche.",
     loadingTitle:'Recherche en cours…',
@@ -878,6 +884,12 @@ const LANGS = {
     locPlaceholder:'Enter a city or postal code…',
     mapHint:'Search a city or click the map to set the search point.',
     mapBtn:'Search here', alertCity:'Please enter a location!',
+    mapImportLabel:'Use form data',
+    mapImportTitle:'Form data imported ✓',
+    mapImportBudget:'Budget',
+    seeOnMap:'🗺 See on map',
+    seeOnGMaps:'View on Google Maps',
+    seeOfficialSite:'Official website',
     costLabels:{low:'💰 Budget',mid:'💳 Moderate',high:'💎 Premium'},
     resultsNote:'Want more suggestions? Change your criteria and search again.',
     loadingTitle:'Searching…',
@@ -911,6 +923,12 @@ const LANGS = {
     locPlaceholder:'Escribe una ciudad o código postal…',
     mapHint:'Busca una ciudad o haz clic en el mapa para definir el punto de búsqueda.',
     mapBtn:'Buscar aquí',alertCity:'¡Por favor introduce una ubicación!',
+    mapImportLabel:'Usar datos del formulario',
+    mapImportTitle:'Datos del formulario importados ✓',
+    mapImportBudget:'Presupuesto',
+    seeOnMap:'🗺 Ver en mapa',
+    seeOnGMaps:'Ver en Google Maps',
+    seeOfficialSite:'Sitio oficial',
     costLabels:{low:'💰 Económico',mid:'💳 Moderado',high:'💎 Premium'},
     resultsNote:'¿Más sugerencias? Cambia tus criterios.',
     loadingTitle:'Buscando…',
@@ -944,6 +962,12 @@ const LANGS = {
     locPlaceholder:'Stadt oder Postleitzahl…',
     mapHint:'Suche eine Stadt oder klicke auf die Karte.',
     mapBtn:'Hier suchen',alertCity:'Bitte gib einen Standort ein!',
+    mapImportLabel:'Formulardaten übernehmen',
+    mapImportTitle:'Formulardaten übernommen ✓',
+    mapImportBudget:'Budget',
+    seeOnMap:'🗺 Auf Karte anzeigen',
+    seeOnGMaps:'Auf Google Maps anzeigen',
+    seeOfficialSite:'Offizielle Website',
     costLabels:{low:'💰 Günstig',mid:'💳 Mittel',high:'💎 Premium'},
     resultsNote:'Mehr Vorschläge? Ändere deine Kriterien.',
     loadingTitle:'Suche läuft…',
@@ -977,6 +1001,12 @@ const LANGS = {
     locPlaceholder:'Inserisci una città o CAP…',
     mapHint:'Cerca una città o clicca sulla mappa.',
     mapBtn:'Cerca qui',alertCity:'Inserisci una posizione!',
+    mapImportLabel:'Usa dati del modulo',
+    mapImportTitle:'Dati del modulo importati ✓',
+    mapImportBudget:'Budget',
+    seeOnMap:'🗺 Vedi sulla mappa',
+    seeOnGMaps:'Vedi su Google Maps',
+    seeOfficialSite:'Sito ufficiale',
     costLabels:{low:'💰 Economico',mid:'💳 Moderato',high:'💎 Premium'},
     resultsNote:'Vuoi altri suggerimenti? Modifica i criteri.',
     loadingTitle:'Ricerca in corso…',
@@ -1010,6 +1040,12 @@ const LANGS = {
     locPlaceholder:'Escreve uma cidade ou código postal…',
     mapHint:'Pesquisa uma cidade ou clica no mapa para definir o ponto de pesquisa.',
     mapBtn:'Pesquisar aqui',alertCity:'Por favor introduz uma localização!',
+    mapImportLabel:'Usar dados do formulário',
+    mapImportTitle:'Dados do formulário importados ✓',
+    mapImportBudget:'Orçamento',
+    seeOnMap:'🗺 Ver no mapa',
+    seeOnGMaps:'Ver no Google Maps',
+    seeOfficialSite:'Site oficial',
     costLabels:{low:'💰 Económico',mid:'💳 Moderado',high:'💎 Premium'},
     resultsNote:'Queres mais sugestões? Altera os critérios.',
     loadingTitle:'A pesquisar…',
@@ -1111,6 +1147,8 @@ function setLang(l) {
   document.getElementById('map-location').placeholder = t.locPlaceholder;
   document.getElementById('map-hint-text').textContent = t.mapHint;
   document.getElementById('map-btn-label').textContent = t.mapBtn;
+  const mapImportLbl = document.getElementById('map-import-label');
+  if (mapImportLbl) mapImportLbl.textContent = t.mapImportLabel || 'Reprendre le formulaire';
   // Date section
   if (t.lblDate) {
     const lblDate = document.getElementById('lbl-date');
@@ -1904,7 +1942,7 @@ function importFormData() {
   const lines = [];
   if (group) lines.push('👥 ' + group);
   if (ages.length) lines.push('🎂 ' + ages.join(', '));
-  lines.push('💶 Budget: ' + parseInt(budget).toLocaleString('fr-FR') + ' €');
+  lines.push('💶 ' + (tx().mapImportBudget||'Budget') + ': ' + parseInt(budget).toLocaleString('fr-FR') + ' €');
   if (moods.length) lines.push('✨ ' + moods.join(', '));
   if (dateStr) lines.push('📅 ' + dateStr);
 
@@ -1915,7 +1953,7 @@ function importFormData() {
     recap.style.cssText = 'margin-top:10px;padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:12px;font-size:12.5px;color:var(--primary);line-height:1.8;';
     document.getElementById('map-import-btn').parentNode.appendChild(recap);
   }
-  recap.innerHTML = '<strong style="display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;">Données du formulaire importées ✓</strong>' + lines.join('<br>');
+  recap.innerHTML = '<strong style="display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;">' + (tx().mapImportTitle||'Données importées ✓') + '</strong>' + lines.join('<br>');
   recap.style.display = 'block';
 
   // 5. Feedback badge
@@ -2440,11 +2478,11 @@ function renderResults(activities, location, radius, budget, group, ages) {
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
           <a class="rc-gmaps" href="${gmaps}" target="_blank" rel="noopener">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="8.5" r="1.2"/><path d="M6 1a3.5 3.5 0 0 1 3.5 3.5C9.5 7 6 11 6 11S2.5 7 2.5 4.5A3.5 3.5 0 0 1 6 1z"/></svg>
-            Voir sur Google Maps
+            ${t.seeOnGMaps||'Voir sur Google Maps'}
           </a>
           ${websiteUrl ? `<a class="rc-gmaps" href="${websiteUrl}" target="_blank" rel="noopener" style="background:var(--primary);color:#fff;border-color:var(--primary);">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="5"/><path d="M6 1v10M1 6h10M2 3.5C3.5 5 4.5 6 6 6s2.5-1 4-2.5M2 8.5C3.5 7 4.5 6 6 6s2.5 1 4 2.5"/></svg>
-            Site officiel
+            ${t.seeOfficialSite||'Site officiel'}
           </a>` : ''}
         </div>
       </div>
@@ -2461,7 +2499,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
     <div class="rc-summary" style="flex-wrap:wrap;gap:8px">
       <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="var(--primary)" stroke-width="1.8"><circle cx="9" cy="11" r="2"/><path d="M9 1a6 6 0 0 1 6 6c0 4-6 10-6 10S3 11 3 7a6 6 0 0 1 6-6z"/></svg>
       <strong>${location}</strong>&ensp;${radLabel}&ensp;·&ensp;${group}${agesNote}&ensp;·&ensp;${budgetRecap}
-      <button onclick="switchView('map');setTimeout(()=>window._lastActivities&&placeActivityMarkers(window._lastActivities),400)" style="margin-left:auto;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer">🗺 Voir sur la carte</button>
+      <button onclick="switchView('map');setTimeout(()=>window._lastActivities&&placeActivityMarkers(window._lastActivities),400)" style="margin-left:auto;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer">${t.seeOnMap||'🗺 Voir sur la carte'}</button>
     </div>
     <div class="results-header">${t.resultsTitle(activities.length)}</div>
     <div class="rc-grid">${cards}</div>
