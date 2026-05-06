@@ -684,10 +684,10 @@ html { -webkit-text-size-adjust: 100%; }
     <!-- Auth: logged out -->
     <button class="login-btn" id="login-btn" onclick="openAccountPanel()">Connexion</button>
     <!-- Auth: logged in -->
-    <div class="user-badge" id="user-badge">
-      <div class="user-avatar" id="user-avatar">?</div>
-      <span class="user-plan plan-free" id="user-plan-badge">Free</span>
-      <button class="user-menu-btn" onclick="openUserMenu()" title="Mon compte">⋯</button>
+    <div class="user-badge" id="user-badge" onclick="openAccountPanel()" style="cursor:pointer" title="Mon compte">
+      <div class="user-avatar" id="user-avatar" style="position:relative">?
+        <span class="user-plan plan-free" id="user-plan-badge" style="position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);font-size:9px;padding:1px 5px;white-space:nowrap">Free</span>
+      </div>
     </div>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
   </div>
@@ -2856,11 +2856,12 @@ function renderAuthUI() {
     if (loginBtn) loginBtn.style.display = 'none';
     if (userBadge) userBadge.style.display = 'flex';
     const av = document.getElementById('user-avatar');
-    if (av) av.textContent = currentUser.id === 'beta-user' ? '✦' : (currentUser.email||'?')[0].toUpperCase();
+    if (av) av.firstChild.textContent = currentUser.id === 'beta-user' ? '✦' : (currentUser.email||'?')[0].toUpperCase();
     const planBadge = document.getElementById('user-plan-badge');
     if (planBadge) {
       planBadge.textContent = userPlan === 'pro' ? (apt().badgePro||'Pro ✦') : (apt().badgeFree||'Free');
       planBadge.className = 'user-plan ' + (userPlan === 'pro' ? 'plan-pro' : 'plan-free');
+      planBadge.style.cssText = 'position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);font-size:9px;padding:1px 5px;white-space:nowrap';
     }
     if (userPlan === 'free') {
       document.getElementById('ad-banner')?.classList.add('show');
