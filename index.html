@@ -766,11 +766,11 @@ html { -webkit-text-size-adjust: 100%; }
       </div>
       <select class="radius-select" id="radius">
         <option value="0" id="rad-0">Ville uniquement</option>
-        <option value="10">Rayon 10 km</option>
-        <option value="25" selected>Rayon 25 km</option>
-        <option value="50">Rayon 50 km</option>
-        <option value="100">Rayon 100 km</option>
-        <option value="200">Rayon 200 km</option>
+        <option value="10" id="rad-10">Rayon 10 km</option>
+        <option value="25" id="rad-25" selected>Rayon 25 km</option>
+        <option value="50" id="rad-50">Rayon 50 km</option>
+        <option value="100" id="rad-100">Rayon 100 km</option>
+        <option value="200" id="rad-200">Rayon 200 km</option>
       </select>
     </div>
     <!-- Météo auto -->
@@ -976,6 +976,10 @@ html { -webkit-text-size-adjust: 100%; }
       <span class="tab-icon">⚙️</span>
       <span id="ap-tab-settings-lbl">Réglages</span>
     </button>
+    <button class="account-tab" id="ap-tab-add" onclick="switchAccountTab('add')">
+      <span class="tab-icon">📍</span>
+      <span id="ap-tab-add-lbl">Ajouter</span>
+    </button>
   </div>
 
   <!-- Content -->
@@ -995,6 +999,11 @@ html { -webkit-text-size-adjust: 100%; }
     <!-- Pane: Mes activités -->
     <div class="account-pane" id="ap-pane-activities">
       <div id="ap-activities-list"></div>
+    </div>
+
+    <!-- Pane: Ajouter événement -->
+    <div class="account-pane" id="ap-pane-add">
+      <div id="ap-add-event-content"></div>
     </div>
 
     <!-- Pane: Réglages -->
@@ -1054,6 +1063,8 @@ const LANGS = {
     nightMain:'Inclure les sorties nocturnes', nightSub:'Bars, clubs, concerts, soirées, restaurants de nuit…',
     submitLabel:'Trouver mes activités →', submitLoading:'Recherche en cours…', submitRefine:'Affiner la recherche →',
     addPerson:'+ Ajouter une personne', radCity:'Ville uniquement',
+    radOptions:['Ville uniquement','Rayon 10 km','Rayon 25 km','Rayon 50 km','Rayon 100 km','Rayon 200 km'],
+    agePlaceholder:'âge',
     lblDate:'Quand ?', dqFlexible:'✨ Flexible', dqToday:"Aujourd'hui", dqTomorrow:'Demain', dqWeekend:'Ce week-end', dqCustom:'📅 Date précise',
     lblDateFrom:'Du', lblDateTo:'Au (optionnel)', lblBudgetNew:'Budget par personne',
     locPlaceholder:'Tape une ville ou un code postal…',
@@ -1099,6 +1110,8 @@ const LANGS = {
     nightMain:'Include nightlife', nightSub:'Bars, clubs, concerts, evening events, late restaurants…',
     submitLabel:'Find activities →', submitLoading:'Searching…', submitRefine:'Refine search →',
     addPerson:'+ Add a person', radCity:'City only',
+    radOptions:['City only','10 km radius','25 km radius','50 km radius','100 km radius','200 km radius'],
+    agePlaceholder:'age',
     lblDate:'When?', dqFlexible:'✨ Flexible', dqToday:'Today', dqTomorrow:'Tomorrow', dqWeekend:'This weekend', dqCustom:'📅 Custom date',
     lblDateFrom:'From', lblDateTo:'To (optional)', lblBudgetNew:'Budget per person',
     locPlaceholder:'Enter a city or postal code…',
@@ -1144,6 +1157,8 @@ const LANGS = {
     nightMain:'Incluir vida nocturna',nightSub:'Bares, clubs, conciertos, restaurantes nocturnos…',
     submitLabel:'Encontrar actividades →',submitLoading:'Buscando…',submitRefine:'Refinar búsqueda →',
     addPerson:'+ Añadir persona',radCity:'Solo ciudad',
+    radOptions:['Solo ciudad','Radio 10 km','Radio 25 km','Radio 50 km','Radio 100 km','Radio 200 km'],
+    agePlaceholder:'edad',
     lblDate:'¿Cuándo?', dqFlexible:'✨ Flexible', dqToday:'Hoy', dqTomorrow:'Mañana', dqWeekend:'Este fin de semana', dqCustom:'📅 Fecha exacta',
     lblDateFrom:'Desde', lblDateTo:'Hasta (opcional)', lblBudgetNew:'Presupuesto por persona',
     locPlaceholder:'Escribe una ciudad o código postal…',
@@ -1189,6 +1204,8 @@ const LANGS = {
     nightMain:'Nachtleben einbeziehen',nightSub:'Bars, Clubs, Konzerte, Restaurants…',
     submitLabel:'Aktivitäten finden →',submitLoading:'Suche läuft…',submitRefine:'Suche verfeinern →',
     addPerson:'+ Person hinzufügen',radCity:'Nur Stadt',
+    radOptions:['Nur Stadt','10 km Radius','25 km Radius','50 km Radius','100 km Radius','200 km Radius'],
+    agePlaceholder:'Alter',
     lblDate:'Wann?', dqFlexible:'✨ Flexibel', dqToday:'Heute', dqTomorrow:'Morgen', dqWeekend:'Dieses Wochenende', dqCustom:'📅 Genaues Datum',
     lblDateFrom:'Von', lblDateTo:'Bis (optional)', lblBudgetNew:'Budget pro Person',
     locPlaceholder:'Stadt oder Postleitzahl…',
@@ -1234,6 +1251,8 @@ const LANGS = {
     nightMain:'Includi vita notturna',nightSub:'Bar, club, concerti, ristoranti serali…',
     submitLabel:'Trova attività →',submitLoading:'Ricerca in corso…',submitRefine:'Affina la ricerca →',
     addPerson:'+ Aggiungi persona',radCity:'Solo città',
+    radOptions:['Solo città','Raggio 10 km','Raggio 25 km','Raggio 50 km','Raggio 100 km','Raggio 200 km'],
+    agePlaceholder:'età',
     lblDate:'Quando?', dqFlexible:'✨ Flessibile', dqToday:'Oggi', dqTomorrow:'Domani', dqWeekend:'Questo weekend', dqCustom:'📅 Data precisa',
     lblDateFrom:'Dal', lblDateTo:'Al (opzionale)', lblBudgetNew:'Budget a persona',
     locPlaceholder:'Inserisci una città o CAP…',
@@ -1279,6 +1298,8 @@ const LANGS = {
     nightMain:'Incluir vida noturna',nightSub:'Bares, clubes, concertos, restaurantes noturnos…',
     submitLabel:'Encontrar atividades →',submitLoading:'A pesquisar…',submitRefine:'Refinar pesquisa →',
     addPerson:'+ Adicionar pessoa',radCity:'Apenas cidade',
+    radOptions:['Apenas cidade','Raio 10 km','Raio 25 km','Raio 50 km','Raio 100 km','Raio 200 km'],
+    agePlaceholder:'idade',
     lblDate:'Quando?', dqFlexible:'✨ Flexível', dqToday:'Hoje', dqTomorrow:'Amanhã', dqWeekend:'Este fim de semana', dqCustom:'📅 Data precisa',
     lblDateFrom:'De', lblDateTo:'Até (opcional)', lblBudgetNew:'Orçamento por pessoa',
     locPlaceholder:'Escreve uma cidade ou código postal…',
@@ -1393,6 +1414,11 @@ function setLang(l) {
   document.getElementById('submit-label').textContent = t.submitLabel;
   document.getElementById('btn-add-person').textContent = t.addPerson;
   document.getElementById('rad-0').textContent = t.radCity;
+  // Traduire les options du select rayon
+  if (t.radOptions) {
+    const ids = ['rad-0','rad-10','rad-25','rad-50','rad-100','rad-200'];
+    ids.forEach((id,i) => { const el = document.getElementById(id); if(el && t.radOptions[i]) el.textContent = t.radOptions[i]; });
+  }
   document.getElementById('location').placeholder = t.locPlaceholder;
   document.getElementById('map-location').placeholder = t.locPlaceholder;
   document.getElementById('map-hint-text').textContent = t.mapHint;
@@ -1518,7 +1544,7 @@ function renderAges() {
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
       <span class="age-label">${p.label}</span>
-      <input class="age-input" type="number" id="age-${p.id}" min="0" max="110" placeholder="âge" value="${p.age||''}">
+      <input class="age-input" type="number" id="age-${p.id}" min="0" max="110" placeholder="${tx().agePlaceholder||'âge'}" value="${p.age||''}">
       ${persons.length > 1 ? `<button class="remove-btn" onclick="removePerson('${p.id}')">×</button>` : ''}
     </div>`).join('');
 }
@@ -2931,11 +2957,25 @@ async function loginWithGoogle() {
 // ══════════════════════════════════════════════════════════════
 const AP_TRANSLATIONS = {
   fr: {
-    tabProfile:'Profil', tabHistory:'Historique', tabActivities:'Activités', tabSettings:'Réglages',
+    tabProfile:'Profil', tabHistory:'Historique', tabActivities:'Activités', tabSettings:'Réglages', tabAdd:'Ajouter',
+    addEventTitle:'Ajouter un événement local',
+    addEventDesc:'Partage un événement de ton village ou quartier avec la communauté.',
+    addEventName:'Nom de l\'événement',
+    addEventNamePh:'Ex: Fête des voisins, Marche de Rochonvillers…',
+    addEventType:'Type',
+    addEventTypes:['Marche/Randonnée','Fête de village','Brocante/Vide-grenier','Marché','Événement sportif','Concert/Spectacle','Autre'],
+    addEventDate:'Date',
+    addEventLocation:'Lieu exact',
+    addEventLocationPh:'Rue, village, commune…',
+    addEventDesc2:'Description (optionnel)',
+    addEventDesc2Ph:'Quelques mots pour décrire l\'événement…',
+    addEventSubmit:'Soumettre l\'événement',
+    addEventSuccess:'✅ Événement soumis ! Il sera vérifié et visible dans les recherches.',
+    addEventError:'Erreur lors de la soumission. Réessaie.',
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
-    proFeatures:['✨ Suggestions plus riches et détaillées','♾️ Recherches illimitées','🕐 Historique de tes recherches','⭐ Notes & activités déjà faites','🔁 Ne repropose plus les activités déjà faites','🚫 Sans publicité'],
+    proFeatures:['✨ Suggestions plus riches et détaillées','♾️ Recherches illimitées','🕐 Historique de tes recherches','⭐ Notes & activités déjà faites','🔁 Ne repropose plus les activités déjà faites','📍 Ajoute tes événements locaux (fête des voisins, marche de village…)','🚫 Sans publicité'],
     proBtn:'Passer Pro — 2,99 € / mois',
     loginBtn:'Se connecter',
     signOutBtn:'Déconnexion',
@@ -2950,11 +2990,12 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Supprimer définitivement ton compte et toutes tes données ?',
   },
   en: {
-    tabProfile:'Profile', tabHistory:'History', tabActivities:'Activities', tabSettings:'Settings',
+    tabProfile:'Profile', tabHistory:'History', tabActivities:'Activities', tabSettings:'Settings', tabAdd:'Add',
+    addEventTitle:'Add a local event', addEventDesc:'Share a village or neighborhood event with the community.', addEventName:'Event name', addEventNamePh:'Ex: Street party, Village walk…', addEventType:'Type', addEventTypes:['Walk/Hike','Village fete','Flea market','Market','Sports event','Concert/Show','Other'], addEventDate:'Date', addEventLocation:'Exact location', addEventLocationPh:'Street, village, town…', addEventDesc2:'Description (optional)', addEventDesc2Ph:'A few words about the event…', addEventSubmit:'Submit event', addEventSuccess:'✅ Event submitted! It will be verified and visible in searches.', addEventError:'Submission error. Please try again.',
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected',
     proTitle:'Activity Finder Pro', proPrice:'€2.99', proPerMonth:'/month',
-    proFeatures:['✨ Richer and more detailed suggestions','♾️ Unlimited searches','🕐 Search history','⭐ Ratings & done activities','🔁 Won\'t suggest already done activities','🚫 Ad-free'],
+    proFeatures:['✨ Richer and more detailed suggestions','♾️ Unlimited searches','🕐 Search history','⭐ Ratings & done activities','🔁 Won\'t suggest already done activities','📍 Add your local events (village fete, group walk…)','🚫 Ad-free'],
     proBtn:'Go Pro — €2.99 / month',
     loginBtn:'Sign in',
     signOutBtn:'Sign out',
@@ -2969,11 +3010,12 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Permanently delete your account and all data?',
   },
   es: {
-    tabProfile:'Perfil', tabHistory:'Historial', tabActivities:'Actividades', tabSettings:'Ajustes',
+    tabProfile:'Perfil', tabHistory:'Historial', tabActivities:'Actividades', tabSettings:'Ajustes', tabAdd:'Añadir',
+    addEventTitle:'Añadir evento local', addEventDesc:'Comparte un evento de tu pueblo o barrio.', addEventName:'Nombre del evento', addEventNamePh:'Ej: Fiesta de vecinos, Marcha popular…', addEventType:'Tipo', addEventTypes:['Marcha/Senderismo','Fiesta de pueblo','Mercadillo','Mercado','Evento deportivo','Concierto/Espectáculo','Otro'], addEventDate:'Fecha', addEventLocation:'Lugar exacto', addEventLocationPh:'Calle, pueblo, municipio…', addEventDesc2:'Descripción (opcional)', addEventDesc2Ph:'Unas palabras sobre el evento…', addEventSubmit:'Enviar evento', addEventSuccess:'✅ ¡Evento enviado! Será verificado y visible en las búsquedas.', addEventError:'Error al enviar. Inténtalo de nuevo.',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mes',
-    proFeatures:['✨ Sugerencias más ricas y detalladas','♾️ Búsquedas ilimitadas','🕐 Historial de búsquedas','⭐ Notas y actividades realizadas','🔁 No repropone actividades ya realizadas','🚫 Sin publicidad'],
+    proFeatures:['✨ Sugerencias más ricas y detalladas','♾️ Búsquedas ilimitadas','🕐 Historial de búsquedas','⭐ Notas y actividades realizadas','🔁 No repropone actividades ya realizadas','📍 Añade tus eventos locales (fiesta de vecinos, marcha…)','🚫 Sin publicidad'],
     proBtn:'Pasar a Pro — 2,99 € / mes',
     loginBtn:'Iniciar sesión',
     signOutBtn:'Cerrar sesión',
@@ -2988,11 +3030,12 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'¿Eliminar definitivamente tu cuenta y todos tus datos?',
   },
   de: {
-    tabProfile:'Profil', tabHistory:'Verlauf', tabActivities:'Aktivitäten', tabSettings:'Einstellungen',
+    tabProfile:'Profil', tabHistory:'Verlauf', tabActivities:'Aktivitäten', tabSettings:'Einstellungen', tabAdd:'Hinzufügen',
+    addEventTitle:'Lokales Event hinzufügen', addEventDesc:'Teile ein Dorf- oder Nachbarschaftsevent.', addEventName:'Eventname', addEventNamePh:'z.B. Dorffest, Wanderung…', addEventType:'Typ', addEventTypes:['Wanderung','Dorffest','Flohmarkt','Markt','Sportevent','Konzert/Show','Sonstiges'], addEventDate:'Datum', addEventLocation:'Genauer Ort', addEventLocationPh:'Straße, Dorf, Gemeinde…', addEventDesc2:'Beschreibung (optional)', addEventDesc2Ph:'Kurze Beschreibung…', addEventSubmit:'Event einreichen', addEventSuccess:'✅ Event eingereicht! Es wird geprüft und in Suchen sichtbar.', addEventError:'Fehler beim Einreichen. Bitte erneut versuchen.',
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
-    proFeatures:['✨ Reichhaltigere Vorschläge','♾️ Unbegrenzte Suchen','🕐 Suchverlauf','⭐ Bewertungen & erledigte Aktivitäten','🔁 Erledigte Aktivitäten werden nicht mehr vorgeschlagen','🚫 Werbefrei'],
+    proFeatures:['✨ Reichhaltigere Vorschläge','♾️ Unbegrenzte Suchen','🕐 Suchverlauf','⭐ Bewertungen & erledigte Aktivitäten','🔁 Erledigte Aktivitäten werden nicht mehr vorgeschlagen','📍 Lokale Events hinzufügen (Dorffest, Wanderung…)','🚫 Werbefrei'],
     proBtn:'Pro werden — 2,99 € / Monat',
     loginBtn:'Anmelden',
     signOutBtn:'Abmelden',
@@ -3007,11 +3050,12 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Konto und alle Daten dauerhaft löschen?',
   },
   it: {
-    tabProfile:'Profilo', tabHistory:'Cronologia', tabActivities:'Attività', tabSettings:'Impostazioni',
+    tabProfile:'Profilo', tabHistory:'Cronologia', tabActivities:'Attività', tabSettings:'Impostazioni', tabAdd:'Aggiungi',
+    addEventTitle:'Aggiungi evento locale', addEventDesc:'Condividi un evento del tuo paese o quartiere.', addEventName:'Nome evento', addEventNamePh:'Es: Festa di quartiere, Camminata…', addEventType:'Tipo', addEventTypes:['Camminata/Escursione','Festa di paese','Mercatino','Mercato','Evento sportivo','Concerto/Spettacolo','Altro'], addEventDate:'Data', addEventLocation:'Luogo esatto', addEventLocationPh:'Via, paese, comune…', addEventDesc2:'Descrizione (opzionale)', addEventDesc2Ph:'Poche parole sull evento…', addEventSubmit:'Invia evento', addEventSuccess:'✅ Evento inviato! Sarà verificato e visibile nelle ricerche.', addEventError:'Errore invio. Riprova.',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connesso',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mese',
-    proFeatures:['✨ Suggerimenti più ricchi e dettagliati','♾️ Ricerche illimitate','🕐 Cronologia ricerche','⭐ Valutazioni e attività svolte','🔁 Non ripropone attività già svolte','🚫 Senza pubblicità'],
+    proFeatures:['✨ Suggerimenti più ricchi e dettagliati','♾️ Ricerche illimitate','🕐 Cronologia ricerche','⭐ Valutazioni e attività svolte','🔁 Non ripropone attività già svolte','📍 Aggiungi eventi locali (festa del vicinato, passeggiata…)','🚫 Senza pubblicità'],
     proBtn:'Passa a Pro — 2,99 € / mese',
     loginBtn:'Accedi',
     signOutBtn:'Disconnetti',
@@ -3026,11 +3070,12 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Eliminare definitivamente il tuo account e tutti i dati?',
   },
   pt: {
-    tabProfile:'Perfil', tabHistory:'Histórico', tabActivities:'Atividades', tabSettings:'Definições',
+    tabProfile:'Perfil', tabHistory:'Histórico', tabActivities:'Atividades', tabSettings:'Definições', tabAdd:'Adicionar',
+    addEventTitle:'Adicionar evento local', addEventDesc:'Partilha um evento da tua aldeia ou bairro.', addEventName:'Nome do evento', addEventNamePh:'Ex: Festa de vizinhos, Caminhada…', addEventType:'Tipo', addEventTypes:['Caminhada/Passeio','Festa de aldeia','Feira/Alfarrabista','Mercado','Evento desportivo','Concerto/Espetáculo','Outro'], addEventDate:'Data', addEventLocation:'Local exato', addEventLocationPh:'Rua, aldeia, concelho…', addEventDesc2:'Descrição (opcional)', addEventDesc2Ph:'Algumas palavras sobre o evento…', addEventSubmit:'Submeter evento', addEventSuccess:'✅ Evento submetido! Será verificado e visível nas pesquisas.', addEventError:'Erro ao submeter. Tenta novamente.',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Não conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mês',
-    proFeatures:['✨ Sugestões mais ricas e detalhadas','♾️ Pesquisas ilimitadas','🕐 Histórico de pesquisas','⭐ Notas e atividades feitas','🔁 Não repropõe atividades já feitas','🚫 Sem publicidade'],
+    proFeatures:['✨ Sugestões mais ricas e detalhadas','♾️ Pesquisas ilimitadas','🕐 Histórico de pesquisas','⭐ Notas e atividades feitas','🔁 Não repropõe atividades já feitas','📍 Adiciona eventos locais (festa de vizinhos, caminhada…)','🚫 Sem publicidade'],
     proBtn:'Ir para Pro — 2,99 € / mês',
     loginBtn:'Entrar',
     signOutBtn:'Sair',
@@ -3078,6 +3123,7 @@ function openAccountPanel() {
   document.getElementById('ap-tab-history-lbl').textContent = t.tabHistory;
   document.getElementById('ap-tab-activities-lbl').textContent = t.tabActivities;
   document.getElementById('ap-tab-settings-lbl').textContent = t.tabSettings;
+  document.getElementById('ap-tab-add-lbl').textContent = t.tabAdd || 'Ajouter';
   document.getElementById('ap-setting-lang-lbl').textContent = t.settingLang;
   document.getElementById('ap-setting-theme-lbl').textContent = t.settingTheme;
   document.getElementById('ap-signout-lbl').textContent = t.signOutBtn;
@@ -3108,6 +3154,7 @@ function switchAccountTab(tab) {
 
   if (tab === 'history') renderAccountHistory();
   if (tab === 'activities') renderAccountActivities();
+  if (tab === 'add') renderAddEventForm();
 }
 
 function renderAccountProfile() {
@@ -3174,7 +3221,107 @@ async function renderAccountActivities() {
     </div>`).join('');
 }
 
-async function markActivityDone(titleEncoded, activityId) {
+function renderAddEventForm() {
+  const t = apt();
+  const el = document.getElementById('ap-add-event-content');
+  const types = (t.addEventTypes||['Marche','Fête','Brocante','Marché','Sport','Concert','Autre']);
+  el.innerHTML = `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">${t.addEventDesc||''}</p>
+    <div id="add-event-msg"></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">${t.addEventName||'Nom'} *</label>
+        <input id="ev-name" type="text" placeholder="${t.addEventNamePh||''}"
+          style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">${t.addEventType||'Type'} *</label>
+        <select id="ev-type" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none">
+          ${types.map(tp=>`<option>${tp}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">${t.addEventDate||'Date'} *</label>
+        <input id="ev-date" type="date" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">${t.addEventLocation||'Lieu'} *</label>
+        <input id="ev-location" type="text" placeholder="${t.addEventLocationPh||''}"
+          style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">${t.addEventDesc2||'Description'}</label>
+        <textarea id="ev-desc" placeholder="${t.addEventDesc2Ph||''}" rows="3"
+          style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none;resize:none"></textarea>
+      </div>
+      <button onclick="submitLocalEvent()" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--primary),var(--primary-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer">
+        ${t.addEventSubmit||'Soumettre'}
+      </button>
+    </div>`;
+}
+
+async function submitLocalEvent() {
+  const t = apt();
+  const name = document.getElementById('ev-name')?.value.trim();
+  const type = document.getElementById('ev-type')?.value;
+  const date = document.getElementById('ev-date')?.value;
+  const location = document.getElementById('ev-location')?.value.trim();
+  const desc = document.getElementById('ev-desc')?.value.trim();
+  const msgEl = document.getElementById('add-event-msg');
+
+  if (!name || !date || !location) {
+    msgEl.innerHTML = '<div style="background:#FDECEA;border:1px solid #F5C6C3;border-radius:8px;padding:8px 12px;font-size:13px;color:#7A1F1A;margin-bottom:12px">Remplis les champs obligatoires *</div>';
+    return;
+  }
+
+  // Validation via Claude — vérifier que c'est un vrai événement local
+  try {
+    msgEl.innerHTML = '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">⏳ Vérification en cours…</div>';
+
+    const validationPrompt = `Tu es un modérateur d'événements locaux. Évalue si cet événement est légitime et non spam.
+Nom: ${name}
+Type: ${type}
+Date: ${date}
+Lieu: ${location}
+Description: ${desc||'Non renseignée'}
+Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}`;
+
+    const res = await fetch(SUPABASE_URL + '/functions/v1/search', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+      body:JSON.stringify({prompt:validationPrompt})
+    });
+    const data = await res.json();
+    const text = (data.content||[]).map(c=>c.text||'').join('');
+    const match = text.match(/\{[\s\S]*\}/);
+    const result = match ? JSON.parse(match[0]) : {valid:true};
+
+    if (!result.valid) {
+      msgEl.innerHTML = `<div style="background:#FDECEA;border:1px solid #F5C6C3;border-radius:8px;padding:8px 12px;font-size:13px;color:#7A1F1A;margin-bottom:12px">❌ ${result.reason||t.addEventError}</div>`;
+      return;
+    }
+
+    // Sauvegarder dans Supabase si connecté, sinon localStorage
+    const eventData = { name, type, date, location, desc, user_id: currentUser?.id||'beta', lang, created_at: new Date().toISOString(), status: 'pending' };
+    if (_sb && currentUser?.id !== 'beta-user') {
+      await _sb.from('local_events').insert(eventData);
+    } else {
+      // Fallback localStorage pour beta-testeurs
+      try {
+        const existing = JSON.parse(localStorage.getItem('local_events')||'[]');
+        existing.push(eventData);
+        localStorage.setItem('local_events', JSON.stringify(existing));
+      } catch(e) {}
+    }
+
+    msgEl.innerHTML = `<div style="background:#EBF5EB;border:1px solid #A5D6A7;border-radius:8px;padding:8px 12px;font-size:13px;color:#2E7D32;margin-bottom:12px">${t.addEventSuccess}</div>`;
+    // Réinitialiser le formulaire
+    setTimeout(() => renderAddEventForm(), 3000);
+
+  } catch(e) {
+    msgEl.innerHTML = `<div style="background:#FDECEA;border:1px solid #F5C6C3;border-radius:8px;padding:8px 12px;font-size:13px;color:#7A1F1A;margin-bottom:12px">${t.addEventError}</div>`;
+  }
+}
   if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
   await _sb.from('notes').upsert({
     user_id: currentUser.id,
