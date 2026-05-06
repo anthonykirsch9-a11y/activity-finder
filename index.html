@@ -445,7 +445,151 @@ html { -webkit-text-size-adjust: 100%; }
 .rc-note-btn:hover { background:var(--primary); color:#fff; }
 .rc-already-done { display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:4px 10px; margin-top:8px; }
 
-/* ── BETA GATE ── */
+/* ══════════════════════════════════════════════════════
+   PANNEAU COMPTE — slide droite desktop / bas mobile
+══════════════════════════════════════════════════════ */
+.account-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.45); z-index:20000;
+  backdrop-filter:blur(2px);
+}
+.account-overlay.open { display:block; }
+
+.account-panel {
+  position:fixed; top:0; right:0; bottom:0; width:360px; max-width:100vw;
+  background:var(--card); box-shadow:-8px 0 40px rgba(0,0,0,0.2);
+  z-index:20001; display:flex; flex-direction:column;
+  transform:translateX(110%); transition:transform 0.32s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+.account-panel.open { transform:translateX(0); }
+
+@media (max-width:600px) {
+  .account-panel {
+    top:auto; right:0; left:0; bottom:0; width:100%;
+    height:85vh; border-radius:20px 20px 0 0;
+    transform:translateY(110%); box-shadow:0 -8px 40px rgba(0,0,0,0.2);
+  }
+  .account-panel.open { transform:translateY(0); }
+}
+
+.account-panel-header {
+  background:linear-gradient(135deg,#3A5C38,#5C7A5A);
+  padding:20px; display:flex; align-items:center; gap:14px; flex-shrink:0;
+}
+.account-panel-avatar {
+  width:48px; height:48px; border-radius:50%;
+  background:rgba(255,255,255,0.2); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; font-weight:700; flex-shrink:0;
+  border:2px solid rgba(255,255,255,0.3);
+}
+.account-panel-info { flex:1; }
+.account-panel-name { font-size:15px; font-weight:700; color:#fff; }
+.account-panel-email { font-size:11px; color:rgba(255,255,255,0.7); margin-top:2px; }
+.account-panel-badge {
+  font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px; margin-top:5px;
+  display:inline-block;
+}
+.badge-free-panel { background:rgba(255,255,255,0.2); color:#fff; }
+.badge-pro-panel { background:#F5A623; color:#1E2A1A; }
+.account-close-btn {
+  background:rgba(255,255,255,0.15); border:none; color:#fff;
+  width:32px; height:32px; border-radius:50%; cursor:pointer;
+  font-size:18px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:background 0.15s;
+}
+.account-close-btn:hover { background:rgba(255,255,255,0.25); }
+
+/* Tabs */
+.account-tabs {
+  display:flex; border-bottom:1.5px solid var(--border);
+  background:var(--card); flex-shrink:0;
+}
+.account-tab {
+  flex:1; padding:12px 8px; font-family:'DM Sans',sans-serif;
+  font-size:12px; font-weight:600; border:none; background:none;
+  color:var(--muted); cursor:pointer; transition:all 0.15s;
+  border-bottom:2.5px solid transparent; margin-bottom:-1.5px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+.account-tab .tab-icon { font-size:16px; }
+.account-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+/* Content */
+.account-content { flex:1; overflow-y:auto; padding:0; }
+.account-pane { display:none; padding:20px; }
+.account-pane.active { display:block; }
+
+/* Pro promo (non connecté / gratuit) */
+.pro-promo {
+  background:linear-gradient(135deg,var(--primary-light),var(--secondary-light));
+  border:1.5px solid var(--primary); border-radius:14px; padding:18px;
+  margin-bottom:16px;
+}
+.pro-promo-title {
+  font-family:'Fraunces',serif; font-size:1.3rem; font-weight:800;
+  color:var(--text); margin-bottom:4px;
+}
+.pro-promo-price {
+  font-size:1.8rem; font-weight:800; color:var(--primary);
+  font-family:'Fraunces',serif; margin:8px 0;
+}
+.pro-promo-price small { font-size:1rem; font-weight:400; color:var(--muted); }
+.pro-promo-features { list-style:none; margin:12px 0; }
+.pro-promo-features li {
+  font-size:13px; color:var(--text); padding:5px 0;
+  border-bottom:1px solid var(--border); display:flex; gap:8px;
+}
+.pro-promo-features li:last-child { border-bottom:none; }
+.pro-promo-btn {
+  width:100%; padding:13px; background:linear-gradient(135deg,var(--secondary),#D4855C);
+  color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif;
+  font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s;
+}
+.pro-promo-btn:hover { opacity:0.9; transform:translateY(-1px); }
+
+/* History items */
+.history-item {
+  background:var(--bg); border:1px solid var(--border); border-radius:10px;
+  padding:12px; margin-bottom:8px; cursor:pointer; transition:all 0.15s;
+}
+.history-item:hover { border-color:var(--primary); background:var(--primary-light); }
+.history-item-loc { font-size:14px; font-weight:600; color:var(--text); }
+.history-item-meta { font-size:11px; color:var(--muted); margin-top:3px; }
+
+/* Activity items */
+.activity-item {
+  background:var(--bg); border:1px solid var(--border); border-radius:10px;
+  padding:12px; margin-bottom:8px;
+}
+.activity-item-title { font-size:13px; font-weight:600; color:var(--text); }
+.activity-item-meta { font-size:11px; color:var(--muted); margin-top:3px; }
+.activity-item-stars { color:#F5A623; font-size:13px; margin-top:4px; }
+.activity-done-btn {
+  display:inline-flex; align-items:center; gap:5px; font-size:11px;
+  background:var(--primary-light); color:var(--primary);
+  border:1px solid var(--primary); border-radius:6px;
+  padding:3px 10px; cursor:pointer; font-family:'DM Sans',sans-serif;
+  transition:all 0.15s; margin-top:6px;
+}
+.activity-done-btn.done { background:var(--primary); color:#fff; }
+
+/* Settings */
+.setting-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 0; border-bottom:1px solid var(--border);
+}
+.setting-row:last-child { border-bottom:none; }
+.setting-label { font-size:14px; font-weight:500; color:var(--text); }
+.setting-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+.danger-btn {
+  width:100%; padding:12px; background:none; border:1.5px solid #C0392B;
+  color:#C0392B; border-radius:10px; font-family:'DM Sans',sans-serif;
+  font-size:14px; font-weight:600; cursor:pointer; transition:all 0.15s;
+  margin-top:16px;
+}
+.danger-btn:hover { background:#FDECEA; }
 .beta-screen {
   display:none; position:fixed; inset:0;
   background:linear-gradient(160deg,#2E4A2C 0%,#4A7248 50%,#7A9E78 100%);
@@ -538,7 +682,7 @@ html { -webkit-text-size-adjust: 100%; }
       </div>
     </div>
     <!-- Auth: logged out -->
-    <button class="login-btn" id="login-btn" onclick="openAuth('login')" id="login-btn-text">Connexion</button>
+    <button class="login-btn" id="login-btn" onclick="openAccountPanel()">Connexion</button>
     <!-- Auth: logged in -->
     <div class="user-badge" id="user-badge">
       <div class="user-avatar" id="user-avatar">?</div>
@@ -801,6 +945,83 @@ html { -webkit-text-size-adjust: 100%; }
       <button class="note-save" onclick="saveNote()">Enregistrer</button>
       <button class="note-cancel" onclick="closeNote()">Annuler</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANNEAU COMPTE
+══════════════════════════════════════════════════ -->
+<div class="account-overlay" id="account-overlay" onclick="closeAccountPanel()"></div>
+<div class="account-panel" id="account-panel">
+
+  <!-- Header -->
+  <div class="account-panel-header">
+    <div class="account-panel-avatar" id="ap-avatar">?</div>
+    <div class="account-panel-info">
+      <div class="account-panel-name" id="ap-name">Activity Finder</div>
+      <div class="account-panel-email" id="ap-email"></div>
+      <span class="account-panel-badge" id="ap-badge">Free</span>
+    </div>
+    <button class="account-close-btn" onclick="closeAccountPanel()">×</button>
+  </div>
+
+  <!-- Tabs (Pro only) -->
+  <div class="account-tabs" id="ap-tabs" style="display:none">
+    <button class="account-tab active" id="ap-tab-profile" onclick="switchAccountTab('profile')">
+      <span class="tab-icon">👤</span>
+      <span id="ap-tab-profile-lbl">Profil</span>
+    </button>
+    <button class="account-tab" id="ap-tab-history" onclick="switchAccountTab('history')">
+      <span class="tab-icon">🕐</span>
+      <span id="ap-tab-history-lbl">Historique</span>
+    </button>
+    <button class="account-tab" id="ap-tab-activities" onclick="switchAccountTab('activities')">
+      <span class="tab-icon">⭐</span>
+      <span id="ap-tab-activities-lbl">Activités</span>
+    </button>
+    <button class="account-tab" id="ap-tab-settings" onclick="switchAccountTab('settings')">
+      <span class="tab-icon">⚙️</span>
+      <span id="ap-tab-settings-lbl">Réglages</span>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="account-content">
+
+    <!-- Pane: Profil / Pro promo -->
+    <div class="account-pane active" id="ap-pane-profile">
+      <div id="ap-pro-promo"><!-- rempli dynamiquement --></div>
+      <div id="ap-profile-actions"><!-- rempli dynamiquement --></div>
+    </div>
+
+    <!-- Pane: Historique -->
+    <div class="account-pane" id="ap-pane-history">
+      <div id="ap-history-list"></div>
+    </div>
+
+    <!-- Pane: Mes activités -->
+    <div class="account-pane" id="ap-pane-activities">
+      <div id="ap-activities-list"></div>
+    </div>
+
+    <!-- Pane: Réglages -->
+    <div class="account-pane" id="ap-pane-settings">
+      <div class="setting-row">
+        <div>
+          <div class="setting-label" id="ap-setting-lang-lbl">Langue</div>
+        </div>
+        <div id="ap-lang-picker-wrap"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label" id="ap-setting-theme-lbl">Thème</div>
+        </div>
+        <button class="theme-btn" style="background:var(--border);color:var(--text)" onclick="toggleTheme()" id="ap-theme-btn">🌙</button>
+      </div>
+      <button class="danger-btn" id="ap-signout-btn" onclick="signOut()">🚪 <span id="ap-signout-lbl">Déconnexion</span></button>
+      <button class="danger-btn" style="margin-top:8px;opacity:0.6" id="ap-delete-btn" onclick="confirmDeleteAccount()">🗑 <span id="ap-delete-lbl">Supprimer mon compte</span></button>
+    </div>
+
   </div>
 </div>
 
@@ -1186,7 +1407,7 @@ function setLang(l) {
   const mapImportLbl = document.getElementById('map-import-label');
   if (mapImportLbl) mapImportLbl.textContent = t.mapImportLabel || 'Reprendre le formulaire';
   const loginBtnEl = document.getElementById('login-btn');
-  if (loginBtnEl) loginBtnEl.textContent = t.loginBtn || 'Connexion';
+  if (loginBtnEl) loginBtnEl.textContent = apt().loginBtn || t.loginBtn || 'Connexion';
   const totalGroupEl = document.getElementById('budget-total-line');
   if (totalGroupEl) totalGroupEl.innerHTML = (t.totalGroup||'Total groupe') + ' : <strong id="budget-total">100 €</strong>';
   // Date section
@@ -2512,6 +2733,13 @@ function renderResults(activities, location, radius, budget, group, ages) {
           ${a.pourquoi_adapte}
         </div>`:''}
 
+        ${currentUser && userPlan === 'pro' ? `
+        <button class="activity-done-btn ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'done' : ''}"
+          data-done-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
+          onclick="markActivityDone('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')"
+          ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'disabled' : ''}>
+          ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? apt().alreadyDone : apt().markDone}
+        </button>` : ''}
         ${currentUser && userPlan === 'pro' ? '<button class="rc-note-btn" onclick="openNote(\''+encodeURIComponent(a.titre)+'\',\''+(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'\')">⭐ Noter cette activité</button>' : ''}
         ${currentUser && userPlan === 'pro' && alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '<div class="rc-already-done">✓ Déjà faite — non reproposée pendant 1 an</div>' : ''}
 
@@ -2704,16 +2932,286 @@ async function loginWithGoogle() {
   if (!_sb) return alert('Supabase non configuré.');
   await _sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
 }
-function openUserMenu() {
-  const actions = currentUser ? [
-    { label: userPlan === 'pro' ? '✦ Mon abonnement Pro' : '⬆ Passer à Pro', fn: userPlan === 'pro' ? null : openUpgrade },
-    { label: '🚪 Déconnexion', fn: () => _sb && _sb.auth.signOut() }
-  ] : [];
-  const msg = actions.map(a => a.label).join('\n');
-  const choice = prompt('Mon compte\n' + msg + '\n\nTape 1 pour Pro, 2 pour déconnexion :');
-  if (choice === '1' && userPlan !== 'pro') openUpgrade();
-  if (choice === '2') _sb && _sb.auth.signOut();
+// ══════════════════════════════════════════════════════════════
+// PANNEAU COMPTE
+// ══════════════════════════════════════════════════════════════
+const AP_TRANSLATIONS = {
+  fr: {
+    tabProfile:'Profil', tabHistory:'Historique', tabActivities:'Activités', tabSettings:'Réglages',
+    badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
+    notConnected:'Non connecté',
+    proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
+    proFeatures:['🧠 IA Premium — résultats plus riches','♾️ Recherches illimitées','🕐 Historique de tes recherches','⭐ Notes & activités déjà faites','🔁 L\'IA ne repropose pas les activités faites','🚫 Sans publicité'],
+    proBtn:'Passer Pro — 2,99 € / mois',
+    loginBtn:'Se connecter',
+    signOutBtn:'Déconnexion',
+    deleteBtn:'Supprimer mon compte',
+    settingLang:'Langue',
+    settingTheme:'Thème',
+    noHistory:'Aucune recherche récente.',
+    noActivities:'Aucune activité notée pour l\'instant.',
+    markDone:'✓ Déjà fait',
+    alreadyDone:'✓ Fait',
+    historyRelaunch:'Relancer',
+    deleteConfirm:'Supprimer définitivement ton compte et toutes tes données ?',
+  },
+  en: {
+    tabProfile:'Profile', tabHistory:'History', tabActivities:'Activities', tabSettings:'Settings',
+    badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
+    notConnected:'Not connected',
+    proTitle:'Activity Finder Pro', proPrice:'€2.99', proPerMonth:'/month',
+    proFeatures:['🧠 Premium AI — richer results','♾️ Unlimited searches','🕐 Search history','⭐ Ratings & done activities','🔁 AI won\'t suggest done activities','🚫 Ad-free'],
+    proBtn:'Go Pro — €2.99 / month',
+    loginBtn:'Sign in',
+    signOutBtn:'Sign out',
+    deleteBtn:'Delete my account',
+    settingLang:'Language',
+    settingTheme:'Theme',
+    noHistory:'No recent searches.',
+    noActivities:'No rated activities yet.',
+    markDone:'✓ Done',
+    alreadyDone:'✓ Done',
+    historyRelaunch:'Relaunch',
+    deleteConfirm:'Permanently delete your account and all data?',
+  },
+  es: {
+    tabProfile:'Perfil', tabHistory:'Historial', tabActivities:'Actividades', tabSettings:'Ajustes',
+    badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
+    notConnected:'No conectado',
+    proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mes',
+    proFeatures:['🧠 IA Premium — resultados más ricos','♾️ Búsquedas ilimitadas','🕐 Historial de búsquedas','⭐ Notas y actividades realizadas','🔁 La IA no repropone actividades hechas','🚫 Sin publicidad'],
+    proBtn:'Pasar a Pro — 2,99 € / mes',
+    loginBtn:'Iniciar sesión',
+    signOutBtn:'Cerrar sesión',
+    deleteBtn:'Eliminar mi cuenta',
+    settingLang:'Idioma',
+    settingTheme:'Tema',
+    noHistory:'Sin búsquedas recientes.',
+    noActivities:'Sin actividades valoradas aún.',
+    markDone:'✓ Hecho',
+    alreadyDone:'✓ Hecho',
+    historyRelaunch:'Relanzar',
+    deleteConfirm:'¿Eliminar definitivamente tu cuenta y todos tus datos?',
+  },
+  de: {
+    tabProfile:'Profil', tabHistory:'Verlauf', tabActivities:'Aktivitäten', tabSettings:'Einstellungen',
+    badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
+    notConnected:'Nicht angemeldet',
+    proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
+    proFeatures:['🧠 Premium KI — reichhaltigere Ergebnisse','♾️ Unbegrenzte Suchen','🕐 Suchverlauf','⭐ Bewertungen & erledigte Aktivitäten','🔁 KI schlägt erledigte Aktivitäten nicht vor','🚫 Werbefrei'],
+    proBtn:'Pro werden — 2,99 € / Monat',
+    loginBtn:'Anmelden',
+    signOutBtn:'Abmelden',
+    deleteBtn:'Konto löschen',
+    settingLang:'Sprache',
+    settingTheme:'Theme',
+    noHistory:'Kein Suchverlauf.',
+    noActivities:'Noch keine bewerteten Aktivitäten.',
+    markDone:'✓ Erledigt',
+    alreadyDone:'✓ Erledigt',
+    historyRelaunch:'Neu starten',
+    deleteConfirm:'Konto und alle Daten dauerhaft löschen?',
+  },
+  it: {
+    tabProfile:'Profilo', tabHistory:'Cronologia', tabActivities:'Attività', tabSettings:'Impostazioni',
+    badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
+    notConnected:'Non connesso',
+    proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mese',
+    proFeatures:['🧠 IA Premium — risultati più ricchi','♾️ Ricerche illimitate','🕐 Cronologia ricerche','⭐ Valutazioni e attività svolte','🔁 L\'IA non ripropone attività già fatte','🚫 Senza pubblicità'],
+    proBtn:'Passa a Pro — 2,99 € / mese',
+    loginBtn:'Accedi',
+    signOutBtn:'Disconnetti',
+    deleteBtn:'Elimina il mio account',
+    settingLang:'Lingua',
+    settingTheme:'Tema',
+    noHistory:'Nessuna ricerca recente.',
+    noActivities:'Nessuna attività valutata.',
+    markDone:'✓ Fatto',
+    alreadyDone:'✓ Fatto',
+    historyRelaunch:'Rilancia',
+    deleteConfirm:'Eliminare definitivamente il tuo account e tutti i dati?',
+  },
+  pt: {
+    tabProfile:'Perfil', tabHistory:'Histórico', tabActivities:'Atividades', tabSettings:'Definições',
+    badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
+    notConnected:'Não conectado',
+    proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mês',
+    proFeatures:['🧠 IA Premium — resultados mais ricos','♾️ Pesquisas ilimitadas','🕐 Histórico de pesquisas','⭐ Notas e atividades feitas','🔁 A IA não repropõe atividades feitas','🚫 Sem publicidade'],
+    proBtn:'Ir para Pro — 2,99 € / mês',
+    loginBtn:'Entrar',
+    signOutBtn:'Sair',
+    deleteBtn:'Eliminar a minha conta',
+    settingLang:'Língua',
+    settingTheme:'Tema',
+    noHistory:'Sem pesquisas recentes.',
+    noActivities:'Sem atividades avaliadas.',
+    markDone:'✓ Feito',
+    alreadyDone:'✓ Feito',
+    historyRelaunch:'Relançar',
+    deleteConfirm:'Eliminar definitivamente a tua conta e todos os dados?',
+  },
+};
+
+function apt() { return AP_TRANSLATIONS[lang] || AP_TRANSLATIONS.fr; }
+
+let _currentAccountTab = 'profile';
+
+function openAccountPanel() {
+  const t = apt();
+  const panel = document.getElementById('account-panel');
+  const overlay = document.getElementById('account-overlay');
+
+  // Header
+  const isConnected = !!currentUser;
+  const isPro = userPlan === 'pro';
+  const isBeta = userPlan === 'pro' && !currentUser; // beta gate
+
+  document.getElementById('ap-avatar').textContent = isConnected
+    ? (currentUser.email||'?')[0].toUpperCase() : '✦';
+  document.getElementById('ap-name').textContent = isConnected
+    ? (currentUser.email||'').split('@')[0] : 'Activity Finder';
+  document.getElementById('ap-email').textContent = isConnected
+    ? currentUser.email : '';
+  const badge = document.getElementById('ap-badge');
+  badge.textContent = isPro ? t.badgePro : t.badgeFree;
+  badge.className = 'account-panel-badge ' + (isPro ? 'badge-pro-panel' : 'badge-free-panel');
+
+  // Tabs — seulement pour Pro connecté
+  document.getElementById('ap-tabs').style.display = (isPro && isConnected) ? 'flex' : 'none';
+
+  // Traduire les tabs
+  document.getElementById('ap-tab-profile-lbl').textContent = t.tabProfile;
+  document.getElementById('ap-tab-history-lbl').textContent = t.tabHistory;
+  document.getElementById('ap-tab-activities-lbl').textContent = t.tabActivities;
+  document.getElementById('ap-tab-settings-lbl').textContent = t.tabSettings;
+  document.getElementById('ap-setting-lang-lbl').textContent = t.settingLang;
+  document.getElementById('ap-setting-theme-lbl').textContent = t.settingTheme;
+  document.getElementById('ap-signout-lbl').textContent = t.signOutBtn;
+  document.getElementById('ap-delete-lbl').textContent = t.deleteBtn;
+
+  // Contenu profil
+  renderAccountProfile();
+
+  // Ouvrir
+  overlay.classList.add('open');
+  panel.classList.add('open');
+  switchAccountTab('profile');
 }
+
+function closeAccountPanel() {
+  document.getElementById('account-panel').classList.remove('open');
+  document.getElementById('account-overlay').classList.remove('open');
+}
+
+function switchAccountTab(tab) {
+  _currentAccountTab = tab;
+  document.querySelectorAll('.account-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.account-pane').forEach(p => p.classList.remove('active'));
+  const tabEl = document.getElementById('ap-tab-' + tab);
+  const paneEl = document.getElementById('ap-pane-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  if (paneEl) paneEl.classList.add('active');
+
+  if (tab === 'history') renderAccountHistory();
+  if (tab === 'activities') renderAccountActivities();
+}
+
+function renderAccountProfile() {
+  const t = apt();
+  const isConnected = !!currentUser;
+  const isPro = userPlan === 'pro';
+  const promoEl = document.getElementById('ap-pro-promo');
+  const actionsEl = document.getElementById('ap-profile-actions');
+
+  if (isPro && isConnected) {
+    // Pro connecté → juste infos + déconnexion dans settings
+    promoEl.innerHTML = `<div style="padding:10px 0;text-align:center">
+      <div style="font-size:48px">✦</div>
+      <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:var(--primary);margin:8px 0">${t.badgePro}</div>
+      <div style="font-size:13px;color:var(--muted)">Activity Finder Pro</div>
+    </div>`;
+    actionsEl.innerHTML = '';
+  } else {
+    // Non connecté ou gratuit → présentation Pro
+    promoEl.innerHTML = `
+      <div class="pro-promo">
+        <div class="pro-promo-title">✦ ${t.proTitle}</div>
+        <div class="pro-promo-price">${t.proPrice} <small>${t.proPerMonth}</small></div>
+        <ul class="pro-promo-features">
+          ${t.proFeatures.map(f=>`<li><span>${f}</span></li>`).join('')}
+        </ul>
+        <button class="pro-promo-btn" onclick="closeAccountPanel();openUpgrade()">${t.proBtn}</button>
+      </div>`;
+    actionsEl.innerHTML = !isConnected ? `
+      <button onclick="closeAccountPanel();openAuth('login')" style="width:100%;padding:12px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;color:var(--text)">
+        ${t.loginBtn}
+      </button>` : `
+      <button onclick="signOut()" style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--muted);margin-top:8px">
+        🚪 ${t.signOutBtn}
+      </button>`;
+  }
+}
+
+async function renderAccountHistory() {
+  const t = apt();
+  const el = document.getElementById('ap-history-list');
+  if (!_sb || !currentUser) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noHistory}</p>`; return; }
+  const { data } = await _sb.from('searches').select('*').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(10);
+  if (!data || !data.length) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noHistory}</p>`; return; }
+  el.innerHTML = data.map(s => `
+    <div class="history-item" onclick="reuseSearch('${s.location}','${s.group}',${s.budget});closeAccountPanel()">
+      <div class="history-item-loc">📍 ${s.location}</div>
+      <div class="history-item-meta">${s.group} · ${s.budget}€ · ${new Date(s.created_at).toLocaleDateString()}</div>
+    </div>`).join('');
+}
+
+async function renderAccountActivities() {
+  const t = apt();
+  const el = document.getElementById('ap-activities-list');
+  if (!_sb || !currentUser) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noActivities}</p>`; return; }
+  const { data } = await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false});
+  if (!data || !data.length) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noActivities}</p>`; return; }
+  el.innerHTML = data.map(n => `
+    <div class="activity-item">
+      <div class="activity-item-title">${decodeURIComponent(n.activity_title||n.activity_id)}</div>
+      <div class="activity-item-stars">${'⭐'.repeat(n.stars||0)}</div>
+      ${n.note ? `<div class="activity-item-meta">"${n.note}"</div>` : ''}
+      <div class="activity-item-meta">${new Date(n.created_at).toLocaleDateString()}</div>
+    </div>`).join('');
+}
+
+async function markActivityDone(titleEncoded, activityId) {
+  if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
+  await _sb.from('notes').upsert({
+    user_id: currentUser.id,
+    activity_id: activityId,
+    activity_title: decodeURIComponent(titleEncoded),
+    stars: 0, done: true,
+    created_at: new Date().toISOString()
+  }, { onConflict: 'user_id,activity_id' });
+  alreadyDoneIds.add(activityId);
+  // Feedback visuel
+  const btn = document.querySelector(`[data-done-id="${activityId}"]`);
+  if (btn) { btn.textContent = apt().alreadyDone; btn.classList.add('done'); btn.disabled = true; }
+}
+
+function signOut() {
+  if (_sb) _sb.auth.signOut();
+  closeAccountPanel();
+}
+
+async function confirmDeleteAccount() {
+  if (!confirm(apt().deleteConfirm)) return;
+  if (_sb && currentUser) {
+    await _sb.from('notes').delete().eq('user_id', currentUser.id);
+    await _sb.from('searches').delete().eq('user_id', currentUser.id);
+    await _sb.from('profiles').delete().eq('id', currentUser.id);
+    await _sb.auth.signOut();
+  }
+  closeAccountPanel();
+}
+
+function openUserMenu() { openAccountPanel(); }
 
 // ── Upgrade modal ──
 function openUpgrade() { document.getElementById('upgrade-modal').classList.add('open'); }
