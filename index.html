@@ -634,7 +634,14 @@ html { -webkit-text-size-adjust: 100%; }
 .weather-pill.active { background:var(--primary); border-color:var(--primary); color:#fff; font-weight:600; }
 .weather-alert { font-size:12px; color:#C0392B; background:#FDECEA; border:1px solid #F5C6C3; border-radius:8px; padding:6px 10px; margin-top:6px; }
 /* Budget par personne */
-.budget-per-person { font-size:13px; color:var(--muted); text-align:center; margin-top:4px; }
+.currency-btn {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 4px 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; background: var(--input-bg); color: var(--muted);
+  transition: all 0.15s;
+}
+.currency-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.currency-btn:hover { border-color: var(--primary); color: var(--primary); }
 .budget-per-person strong { color:var(--primary); }
 
 /* Badges vérification lieu */
@@ -701,8 +708,8 @@ html { -webkit-text-size-adjust: 100%; }
 </header>
 
 <div class="view-tabs">
-  <button class="view-tab active" id="tab-form" onclick="switchView('form')">📋 <span class="tab-label" id="tab-form-label">Formulaire</span></button>
-  <button class="view-tab" id="tab-map" onclick="switchView('map')">🗺️ <span class="tab-label" id="tab-map-label">Recherche sur carte</span></button>
+  <button class="view-tab active" id="tab-form" onclick="switchView('form')">🔍 <span class="tab-label" id="tab-form-label">Recherche</span></button>
+  <button class="view-tab" id="tab-map" onclick="switchView('map')">🗺️ <span class="tab-label" id="tab-map-label">Explorer</span></button>
 </div>
 
 <!-- Limit banner -->
@@ -751,10 +758,17 @@ html { -webkit-text-size-adjust: 100%; }
 
   <div class="form-section">
     <div class="section-head"><div class="section-icon">💶</div><span class="section-title" id="lbl-budget">Budget par personne</span></div>
-    <div class="budget-display"><span>€</span> <span id="budget-val">50</span><span style="font-size:1rem;font-weight:400;color:var(--muted)"> /pers.</span></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
+      <div class="budget-display"><span id="currency-symbol">€</span> <span id="budget-val">50</span><span style="font-size:1rem;font-weight:400;color:var(--muted)" id="budget-per-label"> /pers.</span></div>
+      <div style="display:flex;gap:4px">
+        <button class="currency-btn active" data-currency="EUR" data-symbol="€" onclick="setCurrency(this)">€</button>
+        <button class="currency-btn" data-currency="USD" data-symbol="$" onclick="setCurrency(this)">$</button>
+        <button class="currency-btn" data-currency="GBP" data-symbol="£" onclick="setCurrency(this)">£</button>
+      </div>
+    </div>
     <div class="budget-per-person" id="budget-total-line">Total groupe : <strong id="budget-total">100 €</strong></div>
     <input type="range" id="budget-slider" min="0" max="500" step="5" value="50" oninput="updateBudget(this.value)">
-    <div class="budget-marks"><span>0 €</span><span>125 €</span><span>250 €</span><span>375 €</span><span>500 €</span></div>
+    <div class="budget-marks" id="budget-marks"><span>0</span><span>125</span><span>250</span><span>375</span><span>500</span></div>
   </div>
 
   <div class="form-section">
@@ -1053,7 +1067,7 @@ const LANGS = {
   fr: {
     heroTitle: 'On fait quoi<br><em>ce week-end ?</em>',
     heroSub: 'Découvre les meilleures activités près de chez toi — adaptées à ton groupe, ta météo et ton budget.',
-    tabForm:'Formulaire', tabMap:'Recherche sur carte',
+    tabForm:'Recherche', tabMap:'Explorer',
     lblGroup:'Configuration du groupe', lblAges:'Âges des participants',
     lblBudget:'Budget global du week-end', lblLocation:'Localisation',
     lblMoods:'Tes envies (optionnel)', lblEvents:'Événements spéciaux',
@@ -1100,7 +1114,7 @@ const LANGS = {
   en: {
     heroTitle: 'What are we doing<br><em>this weekend?</em>',
     heroSub: 'Enter your criteria and discover activities perfectly suited to your group, location and budget.',
-    tabForm:'Form', tabMap:'Search on map',
+    tabForm:'Search', tabMap:'Explore',
     lblGroup:'Group setup', lblAges:'Participants ages',
     lblBudget:'Weekend budget', lblLocation:'Location',
     lblMoods:'Your interests (optional)', lblEvents:'Special events',
@@ -1147,7 +1161,7 @@ const LANGS = {
   es: {
     heroTitle:'¿Qué hacemos<br><em>este fin de semana?</em>',
     heroSub:'Introduce tus criterios y descubre actividades perfectamente adaptadas a tu grupo, ubicación y presupuesto.',
-    tabForm:'Formulario',tabMap:'Buscar en mapa',
+    tabForm:'Búsqueda',tabMap:'Explorar',
     lblGroup:'Configuración del grupo',lblAges:'Edades de los participantes',
     lblBudget:'Presupuesto del fin de semana',lblLocation:'Ubicación',
     lblMoods:'Tus preferencias (opcional)',lblEvents:'Eventos especiales',
@@ -1194,7 +1208,7 @@ const LANGS = {
   de: {
     heroTitle:'Was machen wir<br><em>dieses Wochenende?</em>',
     heroSub:'Gib deine Kriterien ein und entdecke Aktivitäten für deine Gruppe, deinen Standort und dein Budget.',
-    tabForm:'Formular',tabMap:'Kartensuche',
+    tabForm:'Suche',tabMap:'Erkunden',
     lblGroup:'Gruppenkonfiguration',lblAges:'Alter der Teilnehmer',
     lblBudget:'Wochenendbudget',lblLocation:'Standort',
     lblMoods:'Deine Vorlieben (optional)',lblEvents:'Besondere Events',
@@ -1241,7 +1255,7 @@ const LANGS = {
   it: {
     heroTitle:'Cosa facciamo<br><em>questo weekend?</em>',
     heroSub:'Inserisci i tuoi criteri e scopri attività perfette per il tuo gruppo, posizione e budget.',
-    tabForm:'Modulo',tabMap:'Cerca sulla mappa',
+    tabForm:'Ricerca',tabMap:'Esplora',
     lblGroup:'Configurazione del gruppo',lblAges:'Età dei partecipanti',
     lblBudget:'Budget del weekend',lblLocation:'Posizione',
     lblMoods:'I tuoi interessi (opzionale)',lblEvents:'Eventi speciali',
@@ -1288,7 +1302,7 @@ const LANGS = {
   pt: {
     heroTitle:'O que fazemos<br><em>neste fim de semana?</em>',
     heroSub:'Introduz os teus critérios e descobre atividades perfeitas para o teu grupo, localização e orçamento.',
-    tabForm:'Formulário',tabMap:'Pesquisar no mapa',
+    tabForm:'Pesquisa',tabMap:'Explorar',
     lblGroup:'Configuração do grupo',lblAges:'Idades dos participantes',
     lblBudget:'Orçamento do fim de semana',lblLocation:'Localização',
     lblMoods:'Os teus interesses (opcional)',lblEvents:'Eventos especiais',
@@ -1522,11 +1536,17 @@ function updateBudget(v) {
   const perPerson = parseInt(v);
   const nbPersons = Math.max(1, persons.length);
   const total = perPerson * nbPersons;
+  const sym = currentCurrency.symbol;
   document.getElementById('budget-val').textContent = perPerson.toLocaleString('fr-FR');
   const totalLine = document.getElementById('budget-total');
   if (totalLine) {
-    totalLine.textContent = total.toLocaleString('fr-FR') + ' €';
+    totalLine.textContent = total.toLocaleString('fr-FR') + ' ' + sym;
     document.getElementById('budget-total-line').style.display = nbPersons > 1 ? 'block' : 'none';
+  }
+  // Mettre à jour les marques
+  const marks = document.getElementById('budget-marks');
+  if (marks) {
+    marks.innerHTML = `<span>0</span><span>125 ${sym}</span><span>250 ${sym}</span><span>375 ${sym}</span><span>500 ${sym}</span>`;
   }
 }
 
@@ -1540,11 +1560,30 @@ function syncAgesUI() {
 
 function addPerson(label) { personCounter++; const id='p'+personCounter; persons.push({id, label: label||'P'+personCounter}); renderAges(); }
 function removePerson(id) { persons = persons.filter(p => p.id !== id); renderAges(); }
+// ── Devise ──
+let currentCurrency = { code:'EUR', symbol:'€' };
+
+function setCurrency(btn) {
+  document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCurrency = { code: btn.dataset.currency, symbol: btn.dataset.symbol };
+  document.getElementById('currency-symbol').textContent = currentCurrency.symbol;
+  updateBudget(document.getElementById('budget-slider').value);
+}
+
 function renderAges() {
+  // Générer les options 0-100
+  const ageOptions = Array.from({length:101},(_,i)=>
+    `<option value="${i}"${i===0?'':''} >${i} ${tx().agesUnit||'ans'}</option>`
+  ).join('');
+
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
       <span class="age-label">${p.label}</span>
-      <input class="age-input" type="number" id="age-${p.id}" min="0" max="110" placeholder="${tx().agePlaceholder||'âge'}" value="${p.age||''}">
+      <select class="age-input" id="age-${p.id}" style="min-height:44px;padding:8px 10px">
+        <option value="">${tx().agePlaceholder||'âge'}</option>
+        ${ageOptions}
+      </select>
       ${persons.length > 1 ? `<button class="remove-btn" onclick="removePerson('${p.id}')">×</button>` : ''}
     </div>`).join('');
 }
@@ -2753,13 +2792,21 @@ function renderResults(activities, location, radius, budget, group, ages) {
         </div>`:''}
 
         ${currentUser && userPlan === 'pro' ? `
-        <button class="activity-done-btn ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'done' : ''}"
-          data-done-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
-          onclick="markActivityDone('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')"
-          ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'disabled' : ''}>
-          ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? apt().alreadyDone : apt().markDone}
-        </button>` : ''}
-        ${currentUser && userPlan === 'pro' ? '<button class="rc-note-btn" onclick="openNote(\''+encodeURIComponent(a.titre)+'\',\''+(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'\')">⭐ Noter cette activité</button>' : ''}
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <button class="activity-done-btn ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'done' : ''}"
+            data-done-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
+            onclick="markActivityDone('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')"
+            ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'disabled' : ''}>
+            ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? (apt().alreadyDone||'✓ Fait') : (apt().markDone||'✓ Déjà fait')}
+          </button>
+          <button class="activity-done-btn" style="background:none;border-color:var(--secondary)"
+            data-fav-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
+            title="${favorites.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
+            onclick="toggleFavorite('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">
+            ${favorites.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '❤️' : '🤍'}
+          </button>
+          <button class="rc-note-btn" onclick="openNote('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">⭐ ${apt().markDone?.includes('✓')?'Noter':'Rate'}</button>
+        </div>` : ''}
         ${currentUser && userPlan === 'pro' && alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '<div class="rc-already-done">✓ Déjà faite — non reproposée pendant 1 an</div>' : ''}
 
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
@@ -3203,29 +3250,61 @@ function renderAccountProfile() {
 async function renderAccountHistory() {
   const t = apt();
   const el = document.getElementById('ap-history-list');
-  if (!_sb || !currentUser) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noHistory}</p>`; return; }
-  const { data } = await _sb.from('searches').select('*').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(10);
+  let data = null;
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const res = await _sb.from('searches').select('*').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(10);
+    data = res.data;
+  } else {
+    data = localLoad('searches') || [];
+  }
   if (!data || !data.length) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noHistory}</p>`; return; }
   el.innerHTML = data.map(s => `
     <div class="history-item" onclick="reuseSearch('${s.location}','${s.group}',${s.budget});closeAccountPanel()">
       <div class="history-item-loc">📍 ${s.location}</div>
-      <div class="history-item-meta">${s.group} · ${s.budget}€ · ${new Date(s.created_at).toLocaleDateString()}</div>
+      <div class="history-item-meta">${s.group} · ${s.budget}${currentCurrency.symbol} · ${new Date(s.created_at).toLocaleDateString()}</div>
     </div>`).join('');
 }
 
 async function renderAccountActivities() {
   const t = apt();
   const el = document.getElementById('ap-activities-list');
-  if (!_sb || !currentUser) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noActivities}</p>`; return; }
-  const { data } = await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false});
-  if (!data || !data.length) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noActivities}</p>`; return; }
-  el.innerHTML = data.map(n => `
-    <div class="activity-item">
-      <div class="activity-item-title">${decodeURIComponent(n.activity_title||n.activity_id)}</div>
-      <div class="activity-item-stars">${'⭐'.repeat(n.stars||0)}</div>
-      ${n.note ? `<div class="activity-item-meta">"${n.note}"</div>` : ''}
-      <div class="activity-item-meta">${new Date(n.created_at).toLocaleDateString()}</div>
-    </div>`).join('');
+  let notes = null;
+  let favs = null;
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const res = await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false});
+    notes = res.data;
+  } else {
+    notes = localLoad('notes') || [];
+    favs = localLoad('favorites') || [];
+  }
+
+  let html = '';
+
+  // Favoris
+  const favsData = favs || [];
+  if (favsData.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">❤️ Favoris</div>`;
+    html += favsData.map(f => `
+      <div class="activity-item">
+        <div class="activity-item-title">${f.activity_title}</div>
+        <div class="activity-item-meta">${new Date(f.saved_at).toLocaleDateString()}</div>
+      </div>`).join('');
+  }
+
+  // Activités faites
+  if (notes && notes.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 0 8px">✓ Déjà fait</div>`;
+    html += notes.map(n => `
+      <div class="activity-item">
+        <div class="activity-item-title">${n.activity_title||n.activity_id}</div>
+        <div class="activity-item-stars">${'⭐'.repeat(n.stars||0)}</div>
+        ${n.note ? `<div class="activity-item-meta">"${n.note}"</div>` : ''}
+        <div class="activity-item-meta">${new Date(n.created_at).toLocaleDateString()}</div>
+      </div>`).join('');
+  }
+
+  if (!html) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noActivities}</p>`; return; }
+  el.innerHTML = html;
 }
 
 function renderAddEventForm() {
@@ -3332,17 +3411,21 @@ Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}
 
 async function markActivityDone(titleEncoded, activityId) {
   if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
-  await _sb.from('notes').upsert({
+  const doneData = {
     user_id: currentUser.id,
     activity_id: activityId,
     activity_title: decodeURIComponent(titleEncoded),
     stars: 0, done: true,
     created_at: new Date().toISOString()
-  }, { onConflict: 'user_id,activity_id' });
+  };
+  if (_sb && currentUser.id !== 'beta-user') {
+    await _sb.from('notes').upsert(doneData, { onConflict: 'user_id,activity_id' });
+  } else {
+    localPush('notes', doneData);
+  }
   alreadyDoneIds.add(activityId);
-  // Feedback visuel
   const btn = document.querySelector(`[data-done-id="${activityId}"]`);
-  if (btn) { btn.textContent = apt().alreadyDone; btn.classList.add('done'); btn.disabled = true; }
+  if (btn) { btn.textContent = apt().alreadyDone||'✓ Fait'; btn.classList.add('done'); btn.disabled = true; }
 }
 
 function signOut() {
@@ -3418,13 +3501,19 @@ function canSearch() {
 
 // ── History ──
 async function saveSearch(location, group, budget) {
-  if (!_sb || !currentUser || userPlan !== 'pro') return;
-  await _sb.from('searches').insert({
-    user_id: currentUser.id,
+  if (userPlan !== 'pro') return;
+  const searchData = {
+    user_id: currentUser?.id||'beta',
     location, group, budget,
     created_at: new Date().toISOString()
-  });
-  loadHistory();
+  };
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    await _sb.from('searches').insert(searchData);
+  } else {
+    const searches = localLoad('searches') || [];
+    searches.unshift(searchData);
+    localSave('searches', searches.slice(0,20));
+  }
 }
 
 async function loadHistory() {
@@ -3456,10 +3545,50 @@ function reuseSearch(location, group, budget) {
 }
 
 // ── Note modal ──
+// ── Stockage local pour beta-testeurs ──
+function localSave(key, data) {
+  try { localStorage.setItem('af_' + key, JSON.stringify(data)); } catch(e) {}
+}
+function localLoad(key) {
+  try { return JSON.parse(localStorage.getItem('af_' + key) || 'null'); } catch(e) { return null; }
+}
+function localPush(key, item) {
+  const arr = localLoad(key) || [];
+  // Upsert par activity_id
+  const idx = arr.findIndex(x => x.activity_id === item.activity_id);
+  if (idx >= 0) arr[idx] = item; else arr.push(item);
+  localSave(key, arr);
+}
+
+// ── Favoris ──
+let favorites = new Set();
+
+function initFavorites() {
+  const saved = localLoad('favorites') || [];
+  favorites = new Set(saved.map(f => f.activity_id));
+}
+
+function toggleFavorite(titleEncoded, activityId) {
+  if (userPlan !== 'pro') { openUpgrade(); return; }
+  const btn = document.querySelector(`[data-fav-id="${activityId}"]`);
+  if (favorites.has(activityId)) {
+    favorites.delete(activityId);
+    if (btn) { btn.textContent = '🤍'; btn.title = 'Ajouter aux favoris'; }
+    const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==activityId);
+    localSave('favorites', saved);
+  } else {
+    favorites.add(activityId);
+    if (btn) { btn.textContent = '❤️'; btn.title = 'Retirer des favoris'; }
+    localPush('favorites', { activity_id: activityId, activity_title: decodeURIComponent(titleEncoded), saved_at: new Date().toISOString() });
+  }
+}
+
 function openNote(activityTitle, activityId) {
   if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
-  noteTarget = { title: activityTitle, id: activityId };
-  document.getElementById('note-activity-title').textContent = activityTitle;
+  const decoded = decodeURIComponent(activityTitle);
+  noteTarget = { title: decoded, id: activityId };
+  // Fix bug titre — utiliser le titre décodé
+  document.getElementById('note-activity-title').textContent = decoded.length > 40 ? decoded.substring(0,40)+'…' : decoded;
   document.getElementById('note-text').value = '';
   setStars(1);
   document.getElementById('note-modal').classList.add('open');
@@ -3472,9 +3601,9 @@ function setStars(n) {
   });
 }
 async function saveNote() {
-  if (!_sb || !noteTarget) return;
+  if (!noteTarget) return;
   const text = document.getElementById('note-text').value.trim();
-  await _sb.from('notes').upsert({
+  const noteData = {
     user_id: currentUser.id,
     activity_id: noteTarget.id,
     activity_title: noteTarget.title,
@@ -3482,9 +3611,18 @@ async function saveNote() {
     note: text,
     done: true,
     created_at: new Date().toISOString()
-  }, { onConflict: 'user_id,activity_id' });
+  };
+  // Supabase si connecté, sinon localStorage
+  if (_sb && currentUser.id !== 'beta-user') {
+    await _sb.from('notes').upsert(noteData, { onConflict: 'user_id,activity_id' });
+  } else {
+    localPush('notes', noteData);
+  }
   alreadyDoneIds.add(noteTarget.id);
   closeNote();
+  // Mettre à jour le bouton "Déjà fait"
+  const doneBtn = document.querySelector(`[data-done-id="${noteTarget.id}"]`);
+  if (doneBtn) { doneBtn.textContent = apt().alreadyDone||'✓ Fait'; doneBtn.classList.add('done'); doneBtn.disabled = true; }
 }
 
 // ── Build already-done context for AI prompt ──
@@ -3524,6 +3662,10 @@ function hideBetaScreen() {
   if (!currentUser) {
     currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' };
   }
+  // Charger les données locales
+  initFavorites();
+  const savedNotes = localLoad('notes') || [];
+  alreadyDoneIds = new Set(savedNotes.filter(n=>n.done).map(n=>n.activity_id));
   renderAuthUI();
   updateLimitBanner();
 }
@@ -3536,7 +3678,9 @@ function initBetaGate() {
     if (!currentUser) {
       currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' };
     }
-    // renderAuthUI sera appelé après le chargement complet
+    initFavorites();
+    const savedNotes = localLoad('notes') || [];
+    alreadyDoneIds = new Set(savedNotes.filter(n=>n.done).map(n=>n.activity_id));
     setTimeout(() => { renderAuthUI(); updateLimitBanner(); }, 100);
   } else {
     document.getElementById('beta-screen').classList.add('show');
