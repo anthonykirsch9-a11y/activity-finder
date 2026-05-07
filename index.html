@@ -772,7 +772,7 @@ html { -webkit-text-size-adjust: 100%; }
     </div>
     <!-- Événements spéciaux -->
     <div style="margin-top:12px">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px" id="lbl-special-event">✨ Événement spécial (optionnel)</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px" id="lbl-special-event">🎊 Occasion particulière (optionnel)</div>
       <div class="event-type-grid" id="special-event-grid">
         <button class="event-type-btn" data-val="" id="ev-none" onclick="selectSpecialEvent(this)"><span class="ev-icon">🚫</span><span id="ev-none-lbl">Aucun</span></button>
         <button class="event-type-btn" data-val="anniversaire" id="ev-birthday" onclick="selectSpecialEvent(this)"><span class="ev-icon">🎂</span><span id="ev-birthday-lbl">Anniversaire</span></button>
@@ -784,10 +784,20 @@ html { -webkit-text-size-adjust: 100%; }
     </div>
   </div>
 
-  <div class="form-section">
+  <div class="form-section" id="ages-section">
     <div class="section-head"><div class="section-icon">🎂</div><span class="section-title" id="lbl-ages">Âges des participants</span></div>
     <div class="ages-container" id="ages-list"></div>
     <button class="add-person-btn" onclick="addPerson()" id="btn-add-person">+ Ajouter une personne</button>
+  </div>
+
+  <div class="form-section" id="participants-section" style="display:none">
+    <div class="section-head"><div class="section-icon">👥</div><span class="section-title" id="lbl-participants">Nombre de participants</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="changeParticipants(-1)" style="width:40px;height:40px;border-radius:50%;border:1.5px solid var(--border);background:var(--input-bg);font-size:20px;cursor:pointer;color:var(--text)">−</button>
+      <span id="participants-count" style="font-family:'Fraunces',serif;font-size:2rem;font-weight:700;color:var(--primary);min-width:40px;text-align:center">10</span>
+      <button onclick="changeParticipants(1)" style="width:40px;height:40px;border-radius:50%;border:1.5px solid var(--border);background:var(--input-bg);font-size:20px;cursor:pointer;color:var(--text)">+</button>
+      <span style="font-size:13px;color:var(--muted)" id="lbl-participants-unit">personnes</span>
+    </div>
   </div>
 
   <div class="form-section">
@@ -880,7 +890,7 @@ html { -webkit-text-size-adjust: 100%; }
   </div>
 
   <div class="form-section">
-    <div class="section-head"><div class="section-icon">🗓</div><span class="section-title" id="lbl-events">Événements spéciaux</span></div>
+    <div class="section-head"><div class="section-icon">🗓</div><span class="section-title" id="lbl-events">Événements &amp; sorties</span></div>
     <div class="toggle-wrap" onclick="toggleEphem()">
       <div class="toggle-track" id="ephem-track"><div class="toggle-thumb"></div></div>
       <div><div class="toggle-main" id="ephem-main-lbl">Inclure les événements éphémères</div><div class="toggle-sub" id="ephem-sub-lbl">Brocantes, marchés, fêtes locales, expos temporaires…</div></div>
@@ -888,6 +898,11 @@ html { -webkit-text-size-adjust: 100%; }
     <div class="toggle-wrap" onclick="toggleNight()">
       <div class="toggle-track" id="night-track"><div class="toggle-thumb"></div></div>
       <div><div class="toggle-main" id="night-main-lbl">Inclure les sorties nocturnes</div><div class="toggle-sub" id="night-sub-lbl">Bars, clubs, concerts, soirées, restaurants de nuit…</div></div>
+    </div>
+    <!-- Boutons rapides -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button class="date-quick-btn" id="only-ephem-btn" onclick="toggleOnlyMode('ephem')" id="only-ephem-lbl">🗓 Que des éphémères</button>
+      <button class="date-quick-btn" id="only-night-btn" onclick="toggleOnlyMode('night')">🌙 Que des nocturnes</button>
     </div>
   </div>
 
@@ -1102,7 +1117,7 @@ const LANGS = {
     tabForm:'Recherche', tabMap:'Explorer',
     lblGroup:'Configuration du groupe', lblAges:'Âges des participants',
     lblBudget:'Budget global du week-end', lblLocation:'Localisation',
-    lblMoods:'Tes envies (optionnel)', lblEvents:'Événements spéciaux',
+    lblMoods:'Tes envies (optionnel)', lblEvents:'Événements & sorties',
     grpSolo:'Seul(e)', grpCouple:'En couple', grpFriends:'Entre amis', grpFamily:'En famille',
     mNature:'Nature',mCulture:'Culture',mSport:'Sport',mGastro:'Gastronomie',mRelax:'Détente',mShop:'Shopping',mShow:'Spectacle',mGames:'Jeux',
     ephemMain:'Inclure les événements éphémères', ephemSub:'Brocantes, marchés, fêtes locales, expos temporaires…',
@@ -1110,7 +1125,10 @@ const LANGS = {
     submitLabel:'Trouver mes activités →', submitLoading:'Recherche en cours…', submitRefine:'Affiner la recherche →',
     addPerson:'+ Ajouter une personne', radCity:'Ville uniquement',
     radOptions:['Ville uniquement','Rayon 10 km','Rayon 25 km','Rayon 50 km','Rayon 100 km','Rayon 200 km'],
-    agePlaceholder:'âge',
+    agePlaceholder:'—',
+    lblSpecialEvent:'🎊 Occasion particulière (optionnel)',
+    evNone:'Aucun', evBirthday:'Anniversaire', evEvjf:'EVJF', evEvj:'EVJ', evTeam:'Team Building', evFamily:'Fête famille',
+    lblParticipants:'Nombre de participants', lblParticipantsUnit:'personnes',
     lblDate:'Quand ?', dqFlexible:'✨ Flexible', dqToday:"Aujourd'hui", dqTomorrow:'Demain', dqWeekend:'Ce week-end', dqCustom:'📅 Date précise',
     lblDateFrom:'Du', lblDateTo:'Au (optionnel)', lblBudgetNew:'Budget par personne',
     locPlaceholder:'Tape une ville ou un code postal…',
@@ -1139,7 +1157,7 @@ const LANGS = {
     nightExtra:`\n- Inclure 1 à 2 SORTIES NOCTURNES adaptées au groupe (bars tendance, concerts, clubs, restaurants ouverts tard, soirées thématiques…). "nocturne":true.`,
     noNightExtra:'',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
-      `Tu es un expert en loisirs et activités de week-end. Génère exactement 6 idées d'activités.\n\nCONTEXTE:\n- Groupe: ${group}\n- ${agesStr}${ageStr}\n- Budget: ${budget}€\n- Lieu: ${location}${radius==='0' ? ' (dans la ville uniquement)' : ', rayon ' + radius + 'km'}\n- ${moods}\n\nRÈGLES STRICTES ANTI-HALLUCINATION:\n- VÉRIFIE via web search que chaque lieu existe VRAIMENT et propose les activités qu'il propose RÉELLEMENT (ex: ne dis pas qu'un cinéma a un bowling s'il n'en a pas).\n- Pour les événements éphémères: vérifie la date EXACTE sur le web avant de l'indiquer. Ne jamais inventer une date.\n- Si tu n'es pas sûr à 100% d'une information, ne la mets pas ou indique "à vérifier".\n- Adapte CHAQUE activité aux âges. Enfants: accessibilité, sécurité. Seniors: rythme adapté.\n- Varie les types d'activités.${eph}${night}\n\nJSON valide uniquement, sans backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Gastronomie|Bien-être|Divertissement|Éphémère|Nocturne","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases concrètes avec lieux réels vérifiés.","pourquoi_adapte":"1 phrase pour CE groupe et CES âges.","infos_pratiques":["...","...","..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
+      `Tu es un expert en loisirs et activités de week-end. Génère exactement 6 idées d'activités VARIÉES.\n\nCONTEXTE:\n- Groupe: ${group}\n- ${agesStr}${ageStr}\n- Budget: ${budget}\n- Lieu: ${location}${radius==='0' ? ' (dans la ville uniquement)' : ', rayon ' + radius + 'km'}\n- ${moods}\n\nRÈGLES STRICTES:\n- VÉRIFIE via web search que chaque lieu existe VRAIMENT.\n- Pour les éphémères: vérifie la date EXACTE sur le web. Ne jamais inventer une date.\n- Si tu n'es pas sûr à 100%, indique "à vérifier".\n- Adapte CHAQUE activité aux âges.\n- VARIES ABSOLUMENT les types: pense escape game, zoo, aquarium, mini-golf, laser game, accrobranche, karting, bowling, spa, musée, château, cinéma, restaurant gastronomique, marché, concert, atelier créatif, randonnée, vélo, kayak, trampoline. Ne propose pas toujours les mêmes activités classiques.${eph}${night}\n\nJSON valide uniquement, sans backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Gastronomie|Bien-être|Divertissement|Éphémère|Nocturne","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases concrètes avec lieux réels vérifiés.","pourquoi_adapte":"1 phrase pour CE groupe et CES âges.","infos_pratiques":["...","...","..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
       `Expert loisirs. 6 activités autour de lat:${lat},lng:${lng}${radius==='0' ? ' (ville)' : ', rayon ' + radius + 'km'}.\nGroupe:${group}, ${agesStr}, Budget:${budget}€, ${moods}\nJSON valide sans backticks:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases.","pourquoi_adapte":"1 phrase.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
@@ -1149,7 +1167,7 @@ const LANGS = {
     tabForm:'Search', tabMap:'Explore',
     lblGroup:'Group setup', lblAges:'Participants ages',
     lblBudget:'Weekend budget', lblLocation:'Location',
-    lblMoods:'Your interests (optional)', lblEvents:'Special events',
+    lblMoods:'Your interests (optional)', lblEvents:'Events & nights out',
     grpSolo:'Solo', grpCouple:'Couple', grpFriends:'Friends', grpFamily:'Family',
     mNature:'Nature',mCulture:'Culture',mSport:'Sport',mGastro:'Food & Drink',mRelax:'Relaxation',mShop:'Shopping',mShow:'Entertainment',mGames:'Games',
     ephemMain:'Include ephemeral events', ephemSub:'Markets, fairs, festivals, temporary exhibitions…',
@@ -1157,7 +1175,10 @@ const LANGS = {
     submitLabel:'Find activities →', submitLoading:'Searching…', submitRefine:'Refine search →',
     addPerson:'+ Add a person', radCity:'City only',
     radOptions:['City only','10 km radius','25 km radius','50 km radius','100 km radius','200 km radius'],
-    agePlaceholder:'age',
+    agePlaceholder:'—',
+    lblSpecialEvent:'🎊 Special occasion (optional)',
+    evNone:'None', evBirthday:'Birthday', evEvjf:'Bachelorette', evEvj:'Bachelor', evTeam:'Team Building', evFamily:'Family party',
+    lblParticipants:'Number of participants', lblParticipantsUnit:'people',
     lblDate:'When?', dqFlexible:'✨ Flexible', dqToday:'Today', dqTomorrow:'Tomorrow', dqWeekend:'This weekend', dqCustom:'📅 Custom date',
     lblDateFrom:'From', lblDateTo:'To (optional)', lblBudgetNew:'Budget per person',
     locPlaceholder:'Enter a city or postal code…',
@@ -1196,7 +1217,7 @@ const LANGS = {
     tabForm:'Búsqueda',tabMap:'Explorar',
     lblGroup:'Configuración del grupo',lblAges:'Edades de los participantes',
     lblBudget:'Presupuesto del fin de semana',lblLocation:'Ubicación',
-    lblMoods:'Tus preferencias (opcional)',lblEvents:'Eventos especiales',
+    lblMoods:'Tus preferencias (opcional)',lblEvents:'Eventos & salidas',
     grpSolo:'Solo/a',grpCouple:'En pareja',grpFriends:'Con amigos',grpFamily:'En familia',
     mNature:'Naturaleza',mCulture:'Cultura',mSport:'Deporte',mGastro:'Gastronomía',mRelax:'Relax',mShop:'Compras',mShow:'Espectáculo',mGames:'Juegos',
     ephemMain:'Incluir eventos efímeros',ephemSub:'Mercadillos, ferias, fiestas locales, exposiciones temporales…',
@@ -1204,7 +1225,10 @@ const LANGS = {
     submitLabel:'Encontrar actividades →',submitLoading:'Buscando…',submitRefine:'Refinar búsqueda →',
     addPerson:'+ Añadir persona',radCity:'Solo ciudad',
     radOptions:['Solo ciudad','Radio 10 km','Radio 25 km','Radio 50 km','Radio 100 km','Radio 200 km'],
-    agePlaceholder:'edad',
+    agePlaceholder:'—',
+    lblSpecialEvent:'🎊 Ocasión especial (opcional)',
+    evNone:'Ninguno', evBirthday:'Cumpleaños', evEvjf:'Despedida soltera', evEvj:'Despedida soltero', evTeam:'Team Building', evFamily:'Fiesta familiar',
+    lblParticipants:'Número de participantes', lblParticipantsUnit:'personas',
     lblDate:'¿Cuándo?', dqFlexible:'✨ Flexible', dqToday:'Hoy', dqTomorrow:'Mañana', dqWeekend:'Este fin de semana', dqCustom:'📅 Fecha exacta',
     lblDateFrom:'Desde', lblDateTo:'Hasta (opcional)', lblBudgetNew:'Presupuesto por persona',
     locPlaceholder:'Escribe una ciudad o código postal…',
@@ -1243,7 +1267,7 @@ const LANGS = {
     tabForm:'Suche',tabMap:'Erkunden',
     lblGroup:'Gruppenkonfiguration',lblAges:'Alter der Teilnehmer',
     lblBudget:'Wochenendbudget',lblLocation:'Standort',
-    lblMoods:'Deine Vorlieben (optional)',lblEvents:'Besondere Events',
+    lblMoods:'Deine Vorlieben (optional)',lblEvents:'Events & Abende',
     grpSolo:'Allein',grpCouple:'Als Paar',grpFriends:'Mit Freunden',grpFamily:'Mit Familie',
     mNature:'Natur',mCulture:'Kultur',mSport:'Sport',mGastro:'Kulinarik',mRelax:'Entspannung',mShop:'Shopping',mShow:'Unterhaltung',mGames:'Spiele',
     ephemMain:'Kurzfristige Events einbeziehen',ephemSub:'Flohmärkte, Feste, temporäre Ausstellungen…',
@@ -1251,7 +1275,10 @@ const LANGS = {
     submitLabel:'Aktivitäten finden →',submitLoading:'Suche läuft…',submitRefine:'Suche verfeinern →',
     addPerson:'+ Person hinzufügen',radCity:'Nur Stadt',
     radOptions:['Nur Stadt','10 km Radius','25 km Radius','50 km Radius','100 km Radius','200 km Radius'],
-    agePlaceholder:'Alter',
+    agePlaceholder:'—',
+    lblSpecialEvent:'🎊 Besonderer Anlass (optional)',
+    evNone:'Keines', evBirthday:'Geburtstag', evEvjf:'Junggesellinnen', evEvj:'Junggesellen', evTeam:'Team Building', evFamily:'Familienfeier',
+    lblParticipants:'Anzahl Teilnehmer', lblParticipantsUnit:'Personen',
     lblDate:'Wann?', dqFlexible:'✨ Flexibel', dqToday:'Heute', dqTomorrow:'Morgen', dqWeekend:'Dieses Wochenende', dqCustom:'📅 Genaues Datum',
     lblDateFrom:'Von', lblDateTo:'Bis (optional)', lblBudgetNew:'Budget pro Person',
     locPlaceholder:'Stadt oder Postleitzahl…',
@@ -1290,7 +1317,7 @@ const LANGS = {
     tabForm:'Ricerca',tabMap:'Esplora',
     lblGroup:'Configurazione del gruppo',lblAges:'Età dei partecipanti',
     lblBudget:'Budget del weekend',lblLocation:'Posizione',
-    lblMoods:'I tuoi interessi (opzionale)',lblEvents:'Eventi speciali',
+    lblMoods:'I tuoi interessi (opzionale)',lblEvents:'Eventi & uscite',
     grpSolo:'Solo/a',grpCouple:'In coppia',grpFriends:'Con amici',grpFamily:'In famiglia',
     mNature:'Natura',mCulture:'Cultura',mSport:'Sport',mGastro:'Gastronomia',mRelax:'Relax',mShop:'Shopping',mShow:'Spettacolo',mGames:'Giochi',
     ephemMain:'Includi eventi effimeri',ephemSub:'Mercatini, sagre, mostre temporanee…',
@@ -1298,7 +1325,10 @@ const LANGS = {
     submitLabel:'Trova attività →',submitLoading:'Ricerca in corso…',submitRefine:'Affina la ricerca →',
     addPerson:'+ Aggiungi persona',radCity:'Solo città',
     radOptions:['Solo città','Raggio 10 km','Raggio 25 km','Raggio 50 km','Raggio 100 km','Raggio 200 km'],
-    agePlaceholder:'età',
+    agePlaceholder:'—',
+    lblSpecialEvent:'🎊 Occasione speciale (opzionale)',
+    evNone:'Nessuno', evBirthday:'Compleanno', evEvjf:'Addio nubilato', evEvj:'Addio celibato', evTeam:'Team Building', evFamily:'Festa famiglia',
+    lblParticipants:'Numero partecipanti', lblParticipantsUnit:'persone',
     lblDate:'Quando?', dqFlexible:'✨ Flessibile', dqToday:'Oggi', dqTomorrow:'Domani', dqWeekend:'Questo weekend', dqCustom:'📅 Data precisa',
     lblDateFrom:'Dal', lblDateTo:'Al (opzionale)', lblBudgetNew:'Budget a persona',
     locPlaceholder:'Inserisci una città o CAP…',
@@ -1337,7 +1367,7 @@ const LANGS = {
     tabForm:'Pesquisa',tabMap:'Explorar',
     lblGroup:'Configuração do grupo',lblAges:'Idades dos participantes',
     lblBudget:'Orçamento do fim de semana',lblLocation:'Localização',
-    lblMoods:'Os teus interesses (opcional)',lblEvents:'Eventos especiais',
+    lblMoods:'Os teus interesses (opcional)',lblEvents:'Eventos & saídas',
     grpSolo:'Sozinho/a',grpCouple:'A dois',grpFriends:'Com amigos',grpFamily:'Em família',
     mNature:'Natureza',mCulture:'Cultura',mSport:'Desporto',mGastro:'Gastronomia',mRelax:'Relaxamento',mShop:'Compras',mShow:'Espetáculo',mGames:'Jogos',
     ephemMain:'Incluir eventos efémeros',ephemSub:'Feiras, mercados, festas locais, exposições temporárias…',
@@ -1345,7 +1375,10 @@ const LANGS = {
     submitLabel:'Encontrar atividades →',submitLoading:'A pesquisar…',submitRefine:'Refinar pesquisa →',
     addPerson:'+ Adicionar pessoa',radCity:'Apenas cidade',
     radOptions:['Apenas cidade','Raio 10 km','Raio 25 km','Raio 50 km','Raio 100 km','Raio 200 km'],
-    agePlaceholder:'idade',
+    agePlaceholder:'—',
+    lblSpecialEvent:'🎊 Ocasión especial (opcional)',
+    evNone:'Nenhum', evBirthday:'Aniversário', evEvjf:'Despedida solteira', evEvj:'Despedida solteiro', evTeam:'Team Building', evFamily:'Festa família',
+    lblParticipants:'Número de participantes', lblParticipantsUnit:'pessoas',
     lblDate:'Quando?', dqFlexible:'✨ Flexível', dqToday:'Hoje', dqTomorrow:'Amanhã', dqWeekend:'Este fim de semana', dqCustom:'📅 Data precisa',
     lblDateFrom:'De', lblDateTo:'Até (opcional)', lblBudgetNew:'Orçamento por pessoa',
     locPlaceholder:'Escreve uma cidade ou código postal…',
@@ -1470,7 +1503,14 @@ function setLang(l) {
   document.getElementById('map-hint-text').textContent = t.mapHint;
   document.getElementById('map-btn-label').textContent = t.mapBtn;
   const mapImportLbl = document.getElementById('map-import-label');
-  if (mapImportLbl) mapImportLbl.textContent = t.mapImportLabel || 'Reprendre le formulaire';
+  if (mapImportLbl) mapImportLbl.textContent = t.mapImportLabel || 'Importer ma recherche';
+  // Événements spéciaux
+  const lblSE = document.getElementById('lbl-special-event');
+  if (lblSE) lblSE.textContent = t.lblSpecialEvent||'🎊 Occasion particulière (optionnel)';
+  const evMap = {'ev-none-lbl':t.evNone||'Aucun','ev-birthday-lbl':t.evBirthday||'Anniversaire','ev-evjf-lbl':t.evEvjf||'EVJF','ev-evj-lbl':t.evEvj||'EVJ','ev-team-lbl':t.evTeam||'Team Building','ev-family-lbl':t.evFamily||'Fête famille'};
+  Object.entries(evMap).forEach(([id,txt])=>{const el=document.getElementById(id);if(el)el.textContent=txt;});
+  const lblPart=document.getElementById('lbl-participants');if(lblPart)lblPart.textContent=t.lblParticipants||'Nombre de participants';
+  const lblPartU=document.getElementById('lbl-participants-unit');if(lblPartU)lblPartU.textContent=t.lblParticipantsUnit||'personnes';
   const loginBtnEl = document.getElementById('login-btn');
   if (loginBtnEl) loginBtnEl.textContent = apt().loginBtn || t.loginBtn || 'Connexion';
   const totalGroupEl = document.getElementById('budget-total-line');
@@ -1604,25 +1644,69 @@ function setCurrency(btn) {
 }
 
 function renderAges() {
-  // Générer les options 0-100
-  const ageOptions = Array.from({length:101},(_,i)=>
-    `<option value="${i}"${i===0?'':''} >${i} ${tx().agesUnit||'ans'}</option>`
-  ).join('');
+  // Si événement spécial → masquer âges, afficher nb participants
+  const agesSection = document.getElementById('ages-section');
+  const participantsSection = document.getElementById('participants-section');
+
+  if (selectedSpecialEvent && selectedSpecialEvent !== '') {
+    if (agesSection) agesSection.style.display = 'none';
+    if (participantsSection) participantsSection.style.display = '';
+    return;
+  }
+  if (agesSection) agesSection.style.display = '';
+  if (participantsSection) participantsSection.style.display = 'none';
+
+  // Options 1-100, juste le chiffre
+  const ageOptions = Array.from({length:100},(_,i) => {
+    const val = i + 1;
+    return `<option value="${val}">${val}</option>`;
+  }).join('');
 
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
       <span class="age-label">${p.label}</span>
       <select class="age-input" id="age-${p.id}" style="min-height:44px;padding:8px 10px">
-        <option value="">${tx().agePlaceholder||'âge'}</option>
+        <option value="">${tx().agePlaceholder||'—'}</option>
         ${ageOptions}
       </select>
       ${persons.length > 1 ? `<button class="remove-btn" onclick="removePerson('${p.id}')">×</button>` : ''}
     </div>`).join('');
+
+  // Mettre le curseur sur 18 par défaut
+  persons.forEach(p => {
+    const sel = document.getElementById('age-' + p.id);
+    if (sel && !sel.value) sel.selectedIndex = 18; // index 18 = valeur 18
+  });
 }
 syncAgesUI();
 
-function toggleEphem() { ephemOn = !ephemOn; document.getElementById('ephem-track').classList.toggle('on-warm', ephemOn); }
-function toggleNight() { nightOn = !nightOn; document.getElementById('night-track').classList.toggle('on-night', nightOn); }
+let onlyMode = ''; // 'ephem' | 'night' | ''
+
+function toggleOnlyMode(mode) {
+  if (onlyMode === mode) {
+    onlyMode = '';
+    document.getElementById('only-ephem-btn')?.classList.remove('active');
+    document.getElementById('only-night-btn')?.classList.remove('active');
+  } else {
+    onlyMode = mode;
+    document.getElementById('only-ephem-btn')?.classList.toggle('active', mode === 'ephem');
+    document.getElementById('only-night-btn')?.classList.toggle('active', mode === 'night');
+    // Activer aussi le toggle correspondant
+    if (mode === 'ephem' && !ephemOn) { ephemOn = true; document.getElementById('ephem-track').classList.add('on-warm'); }
+    if (mode === 'night' && !nightOn) { nightOn = true; document.getElementById('night-track').classList.add('on-night'); }
+  }
+}
+
+function toggleEphem() {
+  ephemOn = !ephemOn;
+  document.getElementById('ephem-track').classList.toggle('on-warm', ephemOn);
+  if (!ephemOn && onlyMode === 'ephem') { onlyMode = ''; document.getElementById('only-ephem-btn')?.classList.remove('active'); }
+}
+function toggleNight() {
+  nightOn = !nightOn;
+  document.getElementById('night-track').classList.toggle('on-night', nightOn);
+  if (!nightOn && onlyMode === 'night') { onlyMode = ''; document.getElementById('only-night-btn')?.classList.remove('active'); }
+}
 
 // ---- CITY AUTOCOMPLETE MONDIALE (Nominatim) ----
 let acTimer = null, acItems = [], acHighlight = -1;
@@ -2590,14 +2674,21 @@ async function runSearch(fromMap) {
   try {
     const group = document.querySelector('#group-type .pill.selected')?.dataset.val || 'amis';
 
-    // Bug 3 fix: lire les âges depuis les inputs au moment de la recherche
-    const ages = persons.map(p => {
-      const el = document.getElementById('age-' + p.id);
-      return el && el.value ? el.value : null;
-    }).filter(Boolean);
-
-    const agesStr = ages.length ? ages.join(', ') + ' ans' : '';
-    const ageStr = ages.length ? 'Âges: ' + ages.join(', ') + ' ans.' : '';
+    // Âges ou nombre de participants selon le mode
+    let ages = [];
+    let agesStr = '';
+    let ageStr = '';
+    if (selectedSpecialEvent && selectedSpecialEvent !== '') {
+      agesStr = participantsCount + ' participants';
+      ageStr = 'Nombre de participants: ' + participantsCount + '.';
+    } else {
+      ages = persons.map(p => {
+        const el = document.getElementById('age-' + p.id);
+        return el && el.value ? el.value : null;
+      }).filter(Boolean);
+      agesStr = ages.length ? ages.join(', ') + ' ans' : '';
+      ageStr = ages.length ? 'Âges: ' + ages.join(', ') + ' ans.' : '';
+    }
     const budget = document.getElementById('budget-slider').value;
     const radius = fromMap
       ? document.getElementById('map-radius').value
@@ -2606,12 +2697,17 @@ async function runSearch(fromMap) {
     // Bug 2 fix: '#moods-grid' → '#moods'
     const moods = [...document.querySelectorAll('#moods .pill.selected')].map(p => p.dataset.val);
     const moodsStr = moods.length ? 'Envies: ' + moods.join(', ') + '.' : '';
-    // Filtre strict : si des envies sont sélectionnées, n'inclure QUE ces catégories
-    const strictMoodFilter = moods.length === 1
-      ? `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités de type "${moods[0]}". Toutes les 6 activités doivent correspondre à cette catégorie. Ne propose RIEN d\'autre.`
-      : moods.length > 1
-      ? `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités parmi ces catégories: ${moods.join(', ')}. Ne propose rien en dehors de ces catégories.`
-      : '';
+    // Filtre strict
+    let strictMoodFilter = '';
+    if (onlyMode === 'ephem') {
+      strictMoodFilter = '\nFILTRE STRICT: Propose UNIQUEMENT des événements éphémères (marchés, brocantes, fêtes, festivals, événements temporaires). Les 6 activités doivent toutes être éphémères. "ephemere":true pour toutes.';
+    } else if (onlyMode === 'night') {
+      strictMoodFilter = '\nFILTRE STRICT: Propose UNIQUEMENT des sorties nocturnes (bars, clubs, concerts, restaurants ouverts le soir, soirées). Les 6 activités doivent toutes être nocturnes. "nocturne":true pour toutes.';
+    } else if (moods.length === 1) {
+      strictMoodFilter = `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités de type "${moods[0]}". Toutes les 6 activités doivent correspondre à cette catégorie.`;
+    } else if (moods.length > 1) {
+      strictMoodFilter = `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités parmi: ${moods.join(', ')}. Ne propose rien en dehors.`;
+    }
 
     // Bug 5 fix: utiliser les variables d'état ephemOn / nightOn au lieu d'IDs inexistants
     const eph = ephemOn ? (t.ephemExtra || '\n- Inclure événements éphémères (marchés, brocantes, fêtes locales).') : (t.noEphemExtra || '');
@@ -3093,15 +3189,32 @@ const SPECIAL_EVENT_PROMPTS = {
   }
 };
 
+let participantsCount = 10;
+
+function changeParticipants(delta) {
+  participantsCount = Math.max(2, Math.min(200, participantsCount + delta));
+  const el = document.getElementById('participants-count');
+  if (el) el.textContent = participantsCount;
+}
+
 function selectSpecialEvent(btn) {
   document.querySelectorAll('.event-type-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedSpecialEvent = btn.dataset.val;
+  // Afficher/masquer sections âges vs participants
+  const agesSection = document.getElementById('ages-section');
+  const participantsSection = document.getElementById('participants-section');
+  if (selectedSpecialEvent) {
+    if (agesSection) agesSection.style.display = 'none';
+    if (participantsSection) participantsSection.style.display = '';
+  } else {
+    if (agesSection) agesSection.style.display = '';
+    if (participantsSection) participantsSection.style.display = 'none';
+  }
   // Adapter le groupe automatiquement
   if (selectedSpecialEvent === 'evjf' || selectedSpecialEvent === 'evj') {
     document.querySelectorAll('#group-type .pill').forEach(p => p.classList.remove('selected'));
     document.getElementById('grp-friends')?.classList.add('selected');
-    syncAgesUI();
   } else if (selectedSpecialEvent === 'team building') {
     document.querySelectorAll('#group-type .pill').forEach(p => p.classList.remove('selected'));
     document.getElementById('grp-friends')?.classList.add('selected');
