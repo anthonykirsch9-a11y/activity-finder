@@ -1109,6 +1109,13 @@ let alreadyDoneIds = new Set();
 let authMode = 'login';
 let _selectedCityCoords = null;
 
+// ── Variables déclarées tôt pour éviter les erreurs d'initialisation ──
+let selectedSpecialEvent = '';
+let participantsCount = 10;
+let onlyMode = ''; // 'ephem' | 'night' | ''
+let favorites = new Set();
+let currentCurrency = { code:'EUR', symbol:'€' };
+
 // ---- TRANSLATIONS ----
 const LANGS = {
   fr: {
@@ -1633,8 +1640,6 @@ function syncAgesUI() {
 function addPerson(label) { personCounter++; const id='p'+personCounter; persons.push({id, label: label||'P'+personCounter}); renderAges(); }
 function removePerson(id) { persons = persons.filter(p => p.id !== id); renderAges(); }
 // ── Devise ──
-let currentCurrency = { code:'EUR', symbol:'€' };
-
 function setCurrency(btn) {
   document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1679,8 +1684,6 @@ function renderAges() {
   });
 }
 syncAgesUI();
-
-let onlyMode = ''; // 'ephem' | 'night' | ''
 
 function toggleOnlyMode(mode) {
   if (onlyMode === mode) {
@@ -3144,52 +3147,13 @@ async function loginWithGoogle() {
 // ══════════════════════════════════════════════════════════════
 // ÉVÉNEMENTS SPÉCIAUX
 // ══════════════════════════════════════════════════════════════
-let selectedSpecialEvent = '';
-
 const SPECIAL_EVENT_PROMPTS = {
-  'anniversaire': {
-    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est un ANNIVERSAIRE. Propose des activités festives et mémorables parfaitement adaptées pour célébrer cet événement. Inclure au moins une activité originale et une sortie gastronomique ou ludique.',
-    en: 'SPECIAL EVENT: This is a BIRTHDAY. Suggest festive and memorable activities perfectly suited to celebrate this occasion.',
-    es: 'EVENTO ESPECIAL: Es un CUMPLEAÑOS. Sugiere actividades festivas y memorables.',
-    de: 'BESONDERES EVENT: Geburtstag. Schlage festliche und unvergessliche Aktivitäten vor.',
-    it: 'EVENTO SPECIALE: Compleanno. Suggerisci attività festive e memorabili.',
-    pt: 'EVENTO ESPECIAL: Aniversário. Sugere atividades festivas e memoráveis.',
-  },
-  'evjf': {
-    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est un ENTERREMENT DE VIE DE JEUNE FILLE (EVJF). Propose des activités fun, glamour et mémorables pour le groupe: spa, ateliers créatifs, soirées, activités originales entre filles.',
-    en: 'SPECIAL EVENT: Bachelorette party. Suggest fun, glamorous activities: spa, creative workshops, nights out.',
-    es: 'EVENTO ESPECIAL: Despedida de soltera. Actividades divertidas y glamurosas.',
-    de: 'BESONDERES EVENT: Junggesellinnenabschied. Spaßige und glamouröse Aktivitäten.',
-    it: 'EVENTO SPECIALE: Addio al nubilato. Attività divertenti e glamour.',
-    pt: 'EVENTO ESPECIAL: Despedida de solteira. Atividades divertidas e glamourosas.',
-  },
-  'evj': {
-    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est un ENTERREMENT DE VIE DE GARÇON (EVJ). Propose des activités fun, sportives et mémorables pour le groupe: karting, escape game, soirée, activités d\'adrénaline.',
-    en: 'SPECIAL EVENT: Bachelor party. Suggest fun, adrenaline-filled activities: karting, escape rooms, nights out.',
-    es: 'EVENTO ESPECIAL: Despedida de soltero. Actividades divertidas y de adrenalina.',
-    de: 'BESONDERES EVENT: Junggesellenabschied. Spaßige Adrenalin-Aktivitäten.',
-    it: 'EVENTO SPECIALE: Addio al celibato. Attività divertenti e adrenalinici.',
-    pt: 'EVENTO ESPECIAL: Despedida de solteiro. Atividades divertidas e adrenalina.',
-  },
-  'team building': {
-    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est un TEAM BUILDING d\'ENTREPRISE. Propose des activités qui favorisent la cohésion d\'équipe, la communication et le fun: escape game, défis sportifs, ateliers collaboratifs, activités de groupe.',
-    en: 'SPECIAL EVENT: Corporate team building. Suggest activities that foster team cohesion: escape rooms, sports challenges, collaborative workshops.',
-    es: 'EVENTO ESPECIAL: Team building empresarial. Actividades de cohesión de equipo.',
-    de: 'BESONDERES EVENT: Betriebliches Team Building. Teambildende Aktivitäten.',
-    it: 'EVENTO SPECIALE: Team building aziendale. Attività di coesione del team.',
-    pt: 'EVENTO ESPECIAL: Team building empresarial. Atividades de coesão de equipa.',
-  },
-  'fête de famille': {
-    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est une FÊTE DE FAMILLE (réunion, célébration). Propose des activités accessibles à tous les âges, conviviales et mémorables pour un grand groupe familial.',
-    en: 'SPECIAL EVENT: Family celebration/reunion. Suggest activities accessible to all ages, convivial and memorable.',
-    es: 'EVENTO ESPECIAL: Celebración familiar. Actividades accesibles para todas las edades.',
-    de: 'BESONDERES EVENT: Familienfeier. Aktivitäten für alle Altersgruppen.',
-    it: 'EVENTO SPECIALE: Festa di famiglia. Attività per tutte le età.',
-    pt: 'EVENTO ESPECIAL: Festa de família. Atividades acessíveis a todas as idades.',
-  }
+  'anniversaire': { fr:'ÉVÉNEMENT SPÉCIAL: ANNIVERSAIRE. Propose des activités festives et mémorables: dîner gastronomique, escape game, karting, spa, atelier créatif, soirée.', en:'SPECIAL EVENT: BIRTHDAY. Festive activities: dinner, escape room, karting, spa.', es:'EVENTO: CUMPLEAÑOS. Actividades festivas.', de:'EVENT: Geburtstag. Festliche Aktivitäten.', it:'EVENTO: Compleanno.', pt:'EVENTO: Aniversário.' },
+  'evjf': { fr:'ÉVÉNEMENT SPÉCIAL: EVJF. Activités fun et glamour pour un groupe de filles: spa, ateliers créatifs (poterie, cocktails), soirée, photobooth, restaurant tendance.', en:'SPECIAL EVENT: Bachelorette. Glamorous fun: spa, cocktail workshop, night out.', es:'EVENTO: Despedida soltera. Glamuroso.', de:'EVENT: JGA Damen. Glamourös.', it:'EVENTO: Addio nubilato.', pt:'EVENTO: Despedida solteira.' },
+  'evj': { fr:'ÉVÉNEMENT SPÉCIAL: EVJ. Activités fun et adrénaline: karting, paintball, escape game, laser game, accrobranche, soirée, bowling.', en:'SPECIAL EVENT: Bachelor. Adrenaline: karting, paintball, escape room, laser game.', es:'EVENTO: Despedida soltero. Adrenalina.', de:'EVENT: JGA Herren. Adrenalin.', it:'EVENTO: Addio celibato.', pt:'EVENTO: Despedida solteiro.' },
+  'team building': { fr:'ÉVÉNEMENT SPÉCIAL: TEAM BUILDING entreprise. Activités cohésion équipe: escape game, défis sportifs, ateliers collaboratifs, quiz, rallye urbain.', en:'SPECIAL EVENT: Team building. Cohesion: escape room, sports challenges, workshops.', es:'EVENTO: Team building. Cohesión.', de:'EVENT: Team Building. Teambildung.', it:'EVENTO: Team building.', pt:'EVENTO: Team building.' },
+  'fête de famille': { fr:'ÉVÉNEMENT SPÉCIAL: FÊTE DE FAMILLE. Activités accessibles à TOUS les âges (enfants, adultes, seniors): parc, pique-nique, visite culturelle, repas convivial.', en:'SPECIAL EVENT: Family party. All-ages activities: park, cultural visit, shared meal.', es:'EVENTO: Fiesta familiar. Todas las edades.', de:'EVENT: Familienfeier. Alle Altersgruppen.', it:'EVENTO: Festa famiglia.', pt:'EVENTO: Festa família.' }
 };
-
-let participantsCount = 10;
 
 function changeParticipants(delta) {
   participantsCount = Math.max(2, Math.min(200, participantsCount + delta));
@@ -3201,7 +3165,6 @@ function selectSpecialEvent(btn) {
   document.querySelectorAll('.event-type-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedSpecialEvent = btn.dataset.val;
-  // Afficher/masquer sections âges vs participants
   const agesSection = document.getElementById('ages-section');
   const participantsSection = document.getElementById('participants-section');
   if (selectedSpecialEvent) {
@@ -3211,11 +3174,7 @@ function selectSpecialEvent(btn) {
     if (agesSection) agesSection.style.display = '';
     if (participantsSection) participantsSection.style.display = 'none';
   }
-  // Adapter le groupe automatiquement
-  if (selectedSpecialEvent === 'evjf' || selectedSpecialEvent === 'evj') {
-    document.querySelectorAll('#group-type .pill').forEach(p => p.classList.remove('selected'));
-    document.getElementById('grp-friends')?.classList.add('selected');
-  } else if (selectedSpecialEvent === 'team building') {
+  if (selectedSpecialEvent === 'evjf' || selectedSpecialEvent === 'evj' || selectedSpecialEvent === 'team building') {
     document.querySelectorAll('#group-type .pill').forEach(p => p.classList.remove('selected'));
     document.getElementById('grp-friends')?.classList.add('selected');
   }
@@ -3884,8 +3843,6 @@ function localPush(key, item) {
 }
 
 // ── Favoris ──
-let favorites = new Set();
-
 function initFavorites() {
   const saved = localLoad('favorites') || [];
   favorites = new Set(saved.map(f => f.activity_id));
