@@ -974,43 +974,33 @@ html { -webkit-text-size-adjust: 100%; }
 
   <!-- Tabs (Pro only) -->
   <div class="account-tabs" id="ap-tabs" style="display:none">
-    <button class="account-tab active" id="ap-tab-profile" onclick="switchAccountTab('profile')">
-      <span class="tab-icon">👤</span>
-      <span id="ap-tab-profile-lbl">Profil</span>
-    </button>
-    <button class="account-tab" id="ap-tab-history" onclick="switchAccountTab('history')">
-      <span class="tab-icon">🕐</span>
-      <span id="ap-tab-history-lbl">Historique</span>
+    <button class="account-tab active" id="ap-tab-stats" onclick="switchAccountTab('stats')">
+      <span class="tab-icon">📊</span>
+      <span id="ap-tab-stats-lbl">Stats</span>
     </button>
     <button class="account-tab" id="ap-tab-activities" onclick="switchAccountTab('activities')">
       <span class="tab-icon">⭐</span>
       <span id="ap-tab-activities-lbl">Activités</span>
     </button>
-    <button class="account-tab" id="ap-tab-settings" onclick="switchAccountTab('settings')">
-      <span class="tab-icon">⚙️</span>
-      <span id="ap-tab-settings-lbl">Réglages</span>
-    </button>
     <button class="account-tab" id="ap-tab-add" onclick="switchAccountTab('add')">
       <span class="tab-icon">📍</span>
       <span id="ap-tab-add-lbl">Ajouter</span>
+    </button>
+    <button class="account-tab" id="ap-tab-settings" onclick="switchAccountTab('settings')">
+      <span class="tab-icon">⚙️</span>
+      <span id="ap-tab-settings-lbl">Réglages</span>
     </button>
   </div>
 
   <!-- Content -->
   <div class="account-content">
 
-    <!-- Pane: Profil / Pro promo -->
-    <div class="account-pane active" id="ap-pane-profile">
-      <div id="ap-pro-promo"><!-- rempli dynamiquement --></div>
-      <div id="ap-profile-actions"><!-- rempli dynamiquement --></div>
+    <!-- Pane: Stats -->
+    <div class="account-pane active" id="ap-pane-stats">
+      <div id="ap-stats-content"></div>
     </div>
 
-    <!-- Pane: Historique -->
-    <div class="account-pane" id="ap-pane-history">
-      <div id="ap-history-list"></div>
-    </div>
-
-    <!-- Pane: Mes activités -->
+    <!-- Pane: Mes activités + Album -->
     <div class="account-pane" id="ap-pane-activities">
       <div id="ap-activities-list"></div>
     </div>
@@ -1022,12 +1012,6 @@ html { -webkit-text-size-adjust: 100%; }
 
     <!-- Pane: Réglages -->
     <div class="account-pane" id="ap-pane-settings">
-      <div class="setting-row">
-        <div>
-          <div class="setting-label" id="ap-setting-lang-lbl">Langue</div>
-        </div>
-        <div id="ap-lang-picker-wrap"></div>
-      </div>
       <div class="setting-row">
         <div>
           <div class="setting-label" id="ap-setting-theme-lbl">Thème</div>
@@ -2095,7 +2079,8 @@ function getPhotoTheme(type, titre) {
   if (type === 'Éphémère' || type === 'Ephemeral') {
     if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail') || t.includes('spiritueux')) return 'apero';
     if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation') || t.includes('cave') || t.includes('vignoble')) return 'vin';
-    if (t.includes('marche') && (t.includes('groupe') || t.includes('populaire') || t.includes('nordique') || t.includes('rochonvillers') || t.includes('pedestre'))) return 'marche-groupe';
+    if (t.includes('médiéval') || t.includes('medieval') || t.includes('moyen-âge') || t.includes('moyen age') || t.includes('chevalier') || t.includes('château') || t.includes('chateau')) return 'chateau';
+    if (t.includes('marche') || t.includes('randonnée') || t.includes('pedestre') || t.includes('trail')) return 'marche-groupe';
     if (t.includes('moto') || t.includes('harley') || t.includes('motard') || t.includes('bikers')) return 'moto';
     if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer') || t.includes('collection')) return 'voiture';
     if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('gastronomique') || t.includes('street food')) return 'food';
@@ -2104,6 +2089,7 @@ function getPhotoTheme(type, titre) {
     if (t.includes('parade') || t.includes('fanfare') || t.includes('carnaval') || t.includes('défilé') || t.includes('arts de rue')) return 'parade';
     if (t.includes('noël') || t.includes('noel')) return 'noel';
     if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces') || t.includes('antiquités') || t.includes('braderie')) return 'brocante';
+    if (t.includes('printemps') || t.includes('fête') || t.includes('fete') || t.includes('village') || t.includes('voisin')) return 'parade';
     return 'marche'; // marché par défaut pour les éphémères
   }
 
@@ -2113,17 +2099,16 @@ function getPhotoTheme(type, titre) {
   if (t.includes('escalad') || t.includes('grimpe') || t.includes('via ferrata')) return 'escalade';
   if (t.includes('kayak') || t.includes('canoë') || t.includes('paddle') || t.includes('rafting')) return 'kayak';
   if (t.includes('ski') || t.includes('snowboard') || t.includes('luge')) return 'ski';
-  if (t.includes('piscine') || t.includes('natation') || t.includes('baignade') || t.includes('thermes') || t.includes('thermal')) return 'thermes';
   if (t.includes('bowling')) return 'bowling';
   if (t.includes('karting') || t.includes('kart')) return 'karting';
   if (t.includes('escape') || t.includes('énigme')) return 'escape';
   if (t.includes('trampoline') || t.includes('saut')) return 'trampoline';
   if (t.includes('musée') || t.includes('museum') || t.includes('galerie') || t.includes('expo')) return 'museum';
-  if (t.includes('château') || t.includes('abbaye') || t.includes('cathédrale') || t.includes('fort') || t.includes('ouvrage') || t.includes('maginot')) return 'chateau';
-  if (t.includes('cinéma') || t.includes('cinema') || t.includes('film')) return 'cinema';
+  if (t.includes('château') || t.includes('abbaye') || t.includes('cathédrale') || t.includes('fort') || t.includes('ouvrage') || t.includes('maginot') || t.includes('médiéval')) return 'chateau';
+  if (t.includes('cinéma') || t.includes('cinema') || t.includes('film') || t.includes('kinépolis') || t.includes('kinepolis')) return 'cinema';
   if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
+  if (t.includes('thermes') || t.includes('thermal') || t.includes('mondorf') || t.includes('bain') || t.includes('piscine') || t.includes('natation')) return 'thermes';
   if (t.includes('spa') || t.includes('massage') || t.includes('hammam') || t.includes('sauna') || t.includes('bien-être')) return 'spa';
-  if (t.includes('thermes') || t.includes('thermal') || t.includes('mondorf') || t.includes('bain')) return 'thermes';
   if (t.includes('bar') || t.includes('pub') || t.includes('brasserie') || t.includes('beaux jours') || t.includes('cocktail') || t.includes('bière')) return 'bar';
   if (t.includes('casino')) return 'casino';
   if (t.includes('concert') || t.includes('festival') || t.includes('musique')) return 'concert';
@@ -2134,7 +2119,7 @@ function getPhotoTheme(type, titre) {
 
   // Fallback par type
   const typeMap = {
-    'Nature': 'nature', 'Culture': 'museum', 'Sport': 'randonnee',
+    'Nature': 'nature', 'Culture': 'chateau', 'Sport': 'randonnee',
     'Gastronomie': 'restaurant', 'Bien-être': 'spa', 'Divertissement': 'parc',
     'Nocturne': 'bar', 'Nightlife': 'bar', 'Food': 'restaurant',
     'Wellness': 'spa', 'Entertainment': 'parc'
@@ -2573,6 +2558,12 @@ async function runSearch(fromMap) {
     // Bug 2 fix: '#moods-grid' → '#moods'
     const moods = [...document.querySelectorAll('#moods .pill.selected')].map(p => p.dataset.val);
     const moodsStr = moods.length ? 'Envies: ' + moods.join(', ') + '.' : '';
+    // Filtre strict : si des envies sont sélectionnées, n'inclure QUE ces catégories
+    const strictMoodFilter = moods.length === 1
+      ? `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités de type "${moods[0]}". Toutes les 6 activités doivent correspondre à cette catégorie. Ne propose RIEN d\'autre.`
+      : moods.length > 1
+      ? `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités parmi ces catégories: ${moods.join(', ')}. Ne propose rien en dehors de ces catégories.`
+      : '';
 
     // Bug 5 fix: utiliser les variables d'état ephemOn / nightOn au lieu d'IDs inexistants
     const eph = ephemOn ? (t.ephemExtra || '\n- Inclure événements éphémères (marchés, brocantes, fêtes locales).') : (t.noEphemExtra || '');
@@ -2647,7 +2638,7 @@ async function runSearch(fromMap) {
         const placesHeader = realPlacesContext ?
           '=== LIEUX REELS GOOGLE MAPS A UTILISER OBLIGATOIREMENT ===\n' + realPlacesContext + '\n=== FIN LIEUX REELS ===\n\n'
           : '';
-        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + '\n\n' + rawPrompt;
+        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + '\n\n' + rawPrompt;
 
         // Sonnet pour tous — Haiku trop peu fiable pour le JSON complexe
         const selectedModel = 'claude-sonnet-4-6';
@@ -3011,7 +3002,7 @@ async function loginWithGoogle() {
 // ══════════════════════════════════════════════════════════════
 const AP_TRANSLATIONS = {
   fr: {
-    tabProfile:'Profil', tabHistory:'Historique', tabActivities:'Activités', tabSettings:'Réglages', tabAdd:'Ajouter',
+    tabStats:'Stats', tabActivities:'Activités', tabSettings:'Réglages', tabAdd:'Ajouter',
     addEventTitle:'Ajouter un événement local',
     addEventDesc:'Partage un événement de ton village ou quartier avec la communauté.',
     addEventName:'Nom de l\'événement',
@@ -3044,7 +3035,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Supprimer définitivement ton compte et toutes tes données ?',
   },
   en: {
-    tabProfile:'Profile', tabHistory:'History', tabActivities:'Activities', tabSettings:'Settings', tabAdd:'Add',
+    tabStats:'Stats', tabActivities:'Activities', tabSettings:'Settings', tabAdd:'Add',
     addEventTitle:'Add a local event', addEventDesc:'Share a village or neighborhood event with the community.', addEventName:'Event name', addEventNamePh:'Ex: Street party, Village walk…', addEventType:'Type', addEventTypes:['Walk/Hike','Village fete','Flea market','Market','Sports event','Concert/Show','Other'], addEventDate:'Date', addEventLocation:'Exact location', addEventLocationPh:'Street, village, town…', addEventDesc2:'Description (optional)', addEventDesc2Ph:'A few words about the event…', addEventSubmit:'Submit event', addEventSuccess:'✅ Event submitted! It will be verified and visible in searches.', addEventError:'Submission error. Please try again.',
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected',
@@ -3064,7 +3055,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Permanently delete your account and all data?',
   },
   es: {
-    tabProfile:'Perfil', tabHistory:'Historial', tabActivities:'Actividades', tabSettings:'Ajustes', tabAdd:'Añadir',
+    tabStats:'Stats', tabActivities:'Actividades', tabSettings:'Ajustes', tabAdd:'Añadir',
     addEventTitle:'Añadir evento local', addEventDesc:'Comparte un evento de tu pueblo o barrio.', addEventName:'Nombre del evento', addEventNamePh:'Ej: Fiesta de vecinos, Marcha popular…', addEventType:'Tipo', addEventTypes:['Marcha/Senderismo','Fiesta de pueblo','Mercadillo','Mercado','Evento deportivo','Concierto/Espectáculo','Otro'], addEventDate:'Fecha', addEventLocation:'Lugar exacto', addEventLocationPh:'Calle, pueblo, municipio…', addEventDesc2:'Descripción (opcional)', addEventDesc2Ph:'Unas palabras sobre el evento…', addEventSubmit:'Enviar evento', addEventSuccess:'✅ ¡Evento enviado! Será verificado y visible en las búsquedas.', addEventError:'Error al enviar. Inténtalo de nuevo.',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado',
@@ -3084,7 +3075,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'¿Eliminar definitivamente tu cuenta y todos tus datos?',
   },
   de: {
-    tabProfile:'Profil', tabHistory:'Verlauf', tabActivities:'Aktivitäten', tabSettings:'Einstellungen', tabAdd:'Hinzufügen',
+    tabStats:'Stats', tabActivities:'Aktivitäten', tabSettings:'Einstellungen', tabAdd:'Hinzufügen',
     addEventTitle:'Lokales Event hinzufügen', addEventDesc:'Teile ein Dorf- oder Nachbarschaftsevent.', addEventName:'Eventname', addEventNamePh:'z.B. Dorffest, Wanderung…', addEventType:'Typ', addEventTypes:['Wanderung','Dorffest','Flohmarkt','Markt','Sportevent','Konzert/Show','Sonstiges'], addEventDate:'Datum', addEventLocation:'Genauer Ort', addEventLocationPh:'Straße, Dorf, Gemeinde…', addEventDesc2:'Beschreibung (optional)', addEventDesc2Ph:'Kurze Beschreibung…', addEventSubmit:'Event einreichen', addEventSuccess:'✅ Event eingereicht! Es wird geprüft und in Suchen sichtbar.', addEventError:'Fehler beim Einreichen. Bitte erneut versuchen.',
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet',
@@ -3104,7 +3095,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Konto und alle Daten dauerhaft löschen?',
   },
   it: {
-    tabProfile:'Profilo', tabHistory:'Cronologia', tabActivities:'Attività', tabSettings:'Impostazioni', tabAdd:'Aggiungi',
+    tabStats:'Stats', tabActivities:'Attività', tabSettings:'Impostazioni', tabAdd:'Aggiungi',
     addEventTitle:'Aggiungi evento locale', addEventDesc:'Condividi un evento del tuo paese o quartiere.', addEventName:'Nome evento', addEventNamePh:'Es: Festa di quartiere, Camminata…', addEventType:'Tipo', addEventTypes:['Camminata/Escursione','Festa di paese','Mercatino','Mercato','Evento sportivo','Concerto/Spettacolo','Altro'], addEventDate:'Data', addEventLocation:'Luogo esatto', addEventLocationPh:'Via, paese, comune…', addEventDesc2:'Descrizione (opzionale)', addEventDesc2Ph:'Poche parole sull evento…', addEventSubmit:'Invia evento', addEventSuccess:'✅ Evento inviato! Sarà verificato e visibile nelle ricerche.', addEventError:'Errore invio. Riprova.',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connesso',
@@ -3124,7 +3115,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Eliminare definitivamente il tuo account e tutti i dati?',
   },
   pt: {
-    tabProfile:'Perfil', tabHistory:'Histórico', tabActivities:'Atividades', tabSettings:'Definições', tabAdd:'Adicionar',
+    tabStats:'Stats', tabActivities:'Atividades', tabSettings:'Definições', tabAdd:'Adicionar',
     addEventTitle:'Adicionar evento local', addEventDesc:'Partilha um evento da tua aldeia ou bairro.', addEventName:'Nome do evento', addEventNamePh:'Ex: Festa de vizinhos, Caminhada…', addEventType:'Tipo', addEventTypes:['Caminhada/Passeio','Festa de aldeia','Feira/Alfarrabista','Mercado','Evento desportivo','Concerto/Espetáculo','Outro'], addEventDate:'Data', addEventLocation:'Local exato', addEventLocationPh:'Rua, aldeia, concelho…', addEventDesc2:'Descrição (opcional)', addEventDesc2Ph:'Algumas palavras sobre o evento…', addEventSubmit:'Submeter evento', addEventSuccess:'✅ Evento submetido! Será verificado e visível nas pesquisas.', addEventError:'Erro ao submeter. Tenta novamente.',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Não conectado',
@@ -3173,17 +3164,19 @@ function openAccountPanel() {
   document.getElementById('ap-tabs').style.display = (isPro && isConnected) ? 'flex' : 'none';
 
   // Traduire les tabs
-  document.getElementById('ap-tab-profile-lbl').textContent = t.tabProfile;
-  document.getElementById('ap-tab-history-lbl').textContent = t.tabHistory;
-  document.getElementById('ap-tab-activities-lbl').textContent = t.tabActivities;
-  document.getElementById('ap-tab-settings-lbl').textContent = t.tabSettings;
-  document.getElementById('ap-tab-add-lbl').textContent = t.tabAdd || 'Ajouter';
-  document.getElementById('ap-setting-lang-lbl').textContent = t.settingLang;
-  document.getElementById('ap-setting-theme-lbl').textContent = t.settingTheme;
-  document.getElementById('ap-signout-lbl').textContent = t.signOutBtn;
-  document.getElementById('ap-delete-lbl').textContent = t.deleteBtn;
+  const apTabStats = document.getElementById('ap-tab-stats-lbl');
+  const apTabAct = document.getElementById('ap-tab-activities-lbl');
+  const apTabAdd = document.getElementById('ap-tab-add-lbl');
+  const apTabSet = document.getElementById('ap-tab-settings-lbl');
+  if (apTabStats) apTabStats.textContent = t.tabStats||'Stats';
+  if (apTabAct) apTabAct.textContent = t.tabActivities||'Activités';
+  if (apTabAdd) apTabAdd.textContent = t.tabAdd||'Ajouter';
+  if (apTabSet) apTabSet.textContent = t.tabSettings||'Réglages';
+  document.getElementById('ap-setting-theme-lbl').textContent = t.settingTheme||'Thème';
+  document.getElementById('ap-signout-lbl').textContent = t.signOutBtn||'Déconnexion';
+  document.getElementById('ap-delete-lbl').textContent = t.deleteBtn||'Supprimer mon compte';
 
-  // Contenu profil
+  // Contenu non-connecté / gratuit
   renderAccountProfile();
 
   // Ouvrir
@@ -3206,7 +3199,7 @@ function switchAccountTab(tab) {
   if (tabEl) tabEl.classList.add('active');
   if (paneEl) paneEl.classList.add('active');
 
-  if (tab === 'history') renderAccountHistory();
+  if (tab === 'stats') renderAccountStats();
   if (tab === 'activities') renderAccountActivities();
   if (tab === 'add') renderAddEventForm();
 }
@@ -3215,96 +3208,151 @@ function renderAccountProfile() {
   const t = apt();
   const isConnected = !!currentUser;
   const isPro = userPlan === 'pro';
-  const promoEl = document.getElementById('ap-pro-promo');
-  const actionsEl = document.getElementById('ap-profile-actions');
-
-  if (isPro && isConnected) {
-    // Pro connecté → juste infos + déconnexion dans settings
-    promoEl.innerHTML = `<div style="padding:10px 0;text-align:center">
-      <div style="font-size:48px">✦</div>
-      <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:var(--primary);margin:8px 0">${t.badgePro}</div>
-      <div style="font-size:13px;color:var(--muted)">Activity Finder Pro</div>
-    </div>`;
-    actionsEl.innerHTML = '';
-  } else {
-    // Non connecté ou gratuit → présentation Pro
-    promoEl.innerHTML = `
-      <div class="pro-promo">
-        <div class="pro-promo-title">✦ ${t.proTitle}</div>
-        <div class="pro-promo-price">${t.proPrice} <small>${t.proPerMonth}</small></div>
-        <ul class="pro-promo-features">
-          ${t.proFeatures.map(f=>`<li><span>${f}</span></li>`).join('')}
-        </ul>
-        <button class="pro-promo-btn" onclick="closeAccountPanel();openUpgrade()">${t.proBtn}</button>
+  // Pour les non-connectés et gratuits, afficher la promo Pro dans stats
+  if (!isPro || !isConnected) {
+    const statsEl = document.getElementById('ap-stats-content');
+    if (statsEl) statsEl.innerHTML = `
+      <div id="ap-pro-promo">
+        <div class="pro-promo">
+          <div class="pro-promo-title">✦ ${t.proTitle||'Activity Finder Pro'}</div>
+          <div class="pro-promo-price">${t.proPrice||'2,99 €'} <small>${t.proPerMonth||'/mois'}</small></div>
+          <ul class="pro-promo-features">
+            ${(t.proFeatures||[]).map(f=>`<li><span>${f}</span></li>`).join('')}
+          </ul>
+          <button class="pro-promo-btn" onclick="closeAccountPanel();openUpgrade()">${t.proBtn||'Passer Pro'}</button>
+        </div>
+        ${!isConnected ? `<button onclick="closeAccountPanel();openAuth('login')" style="width:100%;padding:12px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);margin-top:8px">${t.loginBtn||'Se connecter'}</button>` : ''}
+        ${isConnected && !isPro ? `<button onclick="signOut()" style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--muted);margin-top:8px">🚪 ${t.signOutBtn||'Déconnexion'}</button>` : ''}
       </div>`;
-    actionsEl.innerHTML = !isConnected ? `
-      <button onclick="closeAccountPanel();openAuth('login')" style="width:100%;padding:12px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;color:var(--text)">
-        ${t.loginBtn}
-      </button>` : `
-      <button onclick="signOut()" style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--muted);margin-top:8px">
-        🚪 ${t.signOutBtn}
-      </button>`;
   }
 }
 
-async function renderAccountHistory() {
+async function renderAccountStats() {
+  const el = document.getElementById('ap-stats-content');
   const t = apt();
-  const el = document.getElementById('ap-history-list');
-  let data = null;
-  if (_sb && currentUser && currentUser.id !== 'beta-user') {
-    const res = await _sb.from('searches').select('*').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(10);
-    data = res.data;
-  } else {
-    data = localLoad('searches') || [];
-  }
-  if (!data || !data.length) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noHistory}</p>`; return; }
-  el.innerHTML = data.map(s => `
-    <div class="history-item" onclick="reuseSearch('${s.location}','${s.group}',${s.budget});closeAccountPanel()">
-      <div class="history-item-loc">📍 ${s.location}</div>
-      <div class="history-item-meta">${s.group} · ${s.budget}${currentCurrency.symbol} · ${new Date(s.created_at).toLocaleDateString()}</div>
-    </div>`).join('');
+  const isPro = userPlan === 'pro';
+
+  if (!isPro) { renderAccountProfile(); return; }
+
+  const notes = (_sb && currentUser?.id !== 'beta-user')
+    ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true)).data || [])
+    : (localLoad('notes') || []);
+  const searches = (_sb && currentUser?.id !== 'beta-user')
+    ? ((await _sb.from('searches').select('*').eq('user_id', currentUser.id)).data || [])
+    : (localLoad('searches') || []);
+  const favs = localLoad('favorites') || [];
+
+  const totalDone = notes.length;
+  const avgStars = notes.filter(n=>n.stars>0).length
+    ? (notes.filter(n=>n.stars>0).reduce((s,n)=>s+n.stars,0) / notes.filter(n=>n.stars>0).length).toFixed(1)
+    : '—';
+  const totalSearches = searches.length;
+  const totalFavs = favs.length;
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div style="background:var(--primary-light);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:2rem;font-weight:800;color:var(--primary);font-family:'Fraunces',serif">${totalDone}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Activités faites</div>
+      </div>
+      <div style="background:var(--secondary-light);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:2rem;font-weight:800;color:var(--secondary);font-family:'Fraunces',serif">${avgStars}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Note moyenne</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:2rem;font-weight:800;color:var(--text);font-family:'Fraunces',serif">${totalSearches}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Recherches</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:2rem;font-weight:800;color:var(--secondary);font-family:'Fraunces',serif">❤️ ${totalFavs}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Favoris</div>
+      </div>
+    </div>
+    ${searches.length ? `
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🕐 Dernières recherches</div>
+    ${searches.slice(0,5).map(s=>`
+      <div class="history-item" onclick="reuseSearch('${s.location}','${s.group}',${s.budget});closeAccountPanel()">
+        <div class="history-item-loc">📍 ${s.location}</div>
+        <div class="history-item-meta">${s.group} · ${s.budget}${currentCurrency.symbol} · ${new Date(s.created_at).toLocaleDateString()}</div>
+      </div>`).join('')}` : ''}
+    <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:16px">
+      🚪 ${t.signOutBtn||'Déconnexion'}
+    </button>`;
 }
+
+// renderAccountHistory supprimé — remplacé par renderAccountStats
 
 async function renderAccountActivities() {
   const t = apt();
   const el = document.getElementById('ap-activities-list');
-  let notes = null;
-  let favs = null;
-  if (_sb && currentUser && currentUser.id !== 'beta-user') {
-    const res = await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false});
-    notes = res.data;
-  } else {
-    notes = localLoad('notes') || [];
-    favs = localLoad('favorites') || [];
-  }
+  const notes = (_sb && currentUser?.id !== 'beta-user')
+    ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false})).data || [])
+    : (localLoad('notes') || []);
+  const favs = localLoad('favorites') || [];
+  const photos = localLoad('activity_photos') || {};
 
   let html = '';
 
   // Favoris
-  const favsData = favs || [];
-  if (favsData.length) {
+  if (favs.length) {
     html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">❤️ Favoris</div>`;
-    html += favsData.map(f => `
-      <div class="activity-item">
-        <div class="activity-item-title">${f.activity_title}</div>
-        <div class="activity-item-meta">${new Date(f.saved_at).toLocaleDateString()}</div>
+    html += favs.map(f => `
+      <div class="activity-item" style="display:flex;gap:10px;align-items:flex-start">
+        <div style="flex:1">
+          <div class="activity-item-title">${f.activity_title}</div>
+          <div class="activity-item-meta">${new Date(f.saved_at).toLocaleDateString()}</div>
+        </div>
+        <button onclick="removeFavorite('${f.activity_id}')" style="background:none;border:none;cursor:pointer;font-size:18px;flex-shrink:0">❤️</button>
       </div>`).join('');
   }
 
   // Activités faites
-  if (notes && notes.length) {
-    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 0 8px">✓ Déjà fait</div>`;
-    html += notes.map(n => `
+  if (notes.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px">✓ Déjà fait — Album</div>`;
+    html += notes.map(n => {
+      const photo = photos[n.activity_id];
+      return `
       <div class="activity-item">
+        ${photo ? `<img src="${photo}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px">` : ''}
         <div class="activity-item-title">${n.activity_title||n.activity_id}</div>
         <div class="activity-item-stars">${'⭐'.repeat(n.stars||0)}</div>
-        ${n.note ? `<div class="activity-item-meta">"${n.note}"</div>` : ''}
+        ${n.note ? `<div class="activity-item-meta" style="font-style:italic">"${n.note}"</div>` : ''}
         <div class="activity-item-meta">${new Date(n.created_at).toLocaleDateString()}</div>
-      </div>`).join('');
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--primary);cursor:pointer;background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:4px 10px">
+          📷 ${photo ? 'Changer la photo' : 'Ajouter une photo'}
+          <input type="file" accept="image/*" style="display:none" onchange="uploadActivityPhoto(this,'${n.activity_id}')">
+        </label>
+      </div>`;
+    }).join('');
   }
 
-  if (!html) { el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noActivities}</p>`; return; }
+  if (!html) {
+    html = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noActivities||'Aucune activité encore.'}</p>`;
+  }
   el.innerHTML = html;
+}
+
+function removeFavorite(activityId) {
+  favorites.delete(activityId);
+  const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==activityId);
+  localSave('favorites', saved);
+  renderAccountActivities();
+  // Mettre à jour le bouton cœur sur la carte si visible
+  const favBtn = document.querySelector(`[data-fav-id="${activityId}"]`);
+  if (favBtn) favBtn.textContent = '🤍';
+}
+
+function uploadActivityPhoto(input, activityId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const photos = localLoad('activity_photos') || {};
+    photos[activityId] = e.target.result;
+    localSave('activity_photos', photos);
+    renderAccountActivities();
+  };
+  reader.readAsDataURL(file);
 }
 
 function renderAddEventForm() {
@@ -3411,21 +3459,35 @@ Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}
 
 async function markActivityDone(titleEncoded, activityId) {
   if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
-  const doneData = {
-    user_id: currentUser.id,
-    activity_id: activityId,
-    activity_title: decodeURIComponent(titleEncoded),
-    stars: 0, done: true,
-    created_at: new Date().toISOString()
-  };
-  if (_sb && currentUser.id !== 'beta-user') {
-    await _sb.from('notes').upsert(doneData, { onConflict: 'user_id,activity_id' });
-  } else {
-    localPush('notes', doneData);
-  }
-  alreadyDoneIds.add(activityId);
   const btn = document.querySelector(`[data-done-id="${activityId}"]`);
-  if (btn) { btn.textContent = apt().alreadyDone||'✓ Fait'; btn.classList.add('done'); btn.disabled = true; }
+  
+  if (alreadyDoneIds.has(activityId)) {
+    // Annuler "déjà fait"
+    alreadyDoneIds.delete(activityId);
+    if (btn) { btn.textContent = apt().markDone||'✓ Déjà fait'; btn.classList.remove('done'); btn.disabled = false; }
+    if (_sb && currentUser.id !== 'beta-user') {
+      await _sb.from('notes').delete().eq('user_id', currentUser.id).eq('activity_id', activityId);
+    } else {
+      const notes = (localLoad('notes')||[]).filter(n=>n.activity_id!==activityId);
+      localSave('notes', notes);
+    }
+  } else {
+    // Marquer comme fait
+    alreadyDoneIds.add(activityId);
+    if (btn) { btn.textContent = apt().alreadyDone||'✓ Fait'; btn.classList.add('done'); }
+    const doneData = {
+      user_id: currentUser.id,
+      activity_id: activityId,
+      activity_title: decodeURIComponent(titleEncoded),
+      stars: 0, done: true,
+      created_at: new Date().toISOString()
+    };
+    if (_sb && currentUser.id !== 'beta-user') {
+      await _sb.from('notes').upsert(doneData, { onConflict: 'user_id,activity_id' });
+    } else {
+      localPush('notes', doneData);
+    }
+  }
 }
 
 function signOut() {
