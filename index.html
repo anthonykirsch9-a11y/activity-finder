@@ -590,6 +590,28 @@ html { -webkit-text-size-adjust: 100%; }
   margin-top:16px;
 }
 .danger-btn:hover { background:#FDECEA; }
+/* ── Événements spéciaux ── */
+.event-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+.event-type-btn { border:1.5px solid var(--border); border-radius:12px; padding:10px 6px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; cursor:pointer; background:var(--input-bg); color:var(--text); transition:all 0.15s; text-align:center; line-height:1.4; }
+.event-type-btn .ev-icon { font-size:20px; display:block; margin-bottom:4px; }
+.event-type-btn.selected { background:var(--primary); border-color:var(--primary); color:#fff; font-weight:700; }
+.event-type-btn:hover { border-color:var(--primary); background:var(--primary-light); }
+
+/* ── Album photo grille ── */
+.photo-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:12px; }
+.photo-grid-item { position:relative; border-radius:10px; overflow:hidden; aspect-ratio:1; cursor:pointer; }
+.photo-grid-item img { width:100%; height:100%; object-fit:cover; transition:transform 0.2s; }
+.photo-grid-item:hover img { transform:scale(1.05); }
+.photo-grid-label { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.7)); color:#fff; font-size:10px; padding:8px 6px 4px; font-family:'DM Sans',sans-serif; }
+
+/* Memory modal */
+.memory-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:30000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.memory-modal.open { display:flex; }
+.memory-card { background:var(--card); border-radius:20px; max-width:400px; width:92%; overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,0.5); position:relative; }
+.memory-card img { width:100%; max-height:250px; object-fit:cover; }
+.memory-card-body { padding:16px; }
+.memory-close { position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.5); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; }
+
 .beta-screen {
   display:none; position:fixed; inset:0;
   background:linear-gradient(160deg,#2E4A2C 0%,#4A7248 50%,#7A9E78 100%);
@@ -748,6 +770,18 @@ html { -webkit-text-size-adjust: 100%; }
       <button class="pill" data-val="entre amis" id="grp-friends">Entre amis</button>
       <button class="pill selected" data-val="en famille" id="grp-family">En famille</button>
     </div>
+    <!-- Événements spéciaux -->
+    <div style="margin-top:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px" id="lbl-special-event">✨ Événement spécial (optionnel)</div>
+      <div class="event-type-grid" id="special-event-grid">
+        <button class="event-type-btn" data-val="" id="ev-none" onclick="selectSpecialEvent(this)"><span class="ev-icon">🚫</span><span id="ev-none-lbl">Aucun</span></button>
+        <button class="event-type-btn" data-val="anniversaire" id="ev-birthday" onclick="selectSpecialEvent(this)"><span class="ev-icon">🎂</span><span id="ev-birthday-lbl">Anniversaire</span></button>
+        <button class="event-type-btn" data-val="evjf" id="ev-evjf" onclick="selectSpecialEvent(this)"><span class="ev-icon">💍</span><span id="ev-evjf-lbl">EVJF</span></button>
+        <button class="event-type-btn" data-val="evj" id="ev-evj" onclick="selectSpecialEvent(this)"><span class="ev-icon">🍺</span><span id="ev-evj-lbl">EVJ</span></button>
+        <button class="event-type-btn" data-val="team building" id="ev-team" onclick="selectSpecialEvent(this)"><span class="ev-icon">🏢</span><span id="ev-team-lbl">Team Building</span></button>
+        <button class="event-type-btn" data-val="fête de famille" id="ev-family" onclick="selectSpecialEvent(this)"><span class="ev-icon">🎉</span><span id="ev-family-lbl">Fête famille</span></button>
+      </div>
+    </div>
   </div>
 
   <div class="form-section">
@@ -888,7 +922,7 @@ html { -webkit-text-size-adjust: 100%; }
     <div class="map-form-actions" style="display:flex;align-items:center;gap:10px;padding:8px 0 0;flex-wrap:wrap">
       <div class="map-hint" id="map-hint-text" style="flex:1;min-width:180px;padding:0;border:none;background:none">Cherche une ville ou clique sur la carte pour placer le point de recherche.</div>
       <button class="map-import-btn" onclick="importFormData()" id="map-import-btn" title="Reprendre ville, rayon, groupe et budget du formulaire">
-        📋 <span id="map-import-label">Reprendre le formulaire</span>
+        📋 <span id="map-import-label">Importer ma recherche</span>
         <span class="map-import-badge" id="map-import-badge">✓</span>
       </button>
     </div>
@@ -1025,6 +1059,20 @@ html { -webkit-text-size-adjust: 100%; }
   </div>
 </div>
 
+<!-- ── MEMORY MODAL ── -->
+<div class="memory-modal" id="memory-modal">
+  <div class="memory-card">
+    <button class="memory-close" onclick="closeMemory()">×</button>
+    <img id="memory-img" src="" alt="">
+    <div class="memory-card-body">
+      <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:4px" id="memory-title"></div>
+      <div id="memory-stars" style="color:#F5A623;margin-bottom:4px"></div>
+      <div style="font-size:13px;color:var(--muted);font-style:italic" id="memory-note"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px" id="memory-date"></div>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
@@ -1068,7 +1116,7 @@ const LANGS = {
     locPlaceholder:'Tape une ville ou un code postal…',
     mapHint:'Cherche une ville ou clique sur la carte pour placer le point de recherche.',
     mapBtn:'Rechercher ici', alertCity:"Merci d'entrer une localisation !",
-    mapImportLabel:'Reprendre le formulaire',
+    mapImportLabel:'Importer ma recherche',
     mapImportTitle:'Données du formulaire importées ✓',
     mapImportBudget:'Budget',
     seeOnMap:'🗺 Voir sur la carte',
@@ -1115,7 +1163,7 @@ const LANGS = {
     locPlaceholder:'Enter a city or postal code…',
     mapHint:'Search a city or click the map to set the search point.',
     mapBtn:'Search here', alertCity:'Please enter a location!',
-    mapImportLabel:'Use form data',
+    mapImportLabel:'Import my search',
     mapImportTitle:'Form data imported ✓',
     mapImportBudget:'Budget',
     seeOnMap:'🗺 See on map',
@@ -1162,7 +1210,7 @@ const LANGS = {
     locPlaceholder:'Escribe una ciudad o código postal…',
     mapHint:'Busca una ciudad o haz clic en el mapa para definir el punto de búsqueda.',
     mapBtn:'Buscar aquí',alertCity:'¡Por favor introduce una ubicación!',
-    mapImportLabel:'Usar datos del formulario',
+    mapImportLabel:'Importar mi búsqueda',
     mapImportTitle:'Datos del formulario importados ✓',
     mapImportBudget:'Presupuesto',
     seeOnMap:'🗺 Ver en mapa',
@@ -1209,7 +1257,7 @@ const LANGS = {
     locPlaceholder:'Stadt oder Postleitzahl…',
     mapHint:'Suche eine Stadt oder klicke auf die Karte.',
     mapBtn:'Hier suchen',alertCity:'Bitte gib einen Standort ein!',
-    mapImportLabel:'Formulardaten übernehmen',
+    mapImportLabel:'Suche importieren',
     mapImportTitle:'Formulardaten übernommen ✓',
     mapImportBudget:'Budget',
     seeOnMap:'🗺 Auf Karte anzeigen',
@@ -1256,7 +1304,7 @@ const LANGS = {
     locPlaceholder:'Inserisci una città o CAP…',
     mapHint:'Cerca una città o clicca sulla mappa.',
     mapBtn:'Cerca qui',alertCity:'Inserisci una posizione!',
-    mapImportLabel:'Usa dati del modulo',
+    mapImportLabel:'Importa ricerca',
     mapImportTitle:'Dati del modulo importati ✓',
     mapImportBudget:'Budget',
     seeOnMap:'🗺 Vedi sulla mappa',
@@ -1303,7 +1351,7 @@ const LANGS = {
     locPlaceholder:'Escreve uma cidade ou código postal…',
     mapHint:'Pesquisa uma cidade ou clica no mapa para definir o ponto de pesquisa.',
     mapBtn:'Pesquisar aqui',alertCity:'Por favor introduz uma localização!',
-    mapImportLabel:'Usar dados do formulário',
+    mapImportLabel:'Importar pesquisa',
     mapImportTitle:'Dados do formulário importados ✓',
     mapImportBudget:'Orçamento',
     seeOnMap:'🗺 Ver no mapa',
@@ -2638,7 +2686,7 @@ async function runSearch(fromMap) {
         const placesHeader = realPlacesContext ?
           '=== LIEUX REELS GOOGLE MAPS A UTILISER OBLIGATOIREMENT ===\n' + realPlacesContext + '\n=== FIN LIEUX REELS ===\n\n'
           : '';
-        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + '\n\n' + rawPrompt;
+        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + getSpecialEventContext() + '\n\n' + rawPrompt;
 
         // Sonnet pour tous — Haiku trop peu fiable pour le JSON complexe
         const selectedModel = 'claude-sonnet-4-6';
@@ -2998,8 +3046,93 @@ async function loginWithGoogle() {
   await _sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
 }
 // ══════════════════════════════════════════════════════════════
-// PANNEAU COMPTE
+// ÉVÉNEMENTS SPÉCIAUX
 // ══════════════════════════════════════════════════════════════
+let selectedSpecialEvent = '';
+
+const SPECIAL_EVENT_PROMPTS = {
+  'anniversaire': {
+    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est un ANNIVERSAIRE. Propose des activités festives et mémorables parfaitement adaptées pour célébrer cet événement. Inclure au moins une activité originale et une sortie gastronomique ou ludique.',
+    en: 'SPECIAL EVENT: This is a BIRTHDAY. Suggest festive and memorable activities perfectly suited to celebrate this occasion.',
+    es: 'EVENTO ESPECIAL: Es un CUMPLEAÑOS. Sugiere actividades festivas y memorables.',
+    de: 'BESONDERES EVENT: Geburtstag. Schlage festliche und unvergessliche Aktivitäten vor.',
+    it: 'EVENTO SPECIALE: Compleanno. Suggerisci attività festive e memorabili.',
+    pt: 'EVENTO ESPECIAL: Aniversário. Sugere atividades festivas e memoráveis.',
+  },
+  'evjf': {
+    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est un ENTERREMENT DE VIE DE JEUNE FILLE (EVJF). Propose des activités fun, glamour et mémorables pour le groupe: spa, ateliers créatifs, soirées, activités originales entre filles.',
+    en: 'SPECIAL EVENT: Bachelorette party. Suggest fun, glamorous activities: spa, creative workshops, nights out.',
+    es: 'EVENTO ESPECIAL: Despedida de soltera. Actividades divertidas y glamurosas.',
+    de: 'BESONDERES EVENT: Junggesellinnenabschied. Spaßige und glamouröse Aktivitäten.',
+    it: 'EVENTO SPECIALE: Addio al nubilato. Attività divertenti e glamour.',
+    pt: 'EVENTO ESPECIAL: Despedida de solteira. Atividades divertidas e glamourosas.',
+  },
+  'evj': {
+    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est un ENTERREMENT DE VIE DE GARÇON (EVJ). Propose des activités fun, sportives et mémorables pour le groupe: karting, escape game, soirée, activités d\'adrénaline.',
+    en: 'SPECIAL EVENT: Bachelor party. Suggest fun, adrenaline-filled activities: karting, escape rooms, nights out.',
+    es: 'EVENTO ESPECIAL: Despedida de soltero. Actividades divertidas y de adrenalina.',
+    de: 'BESONDERES EVENT: Junggesellenabschied. Spaßige Adrenalin-Aktivitäten.',
+    it: 'EVENTO SPECIALE: Addio al celibato. Attività divertenti e adrenalinici.',
+    pt: 'EVENTO ESPECIAL: Despedida de solteiro. Atividades divertidas e adrenalina.',
+  },
+  'team building': {
+    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est un TEAM BUILDING d\'ENTREPRISE. Propose des activités qui favorisent la cohésion d\'équipe, la communication et le fun: escape game, défis sportifs, ateliers collaboratifs, activités de groupe.',
+    en: 'SPECIAL EVENT: Corporate team building. Suggest activities that foster team cohesion: escape rooms, sports challenges, collaborative workshops.',
+    es: 'EVENTO ESPECIAL: Team building empresarial. Actividades de cohesión de equipo.',
+    de: 'BESONDERES EVENT: Betriebliches Team Building. Teambildende Aktivitäten.',
+    it: 'EVENTO SPECIALE: Team building aziendale. Attività di coesione del team.',
+    pt: 'EVENTO ESPECIAL: Team building empresarial. Atividades de coesão de equipa.',
+  },
+  'fête de famille': {
+    fr: 'ÉVÉNEMENT SPÉCIAL: C\'est une FÊTE DE FAMILLE (réunion, célébration). Propose des activités accessibles à tous les âges, conviviales et mémorables pour un grand groupe familial.',
+    en: 'SPECIAL EVENT: Family celebration/reunion. Suggest activities accessible to all ages, convivial and memorable.',
+    es: 'EVENTO ESPECIAL: Celebración familiar. Actividades accesibles para todas las edades.',
+    de: 'BESONDERES EVENT: Familienfeier. Aktivitäten für alle Altersgruppen.',
+    it: 'EVENTO SPECIALE: Festa di famiglia. Attività per tutte le età.',
+    pt: 'EVENTO ESPECIAL: Festa de família. Atividades acessíveis a todas as idades.',
+  }
+};
+
+function selectSpecialEvent(btn) {
+  document.querySelectorAll('.event-type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSpecialEvent = btn.dataset.val;
+  // Adapter le groupe automatiquement
+  if (selectedSpecialEvent === 'evjf' || selectedSpecialEvent === 'evj') {
+    document.querySelectorAll('#group-type .pill').forEach(p => p.classList.remove('selected'));
+    document.getElementById('grp-friends')?.classList.add('selected');
+    syncAgesUI();
+  } else if (selectedSpecialEvent === 'team building') {
+    document.querySelectorAll('#group-type .pill').forEach(p => p.classList.remove('selected'));
+    document.getElementById('grp-friends')?.classList.add('selected');
+  }
+}
+
+function getSpecialEventContext() {
+  if (!selectedSpecialEvent) return '';
+  const prompts = SPECIAL_EVENT_PROMPTS[selectedSpecialEvent];
+  if (!prompts) return '';
+  return '\n\n' + (prompts[lang] || prompts.fr);
+}
+
+// Memory modal
+function openMemory(activityId) {
+  const photos = localLoad('activity_photos') || {};
+  const notes = localLoad('notes') || [];
+  const note = notes.find(n => n.activity_id === activityId);
+  const photo = photos[activityId];
+  if (!photo && !note) return;
+  const modal = document.getElementById('memory-modal');
+  const img = document.getElementById('memory-img');
+  if (photo) { img.src = photo; img.style.display = 'block'; }
+  else img.style.display = 'none';
+  document.getElementById('memory-title').textContent = note?.activity_title || '';
+  document.getElementById('memory-stars').textContent = '⭐'.repeat(note?.stars||0);
+  document.getElementById('memory-note').textContent = note?.note ? '"' + note.note + '"' : '';
+  document.getElementById('memory-date').textContent = note ? new Date(note.created_at).toLocaleDateString() : '';
+  modal.classList.add('open');
+}
+function closeMemory() { document.getElementById('memory-modal').classList.remove('open'); }
 const AP_TRANSLATIONS = {
   fr: {
     tabStats:'Stats', tabActivities:'Activités', tabSettings:'Réglages', tabAdd:'Ajouter',
@@ -3291,7 +3424,22 @@ async function renderAccountActivities() {
   const favs = localLoad('favorites') || [];
   const photos = localLoad('activity_photos') || {};
 
+  // Si on a des photos → afficher la grille album EN PREMIER
+  const photoEntries = Object.entries(photos);
   let html = '';
+
+  if (photoEntries.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📸 Album Souvenirs</div>`;
+    html += `<div class="photo-grid">`;
+    html += photoEntries.map(([actId, photoSrc]) => {
+      const note = notes.find(n => n.activity_id === actId);
+      return `<div class="photo-grid-item" onclick="openMemory('${actId}')">
+        <img src="${photoSrc}" alt="">
+        <div class="photo-grid-label">${note?.activity_title?.substring(0,25)||actId}<br>${note ? '⭐'.repeat(note.stars||0) : ''}</div>
+      </div>`;
+    }).join('');
+    html += `</div><div style="height:16px"></div>`;
+  }
 
   // Favoris
   if (favs.length) {
@@ -3312,7 +3460,7 @@ async function renderAccountActivities() {
     html += notes.map(n => {
       const photo = photos[n.activity_id];
       return `
-      <div class="activity-item">
+      <div class="activity-item" style="cursor:${photo?'pointer':'default'}" ${photo?`onclick="openMemory('${n.activity_id}')"`:''}>
         ${photo ? `<img src="${photo}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px">` : ''}
         <div class="activity-item-title">${n.activity_title||n.activity_id}</div>
         <div class="activity-item-stars">${'⭐'.repeat(n.stars||0)}</div>
