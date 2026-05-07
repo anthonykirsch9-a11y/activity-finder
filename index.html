@@ -612,7 +612,24 @@ html { -webkit-text-size-adjust: 100%; }
 .memory-card-body { padding:16px; }
 .memory-close { position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.5); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; }
 
-.beta-screen {
+/* ── Programme week-end ── */
+.weekend-program-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:25000; align-items:flex-start; justify-content:center; overflow-y:auto; padding:20px; backdrop-filter:blur(3px); }
+.weekend-program-modal.open { display:flex; }
+.weekend-program-card { background:var(--card); border-radius:20px; max-width:520px; width:100%; box-shadow:0 24px 80px rgba(0,0,0,0.4); overflow:hidden; margin:auto; }
+.weekend-program-header { background:linear-gradient(135deg,#3A5C38,#5C7A5A); padding:20px; display:flex; align-items:center; justify-content:space-between; }
+.weekend-program-body { padding:20px; max-height:70vh; overflow-y:auto; }
+.program-day { margin-bottom:20px; }
+.program-day-title { font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700; color:var(--text); margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid var(--primary); }
+.program-step { display:flex; gap:12px; margin-bottom:12px; align-items:flex-start; }
+.program-time { font-size:12px; font-weight:700; color:var(--primary); min-width:50px; padding-top:2px; }
+.program-step-content { flex:1; background:var(--bg); border-radius:10px; padding:10px 12px; }
+.program-step-title { font-size:14px; font-weight:600; color:var(--text); }
+.program-step-detail { font-size:12px; color:var(--muted); margin-top:3px; }
+.program-transport { font-size:11px; color:var(--primary); margin:4px 0 4px 62px; display:flex; align-items:center; gap:4px; }
+.program-loading { text-align:center; padding:30px; }
+.generate-program-btn { width:100%; padding:13px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:12px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.generate-program-btn:hover { opacity:0.9; transform:translateY(-1px); }
+.generate-program-btn:disabled { opacity:0.5; cursor:default; transform:none; }
   display:none; position:fixed; inset:0;
   background:linear-gradient(160deg,#2E4A2C 0%,#4A7248 50%,#7A9E78 100%);
   z-index:99999; align-items:center; justify-content:center;
@@ -1071,6 +1088,25 @@ html { -webkit-text-size-adjust: 100%; }
       <button class="danger-btn" style="margin-top:8px;opacity:0.6" id="ap-delete-btn" onclick="confirmDeleteAccount()">🗑 <span id="ap-delete-lbl">Supprimer mon compte</span></button>
     </div>
 
+  </div>
+</div>
+
+<!-- ── PROGRAMME WEEK-END MODAL ── -->
+<div class="weekend-program-modal" id="weekend-program-modal">
+  <div class="weekend-program-card">
+    <div class="weekend-program-header">
+      <div>
+        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:800;color:#fff">🗓 Mon programme week-end</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px" id="wp-subtitle">Basé sur tes favoris</div>
+      </div>
+      <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">×</button>
+    </div>
+    <div class="weekend-program-body" id="weekend-program-body">
+      <div class="program-loading">
+        <div class="spinner"></div>
+        <p style="color:var(--muted);font-size:13px;margin-top:10px">Génération du programme…</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2703,9 +2739,9 @@ async function runSearch(fromMap) {
     // Filtre strict
     let strictMoodFilter = '';
     if (onlyMode === 'ephem') {
-      strictMoodFilter = '\nFILTRE STRICT: Propose UNIQUEMENT des événements éphémères (marchés, brocantes, fêtes, festivals, événements temporaires). Les 6 activités doivent toutes être éphémères. "ephemere":true pour toutes.';
+      strictMoodFilter = '\nFILTRE ABSOLU: Propose UNIQUEMENT ET EXCLUSIVEMENT des événements éphémères (marchés, brocantes, fêtes locales, festivals, concerts, foires, événements temporaires avec une date précise). AUCUNE activité fixe (restaurant, musée, bowling...) n\'est acceptée. "ephemere":true pour TOUTES les 6 activités OBLIGATOIREMENT.';
     } else if (onlyMode === 'night') {
-      strictMoodFilter = '\nFILTRE STRICT: Propose UNIQUEMENT des sorties nocturnes (bars, clubs, concerts, restaurants ouverts le soir, soirées). Les 6 activités doivent toutes être nocturnes. "nocturne":true pour toutes.';
+      strictMoodFilter = '\nFILTRE ABSOLU: Propose UNIQUEMENT ET EXCLUSIVEMENT des sorties nocturnes (bars, clubs, concerts le soir, restaurants ouverts tard, soirées thématiques). "nocturne":true pour TOUTES les 6 activités OBLIGATOIREMENT.';
     } else if (moods.length === 1) {
       strictMoodFilter = `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités de type "${moods[0]}". Toutes les 6 activités doivent correspondre à cette catégorie.`;
     } else if (moods.length > 1) {
@@ -2776,7 +2812,7 @@ async function runSearch(fromMap) {
         const locForRules = fromMap && mapSearchCoords ? (mapSearchName||location) : location;
         const LANG_NAMES = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
         const langInstruction = `LANGUE: Réponds OBLIGATOIREMENT en ${LANG_NAMES[lang] || 'français'}. Tous les textes (titre, description, infos_pratiques, pourquoi_adapte) doivent être en ${LANG_NAMES[lang] || 'français'}.\n`;
-        const strictRules = "REGLES CRITIQUES:\n1. LIEUX VERIFIES EN PRIORITE: Si des lieux certifies sont fournis, utilise-les en priorite. lieu_certain:true pour eux.\n2. LIEUX INVENTES INTERDITS: Bars/restos sans certitude = description generique sans nom invente. lieu_certain:false.\n3. BROCANTES/MARCHES: Ville exacte obligatoire.\n4. DATE: Chaque activite realisable le jour demande.\n5. METEO: Respecter strictement.\n6. GPS: lat/lng precis, jamais 0.0.";
+        const strictRules = "REGLES CRITIQUES:\n1. LIEUX VERIFIES EN PRIORITE: Si des lieux certifies sont fournis, utilise-les en priorite. lieu_certain:true pour eux.\n2. LIEUX INVENTES INTERDITS: Bars/restos sans certitude = description generique sans nom invente. lieu_certain:false.\n3. BROCANTES/MARCHES: Ville exacte obligatoire.\n4. DATE: Chaque activite realisable le jour demande.\n5. METEO: Respecter strictement.\n6. GPS: lat/lng precis dans les champs JSON, jamais 0.0. NE PAS mentionner les coordonnees GPS dans la description ou les infos_pratiques.\n7. PAS DE GPS DANS LA DESCRIPTION: Ne jamais ecrire 'GPS: xx.xxxx, xx.xxxx' dans description ou infos_pratiques.";
 
         const rawPrompt = fromMap && mapSearchCoords
           ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
@@ -2929,21 +2965,20 @@ function renderResults(activities, location, radius, budget, group, ages) {
           ${a.pourquoi_adapte}
         </div>`:''}
 
-        ${currentUser && userPlan === 'pro' ? `
+        ${userPlan === 'pro' ? `
         <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
           <button class="activity-done-btn ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'done' : ''}"
             data-done-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
-            onclick="markActivityDone('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')"
-            ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'disabled' : ''}>
+            onclick="markActivityDone('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">
             ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? (apt().alreadyDone||'✓ Fait') : (apt().markDone||'✓ Déjà fait')}
           </button>
           <button class="activity-done-btn" style="background:none;border-color:var(--secondary)"
             data-fav-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
-            title="${favorites.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
+            title="Favoris"
             onclick="toggleFavorite('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">
             ${favorites.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '❤️' : '🤍'}
           </button>
-          <button class="rc-note-btn" onclick="openNote('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">⭐ ${apt().markDone?.includes('✓')?'Noter':'Rate'}</button>
+          <button class="rc-note-btn" onclick="openNote('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">⭐ Noter</button>
         </div>` : ''}
         ${currentUser && userPlan === 'pro' && alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '<div class="rc-already-done">✓ Déjà faite — non reproposée pendant 1 an</div>' : ''}
 
@@ -3225,7 +3260,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
-    proFeatures:['✨ Suggestions plus riches et détaillées','♾️ Recherches illimitées','🕐 Historique de tes recherches','⭐ Notes & activités déjà faites','🔁 Ne repropose plus les activités déjà faites','📍 Ajoute tes événements locaux (fête des voisins, marche de village…)','🚫 Sans publicité'],
+    proFeatures:['✨ Suggestions plus riches et détaillées','♾️ Recherches illimitées','❤️ Favoris & album souvenirs avec photos','⭐ Notes sur chaque activité','🔁 Ne repropose plus les activités déjà faites','🗓 Programme week-end complet basé sur tes favoris','🎊 Occasions spéciales (EVJF, anniversaire, team building…)','📍 Ajoute tes événements locaux','🚫 Sans publicité'],
     proBtn:'Passer Pro — 2,99 € / mois',
     loginBtn:'Se connecter',
     signOutBtn:'Déconnexion',
@@ -3245,7 +3280,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected',
     proTitle:'Activity Finder Pro', proPrice:'€2.99', proPerMonth:'/month',
-    proFeatures:['✨ Richer and more detailed suggestions','♾️ Unlimited searches','🕐 Search history','⭐ Ratings & done activities','🔁 Won\'t suggest already done activities','📍 Add your local events (village fete, group walk…)','🚫 Ad-free'],
+    proFeatures:['✨ Richer and more detailed suggestions','♾️ Unlimited searches','❤️ Favorites & photo memory book','⭐ Rate each activity','🔁 Won\'t suggest already done activities','🗓 Full weekend program based on your favorites','🎊 Special occasions (bachelorette, birthday, team building…)','📍 Add your local events','🚫 Ad-free'],
     proBtn:'Go Pro — €2.99 / month',
     loginBtn:'Sign in',
     signOutBtn:'Sign out',
@@ -3265,7 +3300,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mes',
-    proFeatures:['✨ Sugerencias más ricas y detalladas','♾️ Búsquedas ilimitadas','🕐 Historial de búsquedas','⭐ Notas y actividades realizadas','🔁 No repropone actividades ya realizadas','📍 Añade tus eventos locales (fiesta de vecinos, marcha…)','🚫 Sin publicidad'],
+    proFeatures:['✨ Sugerencias más ricas y detalladas','♾️ Búsquedas ilimitadas','❤️ Favoritos & álbum de recuerdos','⭐ Valora cada actividad','🔁 No repropone actividades ya realizadas','🗓 Programa completo de fin de semana','🎊 Ocasiones especiales (EVJF, cumpleaños, team building…)','📍 Añade eventos locales','🚫 Sin publicidad'],
     proBtn:'Pasar a Pro — 2,99 € / mes',
     loginBtn:'Iniciar sesión',
     signOutBtn:'Cerrar sesión',
@@ -3285,7 +3320,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
-    proFeatures:['✨ Reichhaltigere Vorschläge','♾️ Unbegrenzte Suchen','🕐 Suchverlauf','⭐ Bewertungen & erledigte Aktivitäten','🔁 Erledigte Aktivitäten werden nicht mehr vorgeschlagen','📍 Lokale Events hinzufügen (Dorffest, Wanderung…)','🚫 Werbefrei'],
+    proFeatures:['✨ Reichhaltigere Vorschläge','♾️ Unbegrenzte Suchen','❤️ Favoriten & Fotobuch','⭐ Aktivitäten bewerten','🔁 Keine Wiederholung erledigter Aktivitäten','🗓 Komplettes Wochenprogramm','🎊 Besondere Anlässe (JGA, Geburtstag, Team Building…)','📍 Lokale Events hinzufügen','🚫 Werbefrei'],
     proBtn:'Pro werden — 2,99 € / Monat',
     loginBtn:'Anmelden',
     signOutBtn:'Abmelden',
@@ -3305,7 +3340,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connesso',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mese',
-    proFeatures:['✨ Suggerimenti più ricchi e dettagliati','♾️ Ricerche illimitate','🕐 Cronologia ricerche','⭐ Valutazioni e attività svolte','🔁 Non ripropone attività già svolte','📍 Aggiungi eventi locali (festa del vicinato, passeggiata…)','🚫 Senza pubblicità'],
+    proFeatures:['✨ Suggerimenti più ricchi e dettagliati','♾️ Ricerche illimitate','❤️ Preferiti & album ricordi','⭐ Valuta ogni attività','🔁 Non ripropone attività già svolte','🗓 Programma weekend completo','🎊 Occasioni speciali (addio nubilato, compleanno, team building…)','📍 Aggiungi eventi locali','🚫 Senza pubblicità'],
     proBtn:'Passa a Pro — 2,99 € / mese',
     loginBtn:'Accedi',
     signOutBtn:'Disconnetti',
@@ -3325,7 +3360,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Não conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mês',
-    proFeatures:['✨ Sugestões mais ricas e detalhadas','♾️ Pesquisas ilimitadas','🕐 Histórico de pesquisas','⭐ Notas e atividades feitas','🔁 Não repropõe atividades já feitas','📍 Adiciona eventos locais (festa de vizinhos, caminhada…)','🚫 Sem publicidade'],
+    proFeatures:['✨ Sugestões mais ricas e detalhadas','♾️ Pesquisas ilimitadas','❤️ Favoritos & álbum de memórias','⭐ Avalia cada atividade','🔁 Não repropõe atividades já feitas','🗓 Programa completo de fim de semana','🎊 Ocasiões especiais (despedida, aniversário, team building…)','📍 Adiciona eventos locais','🚫 Sem publicidade'],
     proBtn:'Ir para Pro — 2,99 € / mês',
     loginBtn:'Entrar',
     signOutBtn:'Sair',
@@ -3485,7 +3520,133 @@ async function renderAccountStats() {
     </button>`;
 }
 
-// renderAccountHistory supprimé — remplacé par renderAccountStats
+// ══════════════════════════════════════════════════════════════
+// PROGRAMME WEEK-END
+// ══════════════════════════════════════════════════════════════
+function openWeekendProgram() {
+  const modal = document.getElementById('weekend-program-modal');
+  const body = document.getElementById('weekend-program-body');
+  modal.classList.add('open');
+  body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">Création de ton programme…</p></div>`;
+  generateWeekendProgram();
+}
+
+function closeWeekendProgram() {
+  document.getElementById('weekend-program-modal').classList.remove('open');
+}
+
+async function generateWeekendProgram() {
+  const favs = localLoad('favorites') || [];
+  const notes = localLoad('notes') || [];
+  const body = document.getElementById('weekend-program-body');
+
+  if (favs.length < 2) {
+    body.innerHTML = '<p style="color:var(--muted);padding:20px;text-align:center">Ajoute au moins 2 favoris pour générer un programme !</p>';
+    return;
+  }
+
+  // Récupérer les activités favorites avec leurs détails
+  const favDetails = favs.map(f => {
+    const note = notes.find(n => n.activity_id === f.activity_id);
+    return `- ${f.activity_title}${note?.stars ? ' (noté ' + note.stars + '/5)' : ''}`;
+  }).join('\n');
+
+  const langNames = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
+  const langInstr = `Réponds en ${langNames[lang]||'français'}.`;
+
+  const prompt = `${langInstr}
+Tu es un expert en organisation de week-ends. L'utilisateur a sélectionné ces activités favorites:
+${favDetails}
+
+Crée un programme week-end complet et détaillé sur SAMEDI et DIMANCHE en organisant ces activités de façon optimale.
+
+Pour chaque activité inclue:
+- L'heure de début recommandée
+- La durée estimée  
+- Le moyen de transport pour y aller (voiture, à pied, transports en commun)
+- Le temps de trajet approximatif
+- Une note pratique (réservation conseillée, tenue adaptée, etc.)
+
+Ajoute aussi des pauses repas logiques (petit-déjeuner, déjeuner, dîner) entre les activités.
+
+Réponds UNIQUEMENT en JSON valide:
+{
+  "samedi": [
+    {"heure": "09h00", "titre": "...", "duree": "2h", "transport": "à pied", "trajet": "5 min", "note": "...", "type": "activite"},
+    {"heure": "11h30", "titre": "Pause déjeuner", "duree": "1h30", "transport": "", "trajet": "", "note": "suggestion de restaurant", "type": "repas"}
+  ],
+  "dimanche": [...]
+}`;
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    const text = (data.content||[]).map(c=>c.text||'').join('');
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No JSON');
+    const program = JSON.parse(match[0]);
+    renderWeekendProgram(program);
+  } catch(e) {
+    body.innerHTML = `<p style="color:#C0392B;padding:20px;text-align:center">Erreur lors de la génération. Réessaie !</p>
+    <button onclick="generateWeekendProgram()" class="generate-program-btn">🔄 Réessayer</button>`;
+  }
+}
+
+function renderWeekendProgram(program) {
+  const body = document.getElementById('weekend-program-body');
+  const dayNames = { fr: ['SAMEDI', 'DIMANCHE'], en: ['SATURDAY', 'SUNDAY'], es: ['SÁBADO', 'DOMINGO'], de: ['SAMSTAG', 'SONNTAG'], it: ['SABATO', 'DOMENICA'], pt: ['SÁBADO', 'DOMINGO'] };
+  const days = dayNames[lang] || dayNames.fr;
+  const typeIcons = { activite: '📍', repas: '🍽️', transport: '🚗', pause: '☕' };
+
+  let html = '';
+
+  // Samedi
+  if (program.samedi?.length) {
+    html += `<div class="program-day">
+      <div class="program-day-title">📅 ${days[0]}</div>`;
+    program.samedi.forEach((step, i) => {
+      html += `
+        <div class="program-step">
+          <div class="program-time">${step.heure}</div>
+          <div class="program-step-content">
+            <div class="program-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
+            <div class="program-step-detail">⏱ ${step.duree}${step.note ? ' · ' + step.note : ''}</div>
+          </div>
+        </div>`;
+      if (step.transport && i < program.samedi.length - 1) {
+        html += `<div class="program-transport">↓ ${step.transport}${step.trajet ? ' · ' + step.trajet : ''}</div>`;
+      }
+    });
+    html += '</div>';
+  }
+
+  // Dimanche
+  if (program.dimanche?.length) {
+    html += `<div class="program-day">
+      <div class="program-day-title">📅 ${days[1]}</div>`;
+    program.dimanche.forEach((step, i) => {
+      html += `
+        <div class="program-step">
+          <div class="program-time">${step.heure}</div>
+          <div class="program-step-content">
+            <div class="program-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
+            <div class="program-step-detail">⏱ ${step.duree}${step.note ? ' · ' + step.note : ''}</div>
+          </div>
+        </div>`;
+      if (step.transport && i < program.dimanche.length - 1) {
+        html += `<div class="program-transport">↓ ${step.transport}${step.trajet ? ' · ' + step.trajet : ''}</div>`;
+      }
+    });
+    html += '</div>';
+  }
+
+  html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">🔄 Régénérer le programme</button>`;
+  body.innerHTML = html;
+}
 
 async function renderAccountActivities() {
   const t = apt();
@@ -3511,6 +3672,16 @@ async function renderAccountActivities() {
       </div>`;
     }).join('');
     html += `</div><div style="height:16px"></div>`;
+  }
+
+  // Bouton programme week-end si assez de favoris
+  if (favs.length >= 2) {
+    html += `<button class="generate-program-btn" onclick="openWeekendProgram()">
+      🗓 Générer mon programme week-end
+      <span style="font-size:11px;opacity:0.8">(${favs.length} favoris)</span>
+    </button><div style="height:16px"></div>`;
+  } else if (favs.length > 0) {
+    html += `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:12px">❤️ Ajoute encore ${2-favs.length} favori(s) pour générer un programme week-end !</div>`;
   }
 
   // Favoris
