@@ -728,7 +728,7 @@ html { -webkit-text-size-adjust: 100%; }
       </div>
     </div>
     <!-- Auth: logged out -->
-    <button class="login-btn" id="login-btn" onclick="openAccountPanel()">Connexion</button>
+    <button class="login-btn" id="login-btn" onclick="openAccountPanel()" id="login-btn-text">Connexion</button>
     <!-- Auth: logged in -->
     <div class="user-badge" id="user-badge" onclick="openAccountPanel()" style="cursor:pointer" title="Mon compte">
       <div class="user-avatar" id="user-avatar" style="position:relative">?
@@ -771,7 +771,7 @@ html { -webkit-text-size-adjust: 100%; }
 </div>
 <!-- History (pro users) -->
 <div class="history-panel" id="history-panel">
-  <div class="history-title">🕐 Dernières recherches</div>
+  <div class="history-title" id="history-title-lbl">🕐 Dernières recherches</div>
   <div class="history-list" id="history-list"></div>
 </div>
 
@@ -973,7 +973,7 @@ html { -webkit-text-size-adjust: 100%; }
     <h2>Activity Finder</h2>
     <p id="auth-desc">Connecte-toi pour sauvegarder tes recherches et accéder à toutes les fonctionnalités.</p>
     <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Connexion</button>
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')" id="auth-login-lbl">Connexion</button>
       <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Inscription</button>
     </div>
     <div class="auth-error" id="auth-error"></div>
@@ -1096,7 +1096,7 @@ html { -webkit-text-size-adjust: 100%; }
   <div class="weekend-program-card">
     <div class="weekend-program-header">
       <div>
-        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:800;color:#fff">🗓 Mon programme week-end</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:800;color:#fff" id="wp-title">🗓 Mon programme week-end</div>
         <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px" id="wp-subtitle">Basé sur tes favoris</div>
       </div>
       <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">×</button>
@@ -1554,8 +1554,25 @@ function setLang(l) {
   Object.entries(evMap).forEach(([id,txt])=>{const el=document.getElementById(id);if(el)el.textContent=txt;});
   const lblPart=document.getElementById('lbl-participants');if(lblPart)lblPart.textContent=t.lblParticipants||'Nombre de participants';
   const lblPartU=document.getElementById('lbl-participants-unit');if(lblPartU)lblPartU.textContent=t.lblParticipantsUnit||'personnes';
-  const loginBtnEl = document.getElementById('login-btn');
-  if (loginBtnEl) loginBtnEl.textContent = apt().loginBtn || t.loginBtn || 'Connexion';
+  // Filtres rapides éphémères/nocturnes
+  const onlyEphBtn = document.getElementById('only-ephem-btn');
+  if (onlyEphBtn) onlyEphBtn.textContent = t.onlyEphem || '🗓 Que des éphémères';
+  const onlyNightBtn = document.getElementById('only-night-btn');
+  if (onlyNightBtn) onlyNightBtn.textContent = t.onlyNight || '🌙 Que des nocturnes';
+  // Programme week-end subtitle
+  const wpSub = document.getElementById('wp-subtitle');
+  if (wpSub) wpSub.textContent = t.programSubtitle || 'Basé sur tes favoris';
+  const wpTitle = document.getElementById('wp-title');
+  if (wpTitle) wpTitle.textContent = '🗓 ' + (t.programTitle || 'Mon programme week-end');
+  // Bouton connexion topbar
+  const loginBtnTopbar = document.getElementById('login-btn');
+  if (loginBtnTopbar) loginBtnTopbar.textContent = apt().loginBtn || t.loginBtn || 'Connexion';
+  // Titre historique
+  const histTitleEl = document.getElementById('history-title-lbl');
+  if (histTitleEl) histTitleEl.textContent = '🕐 ' + (t.statsLastSearches || 'Dernières recherches');
+  // Auth modal tab
+  const authLoginEl = document.getElementById('auth-login-lbl');
+  if (authLoginEl) authLoginEl.textContent = t.loginBtn || 'Connexion';
   const totalGroupEl = document.getElementById('budget-total-line');
   if (totalGroupEl) totalGroupEl.innerHTML = (t.totalGroup||'Total groupe') + ' : <strong id="budget-total">100 €</strong>';
   // Date section
@@ -2300,7 +2317,8 @@ function getPhotoTheme(type, titre) {
 
 function photoUrl(type, titre) {
   const theme = getPhotoTheme(type, titre);
-  return makePhotoSvg(theme);
+  // Utiliser photo directe si disponible, sinon SVG
+  return PEXELS_DIRECT[theme] || makePhotoSvg(theme);
 }
 // ══════════════════════════════════════════════════════════════
 // PEXELS API — vraies photos dynamiques
@@ -2354,6 +2372,29 @@ const PEXELS_DIRECT = {
   'vide-grenier':  'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche-groupe': 'https://images.pexels.com/photos/1586298/pexels-photo-1586298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche':        'https://images.pexels.com/photos/3731256/pexels-photo-3731256.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'apero':         'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vin':           'https://images.pexels.com/photos/1407846/pexels-photo-1407846.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'chateau':       'https://images.pexels.com/photos/1796730/pexels-photo-1796730.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'parade':        'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'concert':       'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'restaurant':    'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'spa':           'https://images.pexels.com/photos/3997989/pexels-photo-3997989.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'thermes':       'https://images.pexels.com/photos/3997989/pexels-photo-3997989.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'museum':        'https://images.pexels.com/photos/1674049/pexels-photo-1674049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'cinema':        'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'randonnee':     'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'nature':        'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bar':           'https://images.pexels.com/photos/1574200/pexels-photo-1574200.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'escape':        'https://images.pexels.com/photos/5702281/pexels-photo-5702281.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'karting':       'https://images.pexels.com/photos/12801013/pexels-photo-12801013.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bowling':       'https://images.pexels.com/photos/4192/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'zoo':           'https://images.pexels.com/photos/247502/pexels-photo-247502.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'parc':          'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'velo':          'https://images.pexels.com/photos/1149601/pexels-photo-1149601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'kayak':         'https://images.pexels.com/photos/1497585/pexels-photo-1497585.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'food':          'https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'noel':          'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'default':       'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
 };
 
 async function fetchPexelsPhoto(theme) {
@@ -2969,16 +3010,21 @@ function renderResults(activities, location, radius, budget, group, ages) {
         <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
           <button class="activity-done-btn ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'done' : ''}"
             data-done-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
-            onclick="markActivityDone('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">
+            data-encoded-title="${encodeURIComponent(a.titre||'')}"
+            onclick="markActivityDone(this.dataset.encodedTitle, this.dataset.doneId)">
             ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? (apt().alreadyDone||'✓ Fait') : (apt().markDone||'✓ Déjà fait')}
           </button>
           <button class="activity-done-btn" style="background:none;border-color:var(--secondary)"
             data-fav-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
-            title="Favoris"
-            onclick="toggleFavorite('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">
+            data-encoded-title="${encodeURIComponent(a.titre||'')}"
+            onclick="toggleFavorite(this.dataset.encodedTitle, this.dataset.favId)"
+            title="Favoris">
             ${favorites.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '❤️' : '🤍'}
           </button>
-          <button class="rc-note-btn" onclick="openNote('${encodeURIComponent(a.titre||'')}','${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}')">⭐ Noter</button>
+          <button class="rc-note-btn"
+            data-note-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
+            data-encoded-title="${encodeURIComponent(a.titre||'')}"
+            onclick="openNote(this.dataset.encodedTitle, this.dataset.noteId)">⭐ Noter</button>
         </div>` : ''}
         ${currentUser && userPlan === 'pro' && alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '<div class="rc-already-done">✓ Déjà faite — non reproposée pendant 1 an</div>' : ''}
 
@@ -3257,6 +3303,27 @@ const AP_TRANSLATIONS = {
     addEventSubmit:'Soumettre l\'événement',
     addEventSuccess:'✅ Événement soumis ! Il sera vérifié et visible dans les recherches.',
     addEventError:'Erreur lors de la soumission. Réessaie.',
+    // Stats
+    statsDone:'Activités faites', statsAvg:'Note moyenne', statsSearches:'Recherches', statsFavs:'Favoris',
+    statsLastSearches:'Dernières recherches',
+    // Album & activités
+    albumTitle:'Album Souvenirs',
+    favsTitle:'Favoris',
+    doneTitle:'Déjà fait — Album',
+    photoAdd:'Ajouter une photo',
+    photoChange:'Changer la photo',
+    // Programme
+    programTitle:'Mon programme week-end',
+    programSubtitle:'Basé sur tes favoris',
+    programGenerate:'🗓 Générer mon programme week-end',
+    programRegenerate:'🔄 Régénérer le programme',
+    programLoading:'Création de ton programme…',
+    programNeedMore:(n) => `❤️ Ajoute encore ${n} favori(s) pour générer un programme !`,
+    programMinFavs:'Ajoute au moins 2 favoris pour générer un programme !',
+    programError:'Erreur lors de la génération. Réessaie !',
+    // Filtres rapides
+    onlyEphem:'🗓 Que des éphémères',
+    onlyNight:'🌙 Que des nocturnes',
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
@@ -3277,6 +3344,18 @@ const AP_TRANSLATIONS = {
   en: {
     tabStats:'Stats', tabActivities:'Activities', tabSettings:'Settings', tabAdd:'Add',
     addEventTitle:'Add a local event', addEventDesc:'Share a village or neighborhood event with the community.', addEventName:'Event name', addEventNamePh:'Ex: Street party, Village walk…', addEventType:'Type', addEventTypes:['Walk/Hike','Village fete','Flea market','Market','Sports event','Concert/Show','Other'], addEventDate:'Date', addEventLocation:'Exact location', addEventLocationPh:'Street, village, town…', addEventDesc2:'Description (optional)', addEventDesc2Ph:'A few words about the event…', addEventSubmit:'Submit event', addEventSuccess:'✅ Event submitted! It will be verified and visible in searches.', addEventError:'Submission error. Please try again.',
+    statsDone:'Activities done', statsAvg:'Avg rating', statsSearches:'Searches', statsFavs:'Favorites',
+    statsLastSearches:'Recent searches',
+    albumTitle:'Memory Album', favsTitle:'Favorites', doneTitle:'Done — Album',
+    photoAdd:'Add a photo', photoChange:'Change photo',
+    programTitle:'My weekend program', programSubtitle:'Based on your favorites',
+    programGenerate:'🗓 Generate my weekend program',
+    programRegenerate:'🔄 Regenerate program',
+    programLoading:'Creating your program…',
+    programNeedMore:(n) => `❤️ Add ${n} more favorite(s) to generate a program!`,
+    programMinFavs:'Add at least 2 favorites to generate a program!',
+    programError:'Generation error. Please try again!',
+    onlyEphem:'🗓 Ephemeral only', onlyNight:'🌙 Nightlife only',
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected',
     proTitle:'Activity Finder Pro', proPrice:'€2.99', proPerMonth:'/month',
@@ -3297,6 +3376,18 @@ const AP_TRANSLATIONS = {
   es: {
     tabStats:'Stats', tabActivities:'Actividades', tabSettings:'Ajustes', tabAdd:'Añadir',
     addEventTitle:'Añadir evento local', addEventDesc:'Comparte un evento de tu pueblo o barrio.', addEventName:'Nombre del evento', addEventNamePh:'Ej: Fiesta de vecinos, Marcha popular…', addEventType:'Tipo', addEventTypes:['Marcha/Senderismo','Fiesta de pueblo','Mercadillo','Mercado','Evento deportivo','Concierto/Espectáculo','Otro'], addEventDate:'Fecha', addEventLocation:'Lugar exacto', addEventLocationPh:'Calle, pueblo, municipio…', addEventDesc2:'Descripción (opcional)', addEventDesc2Ph:'Unas palabras sobre el evento…', addEventSubmit:'Enviar evento', addEventSuccess:'✅ ¡Evento enviado! Será verificado y visible en las búsquedas.', addEventError:'Error al enviar. Inténtalo de nuevo.',
+    statsDone:'Actividades hechas', statsAvg:'Nota media', statsSearches:'Búsquedas', statsFavs:'Favoritos',
+    statsLastSearches:'Últimas búsquedas',
+    albumTitle:'Álbum recuerdos', favsTitle:'Favoritos', doneTitle:'Hecho — Álbum',
+    photoAdd:'Añadir foto', photoChange:'Cambiar foto',
+    programTitle:'Mi programa fin de semana', programSubtitle:'Basado en tus favoritos',
+    programGenerate:'🗓 Generar mi programa',
+    programRegenerate:'🔄 Regenerar programa',
+    programLoading:'Creando tu programa…',
+    programNeedMore:(n) => `❤️ Añade ${n} favorito(s) más para generar un programa!`,
+    programMinFavs:'Añade al menos 2 favoritos para generar un programa!',
+    programError:'Error de generación. ¡Inténtalo de nuevo!',
+    onlyEphem:'🗓 Solo efímeros', onlyNight:'🌙 Solo nocturno',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mes',
@@ -3317,6 +3408,18 @@ const AP_TRANSLATIONS = {
   de: {
     tabStats:'Stats', tabActivities:'Aktivitäten', tabSettings:'Einstellungen', tabAdd:'Hinzufügen',
     addEventTitle:'Lokales Event hinzufügen', addEventDesc:'Teile ein Dorf- oder Nachbarschaftsevent.', addEventName:'Eventname', addEventNamePh:'z.B. Dorffest, Wanderung…', addEventType:'Typ', addEventTypes:['Wanderung','Dorffest','Flohmarkt','Markt','Sportevent','Konzert/Show','Sonstiges'], addEventDate:'Datum', addEventLocation:'Genauer Ort', addEventLocationPh:'Straße, Dorf, Gemeinde…', addEventDesc2:'Beschreibung (optional)', addEventDesc2Ph:'Kurze Beschreibung…', addEventSubmit:'Event einreichen', addEventSuccess:'✅ Event eingereicht! Es wird geprüft und in Suchen sichtbar.', addEventError:'Fehler beim Einreichen. Bitte erneut versuchen.',
+    statsDone:'Erledigte Aktivitäten', statsAvg:'Ø Bewertung', statsSearches:'Suchen', statsFavs:'Favoriten',
+    statsLastSearches:'Letzte Suchen',
+    albumTitle:'Erinnerungsalbum', favsTitle:'Favoriten', doneTitle:'Erledigt — Album',
+    photoAdd:'Foto hinzufügen', photoChange:'Foto ändern',
+    programTitle:'Mein Wochenendprogramm', programSubtitle:'Basierend auf deinen Favoriten',
+    programGenerate:'🗓 Wochenendprogramm erstellen',
+    programRegenerate:'🔄 Programm neu erstellen',
+    programLoading:'Programm wird erstellt…',
+    programNeedMore:(n) => `❤️ Füge noch ${n} Favorit(en) hinzu!`,
+    programMinFavs:'Füge mindestens 2 Favoriten hinzu!',
+    programError:'Fehler bei der Erstellung. Bitte erneut versuchen!',
+    onlyEphem:'🗓 Nur kurzfristige Events', onlyNight:'🌙 Nur Nachtleben',
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
@@ -3337,6 +3440,18 @@ const AP_TRANSLATIONS = {
   it: {
     tabStats:'Stats', tabActivities:'Attività', tabSettings:'Impostazioni', tabAdd:'Aggiungi',
     addEventTitle:'Aggiungi evento locale', addEventDesc:'Condividi un evento del tuo paese o quartiere.', addEventName:'Nome evento', addEventNamePh:'Es: Festa di quartiere, Camminata…', addEventType:'Tipo', addEventTypes:['Camminata/Escursione','Festa di paese','Mercatino','Mercato','Evento sportivo','Concerto/Spettacolo','Altro'], addEventDate:'Data', addEventLocation:'Luogo esatto', addEventLocationPh:'Via, paese, comune…', addEventDesc2:'Descrizione (opzionale)', addEventDesc2Ph:'Poche parole sull evento…', addEventSubmit:'Invia evento', addEventSuccess:'✅ Evento inviato! Sarà verificato e visibile nelle ricerche.', addEventError:'Errore invio. Riprova.',
+    statsDone:'Attività fatte', statsAvg:'Voto medio', statsSearches:'Ricerche', statsFavs:'Preferiti',
+    statsLastSearches:'Ultime ricerche',
+    albumTitle:'Album ricordi', favsTitle:'Preferiti', doneTitle:'Fatto — Album',
+    photoAdd:'Aggiungi foto', photoChange:'Cambia foto',
+    programTitle:'Il mio programma weekend', programSubtitle:'Basato sui tuoi preferiti',
+    programGenerate:'🗓 Genera il mio programma',
+    programRegenerate:'🔄 Rigenera programma',
+    programLoading:'Creazione del programma…',
+    programNeedMore:(n) => `❤️ Aggiungi ancora ${n} preferito/i!`,
+    programMinFavs:'Aggiungi almeno 2 preferiti per generare un programma!',
+    programError:'Errore di generazione. Riprova!',
+    onlyEphem:'🗓 Solo effimeri', onlyNight:'🌙 Solo vita notturna',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connesso',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mese',
@@ -3357,6 +3472,18 @@ const AP_TRANSLATIONS = {
   pt: {
     tabStats:'Stats', tabActivities:'Atividades', tabSettings:'Definições', tabAdd:'Adicionar',
     addEventTitle:'Adicionar evento local', addEventDesc:'Partilha um evento da tua aldeia ou bairro.', addEventName:'Nome do evento', addEventNamePh:'Ex: Festa de vizinhos, Caminhada…', addEventType:'Tipo', addEventTypes:['Caminhada/Passeio','Festa de aldeia','Feira/Alfarrabista','Mercado','Evento desportivo','Concerto/Espetáculo','Outro'], addEventDate:'Data', addEventLocation:'Local exato', addEventLocationPh:'Rua, aldeia, concelho…', addEventDesc2:'Descrição (opcional)', addEventDesc2Ph:'Algumas palavras sobre o evento…', addEventSubmit:'Submeter evento', addEventSuccess:'✅ Evento submetido! Será verificado e visível nas pesquisas.', addEventError:'Erro ao submeter. Tenta novamente.',
+    statsDone:'Atividades feitas', statsAvg:'Nota média', statsSearches:'Pesquisas', statsFavs:'Favoritos',
+    statsLastSearches:'Últimas pesquisas',
+    albumTitle:'Álbum memórias', favsTitle:'Favoritos', doneTitle:'Feito — Álbum',
+    photoAdd:'Adicionar foto', photoChange:'Mudar foto',
+    programTitle:'O meu programa fim de semana', programSubtitle:'Baseado nos teus favoritos',
+    programGenerate:'🗓 Gerar o meu programa',
+    programRegenerate:'🔄 Regenerar programa',
+    programLoading:'A criar o teu programa…',
+    programNeedMore:(n) => `❤️ Adiciona mais ${n} favorito(s)!`,
+    programMinFavs:'Adiciona pelo menos 2 favoritos para gerar um programa!',
+    programError:'Erro de geração. Tenta novamente!',
+    onlyEphem:'🗓 Só efémeros', onlyNight:'🌙 Só vida noturna',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Não conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mês',
@@ -3489,34 +3616,35 @@ async function renderAccountStats() {
   const totalSearches = searches.length;
   const totalFavs = favs.length;
 
+  const t2 = apt();
   el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
       <div style="background:var(--primary-light);border-radius:12px;padding:14px;text-align:center">
         <div style="font-size:2rem;font-weight:800;color:var(--primary);font-family:'Fraunces',serif">${totalDone}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Activités faites</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${t2.statsDone||'Activités faites'}</div>
       </div>
       <div style="background:var(--secondary-light);border-radius:12px;padding:14px;text-align:center">
         <div style="font-size:2rem;font-weight:800;color:var(--secondary);font-family:'Fraunces',serif">${avgStars}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Note moyenne</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${t2.statsAvg||'Note moyenne'}</div>
       </div>
       <div style="background:var(--bg2);border-radius:12px;padding:14px;text-align:center">
         <div style="font-size:2rem;font-weight:800;color:var(--text);font-family:'Fraunces',serif">${totalSearches}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Recherches</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${t2.statsSearches||'Recherches'}</div>
       </div>
       <div style="background:var(--bg2);border-radius:12px;padding:14px;text-align:center">
         <div style="font-size:2rem;font-weight:800;color:var(--secondary);font-family:'Fraunces',serif">❤️ ${totalFavs}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Favoris</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${t2.statsFavs||'Favoris'}</div>
       </div>
     </div>
     ${searches.length ? `
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🕐 Dernières recherches</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🕐 ${t2.statsLastSearches||'Dernières recherches'}</div>
     ${searches.slice(0,5).map(s=>`
       <div class="history-item" onclick="reuseSearch('${s.location}','${s.group}',${s.budget});closeAccountPanel()">
         <div class="history-item-loc">📍 ${s.location}</div>
         <div class="history-item-meta">${s.group} · ${s.budget}${currentCurrency.symbol} · ${new Date(s.created_at).toLocaleDateString()}</div>
       </div>`).join('')}` : ''}
     <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:16px">
-      🚪 ${t.signOutBtn||'Déconnexion'}
+      🚪 ${t2.signOutBtn||'Déconnexion'}
     </button>`;
 }
 
@@ -3527,7 +3655,7 @@ function openWeekendProgram() {
   const modal = document.getElementById('weekend-program-modal');
   const body = document.getElementById('weekend-program-body');
   modal.classList.add('open');
-  body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">Création de ton programme…</p></div>`;
+  body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création de ton programme…'}</p></div>`;
   generateWeekendProgram();
 }
 
@@ -3541,7 +3669,7 @@ async function generateWeekendProgram() {
   const body = document.getElementById('weekend-program-body');
 
   if (favs.length < 2) {
-    body.innerHTML = '<p style="color:var(--muted);padding:20px;text-align:center">Ajoute au moins 2 favoris pour générer un programme !</p>';
+    body.innerHTML = `<p style="color:var(--muted);padding:20px;text-align:center">${apt().programMinFavs||'Ajoute au moins 2 favoris !'}</p>`;
     return;
   }
 
@@ -3591,8 +3719,8 @@ Réponds UNIQUEMENT en JSON valide:
     const program = JSON.parse(match[0]);
     renderWeekendProgram(program);
   } catch(e) {
-    body.innerHTML = `<p style="color:#C0392B;padding:20px;text-align:center">Erreur lors de la génération. Réessaie !</p>
-    <button onclick="generateWeekendProgram()" class="generate-program-btn">🔄 Réessayer</button>`;
+    body.innerHTML = `<p style="color:#C0392B;padding:20px;text-align:center">${apt().programError||'Erreur lors de la génération.'}</p>
+    <button onclick="generateWeekendProgram()" class="generate-program-btn">🔄 ${apt().programRegenerate||'Régénérer'}</button>`;
   }
 }
 
@@ -3644,17 +3772,26 @@ function renderWeekendProgram(program) {
     html += '</div>';
   }
 
-  html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">🔄 Régénérer le programme</button>`;
+  html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">${apt().programRegenerate||'🔄 Régénérer le programme'}</button>`;
   body.innerHTML = html;
 }
 
 async function renderAccountActivities() {
-  const t = apt();
+  const ta = apt();
   const el = document.getElementById('ap-activities-list');
+  if (!el) return;
+
+  // Toujours recharger depuis localStorage pour beta
   const notes = (_sb && currentUser?.id !== 'beta-user')
     ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false})).data || [])
     : (localLoad('notes') || []);
-  const favs = localLoad('favorites') || [];
+
+  // Recharger les favoris depuis localStorage ET depuis la variable en mémoire
+  const favsRaw = localLoad('favorites') || [];
+  // Sync la variable favorites en mémoire
+  favorites = new Set(favsRaw.map(f => f.activity_id));
+  const favs = favsRaw;
+
   const photos = localLoad('activity_photos') || {};
 
   // Si on a des photos → afficher la grille album EN PREMIER
@@ -3662,7 +3799,7 @@ async function renderAccountActivities() {
   let html = '';
 
   if (photoEntries.length) {
-    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📸 Album Souvenirs</div>`;
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📸 ${ta.albumTitle||'Album Souvenirs'}</div>`;
     html += `<div class="photo-grid">`;
     html += photoEntries.map(([actId, photoSrc]) => {
       const note = notes.find(n => n.activity_id === actId);
@@ -3674,19 +3811,19 @@ async function renderAccountActivities() {
     html += `</div><div style="height:16px"></div>`;
   }
 
-  // Bouton programme week-end si assez de favoris
   if (favs.length >= 2) {
     html += `<button class="generate-program-btn" onclick="openWeekendProgram()">
-      🗓 Générer mon programme week-end
-      <span style="font-size:11px;opacity:0.8">(${favs.length} favoris)</span>
+      ${ta.programGenerate||'🗓 Générer mon programme week-end'}
+      <span style="font-size:11px;opacity:0.8">(${favs.length} ❤️)</span>
     </button><div style="height:16px"></div>`;
   } else if (favs.length > 0) {
-    html += `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:12px">❤️ Ajoute encore ${2-favs.length} favori(s) pour générer un programme week-end !</div>`;
+    const msg = ta.programNeedMore ? ta.programNeedMore(2-favs.length) : `❤️ Ajoute encore ${2-favs.length} favori(s) !`;
+    html += `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:12px">${msg}</div>`;
   }
 
   // Favoris
   if (favs.length) {
-    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">❤️ Favoris</div>`;
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">❤️ ${ta.favsTitle||'Favoris'}</div>`;
     html += favs.map(f => `
       <div class="activity-item" style="display:flex;gap:10px;align-items:flex-start">
         <div style="flex:1">
@@ -3699,7 +3836,7 @@ async function renderAccountActivities() {
 
   // Activités faites
   if (notes.length) {
-    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px">✓ Déjà fait — Album</div>`;
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px">✓ ${ta.doneTitle||'Déjà fait — Album'}</div>`;
     html += notes.map(n => {
       const photo = photos[n.activity_id];
       return `
@@ -3710,7 +3847,7 @@ async function renderAccountActivities() {
         ${n.note ? `<div class="activity-item-meta" style="font-style:italic">"${n.note}"</div>` : ''}
         <div class="activity-item-meta">${new Date(n.created_at).toLocaleDateString()}</div>
         <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--primary);cursor:pointer;background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:4px 10px">
-          📷 ${photo ? 'Changer la photo' : 'Ajouter une photo'}
+          📷 ${photo ? (ta.photoChange||'Changer la photo') : (ta.photoAdd||'Ajouter une photo')}
           <input type="file" accept="image/*" style="display:none" onchange="uploadActivityPhoto(this,'${n.activity_id}')">
         </label>
       </div>`;
@@ -3850,26 +3987,25 @@ Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}
 
 async function markActivityDone(titleEncoded, activityId) {
   if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
-  const btn = document.querySelector(`[data-done-id="${activityId}"]`);
-  
-  if (alreadyDoneIds.has(activityId)) {
-    // Annuler "déjà fait"
-    alreadyDoneIds.delete(activityId);
-    if (btn) { btn.textContent = apt().markDone||'✓ Déjà fait'; btn.classList.remove('done'); btn.disabled = false; }
+  const id = activityId || '';
+  const btn = document.querySelector(`[data-done-id="${id}"]`);
+
+  if (alreadyDoneIds.has(id)) {
+    alreadyDoneIds.delete(id);
+    if (btn) { btn.textContent = apt().markDone||'✓ Déjà fait'; btn.classList.remove('done'); }
     if (_sb && currentUser.id !== 'beta-user') {
-      await _sb.from('notes').delete().eq('user_id', currentUser.id).eq('activity_id', activityId);
+      await _sb.from('notes').delete().eq('user_id', currentUser.id).eq('activity_id', id);
     } else {
-      const notes = (localLoad('notes')||[]).filter(n=>n.activity_id!==activityId);
+      const notes = (localLoad('notes')||[]).filter(n=>n.activity_id!==id);
       localSave('notes', notes);
     }
   } else {
-    // Marquer comme fait
-    alreadyDoneIds.add(activityId);
+    alreadyDoneIds.add(id);
     if (btn) { btn.textContent = apt().alreadyDone||'✓ Fait'; btn.classList.add('done'); }
     const doneData = {
       user_id: currentUser.id,
-      activity_id: activityId,
-      activity_title: decodeURIComponent(titleEncoded),
+      activity_id: id,
+      activity_title: decodeURIComponent(titleEncoded||''),
       stars: 0, done: true,
       created_at: new Date().toISOString()
     };
@@ -4021,16 +4157,18 @@ function initFavorites() {
 
 function toggleFavorite(titleEncoded, activityId) {
   if (userPlan !== 'pro') { openUpgrade(); return; }
-  const btn = document.querySelector(`[data-fav-id="${activityId}"]`);
-  if (favorites.has(activityId)) {
-    favorites.delete(activityId);
-    if (btn) { btn.textContent = '🤍'; btn.title = 'Ajouter aux favoris'; }
-    const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==activityId);
+  // Support appel depuis dataset
+  const id = activityId || '';
+  const btn = document.querySelector(`[data-fav-id="${id}"]`);
+  if (favorites.has(id)) {
+    favorites.delete(id);
+    if (btn) btn.textContent = '🤍';
+    const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==id);
     localSave('favorites', saved);
   } else {
-    favorites.add(activityId);
-    if (btn) { btn.textContent = '❤️'; btn.title = 'Retirer des favoris'; }
-    localPush('favorites', { activity_id: activityId, activity_title: decodeURIComponent(titleEncoded), saved_at: new Date().toISOString() });
+    favorites.add(id);
+    if (btn) btn.textContent = '❤️';
+    localPush('favorites', { activity_id: id, activity_title: decodeURIComponent(titleEncoded||''), saved_at: new Date().toISOString() });
   }
 }
 
