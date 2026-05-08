@@ -1113,6 +1113,16 @@ html { -webkit-text-size-adjust: 100%; }
           <button class="wp-dur-btn" data-dur="journee" onclick="selectProgramDuration(this)">☀️ Journée</button>
           <button class="wp-dur-btn" data-dur="weekend" onclick="selectProgramDuration(this)">📅 Week-end</button>
         </div>
+        <!-- Sélecteur jour -->
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="wp-day-btns">
+          <button class="wp-dur-btn active" data-day="auto" onclick="selectProgramDay(this)" id="wp-day-auto">🗓 Ce week-end</button>
+          <button class="wp-dur-btn" data-day="today" onclick="selectProgramDay(this)" id="wp-day-today">Aujourd'hui</button>
+          <button class="wp-dur-btn" data-day="tomorrow" onclick="selectProgramDay(this)" id="wp-day-tomorrow">Demain</button>
+          <button class="wp-dur-btn" data-day="custom" onclick="selectProgramDay(this)" id="wp-day-custom">📅 Date</button>
+        </div>
+        <div id="wp-day-custom-input" style="display:none;margin-top:6px">
+          <input type="date" id="wp-custom-date" style="padding:5px 10px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;outline:none" onchange="generateWeekendProgram()">
+        </div>
       </div>
       <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0;align-self:flex-start">×</button>
     </div>
@@ -1214,6 +1224,8 @@ const LANGS = {
     noEphemExtra:'',
     nightExtra:`\n- Inclure 1 à 2 SORTIES NOCTURNES adaptées au groupe (bars tendance, concerts, clubs, restaurants ouverts tard, soirées thématiques…). "nocturne":true.`,
     noNightExtra:'',
+    onlyEphem:'🗓 Que des éphémères',
+    onlyNight:'🌙 Que des nocturnes',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
       `Tu es un expert en loisirs et activités de week-end. Génère exactement 6 idées d'activités VARIÉES.\n\nCONTEXTE:\n- Groupe: ${group}\n- ${agesStr}${ageStr}\n- Budget: ${budget}\n- Lieu: ${location}${radius==='0' ? ' (dans la ville uniquement)' : ', rayon ' + radius + 'km'}\n- ${moods}\n\nRÈGLES STRICTES:\n- VÉRIFIE via web search que chaque lieu existe VRAIMENT.\n- Pour les éphémères: vérifie la date EXACTE sur le web. Ne jamais inventer une date.\n- Si tu n'es pas sûr à 100%, indique "à vérifier".\n- Adapte CHAQUE activité aux âges.\n- VARIES ABSOLUMENT les types: pense escape game, zoo, aquarium, mini-golf, laser game, accrobranche, karting, bowling, spa, musée, château, cinéma, restaurant gastronomique, marché, concert, atelier créatif, randonnée, vélo, kayak, trampoline. Ne propose pas toujours les mêmes activités classiques.${eph}${night}\n\nJSON valide uniquement, sans backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Gastronomie|Bien-être|Divertissement|Éphémère|Nocturne","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases concrètes avec lieux réels vérifiés.","pourquoi_adapte":"1 phrase pour CE groupe et CES âges.","infos_pratiques":["...","...","..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
@@ -1264,6 +1276,8 @@ const LANGS = {
     noEphemExtra:'',
     nightExtra:`\n- Include 1-2 NIGHTLIFE options suited to the group. "nocturne":true.`,
     noNightExtra:'',
+    onlyEphem:'🗓 Ephemeral only',
+    onlyNight:'🌙 Nightlife only',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
       `You are a leisure expert. Generate exactly 6 weekend activity ideas.\n\nCONTEXT:\n- Group: ${group}\n- ${agesStr}${ageStr}\n- Budget: €${budget}\n- Location: ${location}${radius==='0' ? ' (city only)' : ', ' + radius + 'km radius'}\n- ${moods}\n\nSTRICT ANTI-HALLUCINATION RULES:\n- Use web search to VERIFY each venue exists and offers the activities you mention (do NOT say a cinema has a bowling alley if it doesn't).\n- For ephemeral events: verify the EXACT date via web search before including it. Never invent a date.\n- If unsure about any fact, omit it or write "to be confirmed".\n- Adapt each activity to the ages. Vary types.${eph}${night}\n\nOnly valid JSON, no backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Food|Wellness|Entertainment|Ephemeral|Nightlife","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 concrete sentences with verified real places.","pourquoi_adapte":"1 sentence for THIS group and ages.","infos_pratiques":["..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
@@ -1314,6 +1328,8 @@ const LANGS = {
     noEphemExtra:'',
     nightExtra:`\n- Incluir 1-2 opciones de vida nocturna. "nocturne":true.`,
     noNightExtra:'',
+    onlyEphem:'🗓 Solo efímeros',
+    onlyNight:'🌙 Solo nocturno',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
       `Eres experto en ocio. Genera exactamente 6 actividades para el fin de semana.\n\nCONTEXTO:\n- Grupo:${group}\n- ${agesStr}${ageStr}\n- Presupuesto:€${budget}\n- Lugar:${location}${radius==='0' ? ' (solo ciudad)' : ', radio ' + radius + 'km'}\n- ${moods}\n\nREGLAS ANTI-ALUCINACIÓN:\n- Verifica con búsqueda web que cada lugar existe y ofrece las actividades mencionadas.\n- Para eventos efímeros: verifica la fecha EXACTA antes de incluirla. Nunca inventes una fecha.\n- Adapta cada actividad a las edades. Varía los tipos.${eph}${night}\n\nSolo JSON válido sin backticks:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 frases con lugares verificados.","pourquoi_adapte":"1 frase.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
@@ -1364,6 +1380,8 @@ const LANGS = {
     noEphemExtra:'',
     nightExtra:`\n- 1-2 Nachtleben-Optionen. "nocturne":true.`,
     noNightExtra:'',
+    onlyEphem:'🗓 Nur kurzfristige Events',
+    onlyNight:'🌙 Nur Nachtleben',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
       `Du bist Freizeitexperte. Generiere genau 6 Wochenendaktivitäten.\n\nKONTEXT:\n- Gruppe:${group}\n- ${agesStr}${ageStr}\n- Budget:€${budget}\n- Standort:${location}${radius==='0' ? ' (nur Stadt)' : ', Radius ' + radius + 'km'}\n- ${moods}\n\nSTRIKTE ANTI-HALLUZINATIONS-REGELN:\n- Prüfe per Websuche, dass jeder Ort existiert und die genannten Aktivitäten tatsächlich anbietet.\n- Bei kurzfristigen Events: verifiziere das GENAUE Datum per Websuche. Niemals ein Datum erfinden.\n- Passe jede Aktivität an die Altersgruppen an. Variiere die Typen.${eph}${night}\n\nNur gültiges JSON ohne Backticks:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 Sätze mit verifizierten Orten.","pourquoi_adapte":"1 Satz.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
@@ -1414,6 +1432,8 @@ const LANGS = {
     noEphemExtra:'',
     nightExtra:`\n- Includi 1-2 opzioni di vita notturna. "nocturne":true.`,
     noNightExtra:'',
+    onlyEphem:'🗓 Solo effimeri',
+    onlyNight:'🌙 Solo vita notturna',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
       `Sei un esperto di attività ricreative. Genera esattamente 6 idee per il weekend.\n\nCONTESTO:\n- Gruppo:${group}\n- ${agesStr}${ageStr}\n- Budget:€${budget}\n- Posizione:${location}${radius==='0' ? ' (solo città)' : ', raggio ' + radius + 'km'}\n- ${moods}\n\nREGOLE ANTI-ALLUCINAZIONE:\n- Verifica tramite ricerca web che ogni luogo esista e offra le attività menzionate.\n- Per eventi effimeri: verifica la data ESATTA prima di includerla. Non inventare mai una data.\n- Adatta ogni attività alle età. Varia i tipi.${eph}${night}\n\nSolo JSON valido:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 frasi con luoghi verificati.","pourquoi_adapte":"1 frase.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
@@ -1464,6 +1484,8 @@ const LANGS = {
     noEphemExtra:'',
     nightExtra:`\n- Incluir 1-2 opções de vida noturna. "nocturne":true.`,
     noNightExtra:'',
+    onlyEphem:'🗓 Só efémeros',
+    onlyNight:'🌙 Só vida noturna',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
       `És especialista em lazer. Gera exatamente 6 atividades para o fim de semana.\n\nCONTEXTO:\n- Grupo:${group}\n- ${agesStr}${ageStr}\n- Orçamento:€${budget}\n- Localização:${location}${radius==='0' ? ' (apenas cidade)' : ', raio ' + radius + 'km'}\n- ${moods}\n\nREGRAS ANTI-ALUCINAÇÃO:\n- Verifica via pesquisa web que cada local existe e oferece as atividades mencionadas.\n- Para eventos efémeros: verifica a data EXATA antes de a incluir. Nunca inventar uma data.\n- Adapta cada atividade às idades. Varia os tipos.${eph}${night}\n\nSó JSON válido sem backticks:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 frases com locais verificados.","pourquoi_adapte":"1 frase.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
@@ -2340,8 +2362,9 @@ function getPhotoTheme(type, titre) {
 
 function photoUrl(type, titre) {
   const theme = getPhotoTheme(type, titre);
-  // Utiliser photo directe si disponible, sinon SVG
-  return PEXELS_DIRECT[theme] || makePhotoSvg(theme);
+  // Toujours utiliser le SVG thématique comme source initiale (100% fiable, pas de requête externe)
+  // Les vraies photos (Google Places / Pexels) sont chargées en async après le rendu
+  return makePhotoSvg(theme);
 }
 // ══════════════════════════════════════════════════════════════
 // PEXELS API — vraies photos dynamiques
@@ -2450,9 +2473,27 @@ async function fetchPexelsPhoto(theme) {
 
 async function loadPexelsPhoto(imgEl, type, titre) {
   const theme = getPhotoTheme(type, titre);
+  // D'abord essayer l'URL directe garantie
+  const directUrl = PEXELS_DIRECT[theme];
+  if (directUrl) {
+    const testImg = new Image();
+    testImg.onload = () => { imgEl.src = directUrl; };
+    testImg.onerror = () => {
+      // URL directe KO (403 hotlinking) → garder le SVG thématique
+      imgEl.src = makePhotoSvg(theme);
+    };
+    testImg.src = directUrl;
+    return;
+  }
+  // Sinon tenter l'API Pexels
   const url = await fetchPexelsPhoto(theme);
-  if (url) imgEl.src = url;
-  // Si pas d'URL Pexels → le SVG reste affiché, c'est le fallback
+  if (url) {
+    const testImg = new Image();
+    testImg.onload = () => { imgEl.src = url; };
+    testImg.onerror = () => { imgEl.src = makePhotoSvg(theme); };
+    testImg.src = url;
+  }
+  // Si rien → SVG thématique déjà en place, ne rien faire
 }
 
 
@@ -2940,16 +2981,34 @@ async function runSearch(fromMap) {
       else window._pendingMarkers = activities;
     }, 500);
 
-    // Photos Google Places — essai depuis cache local, puis API si besoin
+    // Photos : charger selon le type
     setTimeout(() => {
       document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
         const placeId = img.dataset.placeid;
-        if (!placeId || placeId === 'null' || placeId === '') {
-          // Pas de placeId → charger via Pexels
-          loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+        const isEphemere = img.dataset.ephemere === '1';
+        const type = img.dataset.type;
+        const titre = img.dataset.titre;
+
+        // Pour les éphémères : TOUJOURS forcer le thème SVG/Pexels, jamais Google Places
+        // (Google Places retournerait la photo du bâtiment, pas de l'événement)
+        if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
+          // Forcer la photo thématique SVG (100% fiable, pas de dépendance externe)
+          const theme = getPhotoTheme(type, titre);
+          const svgUrl = makePhotoSvg(theme);
+          // Garder la src actuelle si c'est déjà un SVG ou Pexels valide
+          // Sinon forcer le SVG
+          if (!img.src || img.src.includes('nike') || img.src.includes('shoe') ||
+              img.src.startsWith('blob:') || img.naturalWidth === 0) {
+            img.src = svgUrl;
+          }
+          // Tenter Pexels en arrière-plan uniquement si pas d'ephémère
+          if (!isEphemere) {
+            loadPexelsPhoto(img, type, titre);
+          }
           return;
         }
-        // 1. Chercher dans les données Google Places déjà récupérées
+
+        // Activité fixe avec placeId Google : tenter Google Places photo
         const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
         if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
           const photoName = gPlace.photos[0].name;
@@ -2957,14 +3016,13 @@ async function runSearch(fromMap) {
             const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
             const testImg = new Image();
             testImg.onload = () => { img.src = photoUrlG; };
-            testImg.onerror = () => { loadGooglePhoto(img, placeId); };
+            testImg.onerror = () => { loadPexelsPhoto(img, type, titre); };
             testImg.src = photoUrlG;
           } else {
-            loadGooglePhoto(img, placeId);
+            loadPexelsPhoto(img, type, titre);
           }
         } else {
-          // Pas dans le cache local → essayer Google puis Pexels
-          loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
+          loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, type, titre));
         }
       });
     }, 300);
@@ -2996,7 +3054,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
 
     return `<div class="rc-card" style="animation-delay:${idx*0.08}s">
       <div class="rc-photo-wrap">
-        <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" loading="lazy" data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}" data-placeid="${a.placeId||''}"
+        <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" loading="lazy" data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}" data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}"
           onerror="this.style.display='none';this.parentElement.classList.add('rc-photo-fallback')">
         <div class="rc-photo-overlay"></div>
         <div class="rc-photo-top">
@@ -3675,6 +3733,20 @@ async function renderAccountStats() {
 // PROGRAMME (soirée / journée / week-end)
 // ══════════════════════════════════════════════════════════════
 let _programDuration = 'soiree'; // valeur par défaut
+let _programDay = 'auto'; // auto | today | tomorrow | custom
+
+function selectProgramDay(btn) {
+  document.querySelectorAll('#wp-day-btns .wp-dur-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _programDay = btn.dataset.day;
+  const customWrap = document.getElementById('wp-day-custom-input');
+  if (customWrap) customWrap.style.display = _programDay === 'custom' ? 'block' : 'none';
+  if (_programDay !== 'custom') {
+    const body = document.getElementById('weekend-program-body');
+    body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création du programme…'}</p></div>`;
+    generateWeekendProgram();
+  }
+}
 
 function selectProgramDuration(btn) {
   document.querySelectorAll('.wp-dur-btn').forEach(b => b.classList.remove('active'));
@@ -3695,9 +3767,22 @@ function openWeekendProgram() {
   const body = document.getElementById('weekend-program-body');
   // Reset durée à soirée par défaut
   _programDuration = 'soiree';
+  _programDay = 'auto';
   document.querySelectorAll('.wp-dur-btn').forEach(b => b.classList.remove('active'));
   const defaultBtn = document.querySelector('.wp-dur-btn[data-dur="soiree"]');
   if (defaultBtn) defaultBtn.classList.add('active');
+  const defaultDayBtn = document.querySelector('#wp-day-btns .wp-dur-btn[data-day="auto"]');
+  if (defaultDayBtn) defaultDayBtn.classList.add('active');
+  const customWrap = document.getElementById('wp-day-custom-input');
+  if (customWrap) customWrap.style.display = 'none';
+  // Traduire les boutons jour selon la langue
+  const todayD = new Date();
+  const tomD = new Date(todayD); tomD.setDate(todayD.getDate() + 1);
+  const fmtShort = d => d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { weekday:'short', day:'numeric' });
+  const wpDayToday = document.getElementById('wp-day-today');
+  const wpDayTomorrow = document.getElementById('wp-day-tomorrow');
+  if (wpDayToday) wpDayToday.textContent = fmtShort(todayD);
+  if (wpDayTomorrow) wpDayTomorrow.textContent = fmtShort(tomD);
   const wpTitle = document.getElementById('wp-title');
   if (wpTitle) wpTitle.textContent = '🌙 Mon programme soirée';
   modal.classList.add('open');
@@ -3727,6 +3812,28 @@ async function generateWeekendProgram() {
   const langNames = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
   const langInstr = `Réponds en ${langNames[lang]||'français'}.`;
 
+  // Calculer la date selon le choix
+  const today = new Date();
+  const fmt = d => d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  let dateLabel = '';
+  const dayMode = _programDay || 'auto';
+  if (dayMode === 'today') {
+    dateLabel = fmt(today);
+  } else if (dayMode === 'tomorrow') {
+    const tom = new Date(today); tom.setDate(tom.getDate() + 1);
+    dateLabel = fmt(tom);
+  } else if (dayMode === 'custom') {
+    const customVal = document.getElementById('wp-custom-date')?.value;
+    if (customVal) dateLabel = fmt(new Date(customVal + 'T12:00:00'));
+  } else {
+    // auto = ce week-end
+    const day = today.getDay();
+    const sat = new Date(today); sat.setDate(today.getDate() + ((6 - day + 7) % 7 || 7));
+    const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
+    dateLabel = fmt(sat) + ' et ' + fmt(sun);
+  }
+  const dateInstr = dateLabel ? `\nDATE: Le programme est prévu pour le ${dateLabel}.` : '';
+
   // Prompt adapté selon la durée
   const dur = _programDuration || 'soiree';
   let durInstr = '';
@@ -3743,7 +3850,7 @@ async function generateWeekendProgram() {
     jsonStructure = `{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite"}]}`;
   }
 
-  const prompt = `${langInstr}
+  const prompt = `${langInstr}${dateInstr}
 Tu es un expert en organisation de sorties. L'utilisateur a sélectionné ces activités favorites:
 ${favDetails}
 
