@@ -7,6 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#5C7A5A">
 <title>Activity Finder</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -630,6 +632,7 @@ html { -webkit-text-size-adjust: 100%; }
 .generate-program-btn { width:100%; padding:13px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:12px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
 .generate-program-btn:hover { opacity:0.9; transform:translateY(-1px); }
 .generate-program-btn:disabled { opacity:0.5; cursor:default; transform:none; }
+.beta-screen {
   display:none; position:fixed; inset:0;
   background:linear-gradient(160deg,#2E4A2C 0%,#4A7248 50%,#7A9E78 100%);
   z-index:99999; align-items:center; justify-content:center;
@@ -769,11 +772,8 @@ html { -webkit-text-size-adjust: 100%; }
     <span style="font-size:13px;color:var(--muted)">Espace publicitaire · Passe en Pro pour supprimer les pubs</span>
   </div>
 </div>
-<!-- History (pro users) -->
-<div class="history-panel" id="history-panel">
-  <div class="history-title" id="history-title-lbl">🕐 Dernières recherches</div>
-  <div class="history-list" id="history-list"></div>
-</div>
+<!-- History (pro users) — affiché uniquement dans le panneau compte -->
+<div class="history-panel" id="history-panel" style="display:none!important"></div>
 
 <div id="form-view">
 <main class="form-wrap">
@@ -2369,7 +2369,7 @@ const PEXELS_QUERIES = {
 // IDs Pexels garantis pour les thèmes critiques (évite les résultats aléatoires)
 const PEXELS_DIRECT = {
   'brocante':      'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'vide-grenier':  'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vide-grenier':  'https://images.pexels.com/photos/5632397/pexels-photo-5632397.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche-groupe': 'https://images.pexels.com/photos/1586298/pexels-photo-1586298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche':        'https://images.pexels.com/photos/3731256/pexels-photo-3731256.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'apero':         'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
@@ -2853,7 +2853,7 @@ async function runSearch(fromMap) {
         const locForRules = fromMap && mapSearchCoords ? (mapSearchName||location) : location;
         const LANG_NAMES = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
         const langInstruction = `LANGUE: Réponds OBLIGATOIREMENT en ${LANG_NAMES[lang] || 'français'}. Tous les textes (titre, description, infos_pratiques, pourquoi_adapte) doivent être en ${LANG_NAMES[lang] || 'français'}.\n`;
-        const strictRules = "REGLES CRITIQUES:\n1. LIEUX VERIFIES EN PRIORITE: Si des lieux certifies sont fournis, utilise-les en priorite. lieu_certain:true pour eux.\n2. LIEUX INVENTES INTERDITS: Bars/restos sans certitude = description generique sans nom invente. lieu_certain:false.\n3. BROCANTES/MARCHES: Ville exacte obligatoire.\n4. DATE: Chaque activite realisable le jour demande.\n5. METEO: Respecter strictement.\n6. GPS: lat/lng precis dans les champs JSON, jamais 0.0. NE PAS mentionner les coordonnees GPS dans la description ou les infos_pratiques.\n7. PAS DE GPS DANS LA DESCRIPTION: Ne jamais ecrire 'GPS: xx.xxxx, xx.xxxx' dans description ou infos_pratiques.";
+        const strictRules = "REGLES CRITIQUES:\n1. LIEUX VERIFIES EN PRIORITE: Si des lieux certifies sont fournis, utilise-les en priorite. lieu_certain:true pour eux.\n2. LIEUX INVENTES INTERDITS: Bars/restos sans certitude = description generique sans nom invente. lieu_certain:false.\n3. BROCANTES/MARCHES: Ville exacte obligatoire.\n4. DATE: Chaque activite realisable le jour demande.\n5. METEO: Respecter strictement.\n6. GPS: lat/lng precis dans les champs JSON, jamais 0.0. NE PAS mentionner les coordonnees GPS dans la description ou les infos_pratiques.\n7. PAS DE GPS DANS LA DESCRIPTION: Ne jamais ecrire 'GPS: xx.xxxx, xx.xxxx' dans description ou infos_pratiques.\n8. EPHEMERE INTERDIT pour lieux PERMANENTS: casino, restaurant, musee, spa, bowling, karting, cinema, bar, theatre, parc = JAMAIS ephemere:true. 'ephemere:true' UNIQUEMENT si l'activite a une date precise et unique (brocante du dimanche, fete locale, concert ponctuel, marche saisonnier). Un casino qui 'propose des soirees regulieres' n'est PAS ephemere.";
 
         const rawPrompt = fromMap && mapSearchCoords
           ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
@@ -3710,12 +3710,18 @@ Réponds UNIQUEMENT en JSON valide:
     const res = await fetch(SUPABASE_URL + '/functions/v1/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt, model: 'claude-sonnet-4-6' })
     });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => 'unknown');
+      throw new Error('HTTP ' + res.status + ': ' + errText.substring(0, 200));
+    }
     const data = await res.json();
+    if (data.error) throw new Error(data.error);
     const text = (data.content||[]).map(c=>c.text||'').join('');
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('No JSON');
+    // Chercher JSON entre accolades (plus robuste)
+    const match = text.match(/\{[\s\S]*"samedi"[\s\S]*\}/);
+    if (!match) throw new Error('Pas de JSON programme dans la réponse');
     const program = JSON.parse(match[0]);
     renderWeekendProgram(program);
   } catch(e) {
@@ -4073,6 +4079,7 @@ async function startCheckout() {
 // ── Search gate ──
 async function incrementSearchCount() {
   if (!_sb || !currentUser) return;
+  if (currentUser.id === 'beta-user') return; // beta-user: pas de profil Supabase
   const now = new Date();
   const monthKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
   searchCount++;
