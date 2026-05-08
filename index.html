@@ -2300,30 +2300,20 @@ function makePhotoSvg(theme) {
 function getPhotoTheme(type, titre) {
   const t = (titre || '').toLowerCase();
 
-  // Éphémères — détection par titre (ordre: du plus spécifique au plus général)
+  // Éphémères — détection par titre
   if (type === 'Éphémère' || type === 'Ephemeral') {
-    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail') || t.includes('spiritueux') || t.includes('salon de l\'apéro') || t.includes('salon apero')) return 'apero';
-    if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation') || t.includes('cave') || t.includes('vignoble') || t.includes('cave') || t.includes('sommelier')) return 'vin';
-    if (t.includes('médiéval') || t.includes('medieval') || t.includes('moyen-âge') || t.includes('moyen age') || t.includes('chevalier') || t.includes('château') || t.includes('chateau')) return 'chateau';
+    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail') || t.includes('spiritueux')) return 'apero';
+    if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation') || t.includes('cave') || t.includes('vignoble')) return 'vin';
+    if (t.includes('marche') && (t.includes('groupe') || t.includes('populaire') || t.includes('nordique') || t.includes('rochonvillers') || t.includes('pedestre'))) return 'marche-groupe';
     if (t.includes('moto') || t.includes('harley') || t.includes('motard') || t.includes('bikers')) return 'moto';
     if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer') || t.includes('collection')) return 'voiture';
-    if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('street food')) return 'food';
-    if (t.includes('gastronomique') || t.includes('gastronomie') || t.includes('saveurs') || t.includes('terroir') || t.includes('provençal') || t.includes('provencal') || t.includes('sud') || t.includes('gourmet')) return 'restaurant';
-    if (t.includes('concert') || t.includes('rock') || t.includes('jazz') || t.includes('musique live') || t.includes('scène')) return 'concert';
-    if (t.includes('festival') && (t.includes('music') || t.includes('musiq') || t.includes('son') || t.includes('band'))) return 'concert';
+    if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('gastronomique') || t.includes('street food')) return 'food';
+    if (t.includes('concert') || t.includes('festival') || t.includes('musique') || t.includes('rock') || t.includes('jazz')) return 'concert';
     if (t.includes('bd') || t.includes('comics') || t.includes('manga') || t.includes('bande dessinée')) return 'bd';
     if (t.includes('parade') || t.includes('fanfare') || t.includes('carnaval') || t.includes('défilé') || t.includes('arts de rue')) return 'parade';
-    if (t.includes('noël') || t.includes('noel') || t.includes('christmas')) return 'noel';
+    if (t.includes('noël') || t.includes('noel')) return 'noel';
     if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces') || t.includes('antiquités') || t.includes('braderie')) return 'brocante';
-    // Mots-clés nature/jardin/plantes
-    if (t.includes('plante') || t.includes('jardin') || t.includes('fleur') || t.includes('botanique') || t.includes('nature') || t.includes('vert') || t.includes('bio') || t.includes('légume') || t.includes('fruit')) return 'nature';
-    // Marchés généralistes
-    if (t.includes('marché') || t.includes('marche') || t.includes('market') || t.includes('salon') || t.includes('foire') || t.includes('expo')) return 'marche';
-    // Fêtes locales/de village
-    if (t.includes('fête') || t.includes('fete') || t.includes('festival') || t.includes('village') || t.includes('voisin') || t.includes('local') || t.includes('quartier')) return 'parade';
-    // Randonnée/marche sportive
-    if (t.includes('randonnée') || t.includes('pedestre') || t.includes('trail') || t.includes('balade')) return 'marche-groupe';
-    return 'marche'; // marché par défaut pour les éphémères non identifiés
+    return 'marche'; // marché par défaut pour les éphémères
   }
 
   // Activités fixes — détection par titre
@@ -2332,16 +2322,17 @@ function getPhotoTheme(type, titre) {
   if (t.includes('escalad') || t.includes('grimpe') || t.includes('via ferrata')) return 'escalade';
   if (t.includes('kayak') || t.includes('canoë') || t.includes('paddle') || t.includes('rafting')) return 'kayak';
   if (t.includes('ski') || t.includes('snowboard') || t.includes('luge')) return 'ski';
+  if (t.includes('piscine') || t.includes('natation') || t.includes('baignade') || t.includes('thermes') || t.includes('thermal')) return 'thermes';
   if (t.includes('bowling')) return 'bowling';
   if (t.includes('karting') || t.includes('kart')) return 'karting';
   if (t.includes('escape') || t.includes('énigme')) return 'escape';
   if (t.includes('trampoline') || t.includes('saut')) return 'trampoline';
   if (t.includes('musée') || t.includes('museum') || t.includes('galerie') || t.includes('expo')) return 'museum';
-  if (t.includes('château') || t.includes('abbaye') || t.includes('cathédrale') || t.includes('fort') || t.includes('ouvrage') || t.includes('maginot') || t.includes('médiéval')) return 'chateau';
-  if (t.includes('cinéma') || t.includes('cinema') || t.includes('film') || t.includes('kinépolis') || t.includes('kinepolis')) return 'cinema';
+  if (t.includes('château') || t.includes('abbaye') || t.includes('cathédrale') || t.includes('fort') || t.includes('ouvrage') || t.includes('maginot')) return 'chateau';
+  if (t.includes('cinéma') || t.includes('cinema') || t.includes('film')) return 'cinema';
   if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
-  if (t.includes('thermes') || t.includes('thermal') || t.includes('mondorf') || t.includes('bain') || t.includes('piscine') || t.includes('natation')) return 'thermes';
   if (t.includes('spa') || t.includes('massage') || t.includes('hammam') || t.includes('sauna') || t.includes('bien-être')) return 'spa';
+  if (t.includes('thermes') || t.includes('thermal') || t.includes('mondorf') || t.includes('bain')) return 'thermes';
   if (t.includes('bar') || t.includes('pub') || t.includes('brasserie') || t.includes('beaux jours') || t.includes('cocktail') || t.includes('bière')) return 'bar';
   if (t.includes('casino')) return 'casino';
   if (t.includes('concert') || t.includes('festival') || t.includes('musique')) return 'concert';
@@ -2352,7 +2343,7 @@ function getPhotoTheme(type, titre) {
 
   // Fallback par type
   const typeMap = {
-    'Nature': 'nature', 'Culture': 'chateau', 'Sport': 'randonnee',
+    'Nature': 'nature', 'Culture': 'museum', 'Sport': 'randonnee',
     'Gastronomie': 'restaurant', 'Bien-être': 'spa', 'Divertissement': 'parc',
     'Nocturne': 'bar', 'Nightlife': 'bar', 'Food': 'restaurant',
     'Wellness': 'spa', 'Entertainment': 'parc'
@@ -2415,33 +2406,11 @@ const PEXELS_QUERIES = {
 // IDs Pexels garantis pour les thèmes critiques (évite les résultats aléatoires)
 const PEXELS_DIRECT = {
   'brocante':      'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'vide-grenier':  'https://images.pexels.com/photos/5632397/pexels-photo-5632397.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vide-grenier':  'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche-groupe': 'https://images.pexels.com/photos/1586298/pexels-photo-1586298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche':        'https://images.pexels.com/photos/3731256/pexels-photo-3731256.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'apero':         'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'vin':           'https://images.pexels.com/photos/1407846/pexels-photo-1407846.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'chateau':       'https://images.pexels.com/photos/1796730/pexels-photo-1796730.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'parade':        'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'concert':       'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'restaurant':    'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'spa':           'https://images.pexels.com/photos/3997989/pexels-photo-3997989.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'thermes':       'https://images.pexels.com/photos/3997989/pexels-photo-3997989.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'museum':        'https://images.pexels.com/photos/1674049/pexels-photo-1674049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'cinema':        'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'randonnee':     'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'nature':        'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'bar':           'https://images.pexels.com/photos/1574200/pexels-photo-1574200.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'escape':        'https://images.pexels.com/photos/5702281/pexels-photo-5702281.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'karting':       'https://images.pexels.com/photos/12801013/pexels-photo-12801013.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'bowling':       'https://images.pexels.com/photos/4192/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'zoo':           'https://images.pexels.com/photos/247502/pexels-photo-247502.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'parc':          'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'velo':          'https://images.pexels.com/photos/1149601/pexels-photo-1149601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'kayak':         'https://images.pexels.com/photos/1497585/pexels-photo-1497585.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'food':          'https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'noel':          'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'default':       'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
 };
+// Pour tous les autres thèmes → API Pexels dynamique via PEXELS_QUERIES
 
 async function fetchPexelsPhoto(theme) {
   if (_pexelsCache[theme]) return _pexelsCache[theme];
