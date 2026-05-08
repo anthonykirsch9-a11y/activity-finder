@@ -2473,27 +2473,9 @@ async function fetchPexelsPhoto(theme) {
 
 async function loadPexelsPhoto(imgEl, type, titre) {
   const theme = getPhotoTheme(type, titre);
-  // D'abord essayer l'URL directe garantie
-  const directUrl = PEXELS_DIRECT[theme];
-  if (directUrl) {
-    const testImg = new Image();
-    testImg.onload = () => { imgEl.src = directUrl; };
-    testImg.onerror = () => {
-      // URL directe KO (403 hotlinking) → garder le SVG thématique
-      imgEl.src = makePhotoSvg(theme);
-    };
-    testImg.src = directUrl;
-    return;
-  }
-  // Sinon tenter l'API Pexels
   const url = await fetchPexelsPhoto(theme);
-  if (url) {
-    const testImg = new Image();
-    testImg.onload = () => { imgEl.src = url; };
-    testImg.onerror = () => { imgEl.src = makePhotoSvg(theme); };
-    testImg.src = url;
-  }
-  // Si rien → SVG thématique déjà en place, ne rien faire
+  if (url) imgEl.src = url;
+  // Si pas d'URL Pexels → le SVG thématique reste affiché
 }
 
 
@@ -2986,29 +2968,14 @@ async function runSearch(fromMap) {
       document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
         const placeId = img.dataset.placeid;
         const isEphemere = img.dataset.ephemere === '1';
-        const type = img.dataset.type;
-        const titre = img.dataset.titre;
 
-        // Pour les éphémères : TOUJOURS forcer le thème SVG/Pexels, jamais Google Places
-        // (Google Places retournerait la photo du bâtiment, pas de l'événement)
+        // Éphémères → toujours Pexels thématique (Google Places = photo du bâtiment, pas de l'événement)
         if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
-          // Forcer la photo thématique SVG (100% fiable, pas de dépendance externe)
-          const theme = getPhotoTheme(type, titre);
-          const svgUrl = makePhotoSvg(theme);
-          // Garder la src actuelle si c'est déjà un SVG ou Pexels valide
-          // Sinon forcer le SVG
-          if (!img.src || img.src.includes('nike') || img.src.includes('shoe') ||
-              img.src.startsWith('blob:') || img.naturalWidth === 0) {
-            img.src = svgUrl;
-          }
-          // Tenter Pexels en arrière-plan uniquement si pas d'ephémère
-          if (!isEphemere) {
-            loadPexelsPhoto(img, type, titre);
-          }
+          loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
           return;
         }
 
-        // Activité fixe avec placeId Google : tenter Google Places photo
+        // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
         const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
         if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
           const photoName = gPlace.photos[0].name;
@@ -3016,13 +2983,13 @@ async function runSearch(fromMap) {
             const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
             const testImg = new Image();
             testImg.onload = () => { img.src = photoUrlG; };
-            testImg.onerror = () => { loadPexelsPhoto(img, type, titre); };
+            testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
             testImg.src = photoUrlG;
           } else {
-            loadPexelsPhoto(img, type, titre);
+            loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
           }
         } else {
-          loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, type, titre));
+          loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
         }
       });
     }, 300);
@@ -3749,14 +3716,12 @@ function selectProgramDay(btn) {
 }
 
 function selectProgramDuration(btn) {
-  document.querySelectorAll('.wp-dur-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#wp-duration-btns .wp-dur-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   _programDuration = btn.dataset.dur;
-  // Mettre à jour le titre
   const titles = { soiree:'🌙 Mon programme soirée', journee:'☀️ Mon programme journée', weekend:'📅 Mon programme week-end' };
   const wpTitle = document.getElementById('wp-title');
   if (wpTitle) wpTitle.textContent = titles[_programDuration] || '🗓 Mon programme';
-  // Regénérer automatiquement
   const body = document.getElementById('weekend-program-body');
   body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création du programme…'}</p></div>`;
   generateWeekendProgram();
@@ -3786,8 +3751,25 @@ function openWeekendProgram() {
   const wpTitle = document.getElementById('wp-title');
   if (wpTitle) wpTitle.textContent = '🌙 Mon programme soirée';
   modal.classList.add('open');
-  body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création du programme…'}</p></div>`;
-  generateWeekendProgram();
+  // Afficher un écran "Choisissez vos options" au lieu de générer directement
+  const favs = localLoad('favorites') || [];
+  if (favs.length < 2) {
+    body.innerHTML = `<p style="color:var(--muted);padding:20px;text-align:center">${apt().programMinFavs||'Ajoute au moins 2 favoris !'}</p>`;
+    return;
+  }
+  body.innerHTML = `
+    <div style="text-align:center;padding:30px 20px">
+      <div style="font-size:48px;margin-bottom:12px">🗓</div>
+      <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px">
+        ${favs.length} activité${favs.length > 1 ? 's' : ''} en favori${favs.length > 1 ? 's' : ''}
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5">
+        Choisis la durée et le jour en haut,<br>puis lance la génération.
+      </div>
+      <button onclick="generateWeekendProgram()" class="generate-program-btn">
+        ✨ Générer mon programme
+      </button>
+    </div>`;
 }
 
 function closeWeekendProgram() {
