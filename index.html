@@ -632,6 +632,15 @@ html { -webkit-text-size-adjust: 100%; }
 .generate-program-btn { width:100%; padding:13px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:12px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
 .generate-program-btn:hover { opacity:0.9; transform:translateY(-1px); }
 .generate-program-btn:disabled { opacity:0.5; cursor:default; transform:none; }
+/* Boutons durée programme */
+.wp-dur-btn {
+  font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif;
+  padding:5px 12px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.4);
+  background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.8);
+  cursor:pointer; transition:all 0.15s; white-space:nowrap;
+}
+.wp-dur-btn:hover { background:rgba(255,255,255,0.25); color:#fff; }
+.wp-dur-btn.active { background:rgba(255,255,255,0.9); color:#3A5C38; border-color:transparent; font-weight:700; }
 .beta-screen {
   display:none; position:fixed; inset:0;
   background:linear-gradient(160deg,#2E4A2C 0%,#4A7248 50%,#7A9E78 100%);
@@ -1095,11 +1104,17 @@ html { -webkit-text-size-adjust: 100%; }
 <div class="weekend-program-modal" id="weekend-program-modal">
   <div class="weekend-program-card">
     <div class="weekend-program-header">
-      <div>
-        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:800;color:#fff" id="wp-title">🗓 Mon programme week-end</div>
+      <div style="flex:1">
+        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:800;color:#fff" id="wp-title">🗓 Mon programme</div>
         <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px" id="wp-subtitle">Basé sur tes favoris</div>
+        <!-- Sélecteur durée -->
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap" id="wp-duration-btns">
+          <button class="wp-dur-btn active" data-dur="soiree" onclick="selectProgramDuration(this)">🌙 Soirée</button>
+          <button class="wp-dur-btn" data-dur="journee" onclick="selectProgramDuration(this)">☀️ Journée</button>
+          <button class="wp-dur-btn" data-dur="weekend" onclick="selectProgramDuration(this)">📅 Week-end</button>
+        </div>
       </div>
-      <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">×</button>
+      <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0;align-self:flex-start">×</button>
     </div>
     <div class="weekend-program-body" id="weekend-program-body">
       <div class="program-loading">
@@ -2263,22 +2278,30 @@ function makePhotoSvg(theme) {
 function getPhotoTheme(type, titre) {
   const t = (titre || '').toLowerCase();
 
-  // Éphémères — détection par titre
+  // Éphémères — détection par titre (ordre: du plus spécifique au plus général)
   if (type === 'Éphémère' || type === 'Ephemeral') {
-    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail') || t.includes('spiritueux')) return 'apero';
-    if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation') || t.includes('cave') || t.includes('vignoble')) return 'vin';
+    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail') || t.includes('spiritueux') || t.includes('salon de l\'apéro') || t.includes('salon apero')) return 'apero';
+    if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation') || t.includes('cave') || t.includes('vignoble') || t.includes('cave') || t.includes('sommelier')) return 'vin';
     if (t.includes('médiéval') || t.includes('medieval') || t.includes('moyen-âge') || t.includes('moyen age') || t.includes('chevalier') || t.includes('château') || t.includes('chateau')) return 'chateau';
-    if (t.includes('marche') || t.includes('randonnée') || t.includes('pedestre') || t.includes('trail')) return 'marche-groupe';
     if (t.includes('moto') || t.includes('harley') || t.includes('motard') || t.includes('bikers')) return 'moto';
     if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer') || t.includes('collection')) return 'voiture';
-    if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('gastronomique') || t.includes('street food')) return 'food';
-    if (t.includes('concert') || t.includes('festival') || t.includes('musique') || t.includes('rock') || t.includes('jazz')) return 'concert';
+    if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('street food')) return 'food';
+    if (t.includes('gastronomique') || t.includes('gastronomie') || t.includes('saveurs') || t.includes('terroir') || t.includes('provençal') || t.includes('provencal') || t.includes('sud') || t.includes('gourmet')) return 'restaurant';
+    if (t.includes('concert') || t.includes('rock') || t.includes('jazz') || t.includes('musique live') || t.includes('scène')) return 'concert';
+    if (t.includes('festival') && (t.includes('music') || t.includes('musiq') || t.includes('son') || t.includes('band'))) return 'concert';
     if (t.includes('bd') || t.includes('comics') || t.includes('manga') || t.includes('bande dessinée')) return 'bd';
     if (t.includes('parade') || t.includes('fanfare') || t.includes('carnaval') || t.includes('défilé') || t.includes('arts de rue')) return 'parade';
-    if (t.includes('noël') || t.includes('noel')) return 'noel';
+    if (t.includes('noël') || t.includes('noel') || t.includes('christmas')) return 'noel';
     if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces') || t.includes('antiquités') || t.includes('braderie')) return 'brocante';
-    if (t.includes('printemps') || t.includes('fête') || t.includes('fete') || t.includes('village') || t.includes('voisin')) return 'parade';
-    return 'marche'; // marché par défaut pour les éphémères
+    // Mots-clés nature/jardin/plantes
+    if (t.includes('plante') || t.includes('jardin') || t.includes('fleur') || t.includes('botanique') || t.includes('nature') || t.includes('vert') || t.includes('bio') || t.includes('légume') || t.includes('fruit')) return 'nature';
+    // Marchés généralistes
+    if (t.includes('marché') || t.includes('marche') || t.includes('market') || t.includes('salon') || t.includes('foire') || t.includes('expo')) return 'marche';
+    // Fêtes locales/de village
+    if (t.includes('fête') || t.includes('fete') || t.includes('festival') || t.includes('village') || t.includes('voisin') || t.includes('local') || t.includes('quartier')) return 'parade';
+    // Randonnée/marche sportive
+    if (t.includes('randonnée') || t.includes('pedestre') || t.includes('trail') || t.includes('balade')) return 'marche-groupe';
+    return 'marche'; // marché par défaut pour les éphémères non identifiés
   }
 
   // Activités fixes — détection par titre
@@ -3649,13 +3672,36 @@ async function renderAccountStats() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// PROGRAMME WEEK-END
+// PROGRAMME (soirée / journée / week-end)
 // ══════════════════════════════════════════════════════════════
+let _programDuration = 'soiree'; // valeur par défaut
+
+function selectProgramDuration(btn) {
+  document.querySelectorAll('.wp-dur-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _programDuration = btn.dataset.dur;
+  // Mettre à jour le titre
+  const titles = { soiree:'🌙 Mon programme soirée', journee:'☀️ Mon programme journée', weekend:'📅 Mon programme week-end' };
+  const wpTitle = document.getElementById('wp-title');
+  if (wpTitle) wpTitle.textContent = titles[_programDuration] || '🗓 Mon programme';
+  // Regénérer automatiquement
+  const body = document.getElementById('weekend-program-body');
+  body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création du programme…'}</p></div>`;
+  generateWeekendProgram();
+}
+
 function openWeekendProgram() {
   const modal = document.getElementById('weekend-program-modal');
   const body = document.getElementById('weekend-program-body');
+  // Reset durée à soirée par défaut
+  _programDuration = 'soiree';
+  document.querySelectorAll('.wp-dur-btn').forEach(b => b.classList.remove('active'));
+  const defaultBtn = document.querySelector('.wp-dur-btn[data-dur="soiree"]');
+  if (defaultBtn) defaultBtn.classList.add('active');
+  const wpTitle = document.getElementById('wp-title');
+  if (wpTitle) wpTitle.textContent = '🌙 Mon programme soirée';
   modal.classList.add('open');
-  body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création de ton programme…'}</p></div>`;
+  body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création du programme…'}</p></div>`;
   generateWeekendProgram();
 }
 
@@ -3673,7 +3719,6 @@ async function generateWeekendProgram() {
     return;
   }
 
-  // Récupérer les activités favorites avec leurs détails
   const favDetails = favs.map(f => {
     const note = notes.find(n => n.activity_id === f.activity_id);
     return `- ${f.activity_title}${note?.stars ? ' (noté ' + note.stars + '/5)' : ''}`;
@@ -3682,29 +3727,37 @@ async function generateWeekendProgram() {
   const langNames = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
   const langInstr = `Réponds en ${langNames[lang]||'français'}.`;
 
+  // Prompt adapté selon la durée
+  const dur = _programDuration || 'soiree';
+  let durInstr = '';
+  let jsonStructure = '';
+
+  if (dur === 'soiree') {
+    durInstr = `Crée un programme pour UNE SOIRÉE (environ 18h-23h) en sélectionnant 2-3 activités parmi les favorites qui conviennent à une soirée. Organise-les de façon fluide avec des transitions logiques.`;
+    jsonStructure = `{"soiree": [{"heure":"18h30","titre":"...","duree":"2h","transport":"à pied","trajet":"5 min","note":"...","type":"activite"}]}`;
+  } else if (dur === 'journee') {
+    durInstr = `Crée un programme pour UNE JOURNÉE (environ 9h-20h) en sélectionnant 3-4 activités parmi les favorites. Inclus une pause déjeuner logique.`;
+    jsonStructure = `{"journee": [{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"},{"heure":"12h30","titre":"Déjeuner","duree":"1h30","transport":"","trajet":"","note":"suggestion de restaurant","type":"repas"}]}`;
+  } else {
+    durInstr = `Crée un programme pour un WEEK-END complet sur SAMEDI et DIMANCHE en organisant toutes les activités de façon optimale. Inclus des pauses repas logiques.`;
+    jsonStructure = `{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite"}]}`;
+  }
+
   const prompt = `${langInstr}
-Tu es un expert en organisation de week-ends. L'utilisateur a sélectionné ces activités favorites:
+Tu es un expert en organisation de sorties. L'utilisateur a sélectionné ces activités favorites:
 ${favDetails}
 
-Crée un programme week-end complet et détaillé sur SAMEDI et DIMANCHE en organisant ces activités de façon optimale.
+${durInstr}
 
 Pour chaque activité inclue:
 - L'heure de début recommandée
-- La durée estimée  
-- Le moyen de transport pour y aller (voiture, à pied, transports en commun)
+- La durée estimée
+- Le moyen de transport (voiture, à pied, transports en commun)
 - Le temps de trajet approximatif
-- Une note pratique (réservation conseillée, tenue adaptée, etc.)
+- Une note pratique courte (réservation, tenue, etc.)
 
-Ajoute aussi des pauses repas logiques (petit-déjeuner, déjeuner, dîner) entre les activités.
-
-Réponds UNIQUEMENT en JSON valide:
-{
-  "samedi": [
-    {"heure": "09h00", "titre": "...", "duree": "2h", "transport": "à pied", "trajet": "5 min", "note": "...", "type": "activite"},
-    {"heure": "11h30", "titre": "Pause déjeuner", "duree": "1h30", "transport": "", "trajet": "", "note": "suggestion de restaurant", "type": "repas"}
-  ],
-  "dimanche": [...]
-}`;
+Réponds UNIQUEMENT en JSON valide, structure exacte:
+${jsonStructure}`;
 
   try {
     const res = await fetch(SUPABASE_URL + '/functions/v1/search', {
@@ -3719,66 +3772,76 @@ Réponds UNIQUEMENT en JSON valide:
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     const text = (data.content||[]).map(c=>c.text||'').join('');
-    // Chercher JSON entre accolades (plus robuste)
-    const match = text.match(/\{[\s\S]*"samedi"[\s\S]*\}/);
-    if (!match) throw new Error('Pas de JSON programme dans la réponse');
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Pas de JSON dans la réponse');
     const program = JSON.parse(match[0]);
-    renderWeekendProgram(program);
+    renderWeekendProgram(program, dur);
   } catch(e) {
     body.innerHTML = `<p style="color:#C0392B;padding:20px;text-align:center">${apt().programError||'Erreur lors de la génération.'}</p>
     <button onclick="generateWeekendProgram()" class="generate-program-btn">🔄 ${apt().programRegenerate||'Régénérer'}</button>`;
   }
 }
 
-function renderWeekendProgram(program) {
+function renderWeekendProgram(program, dur) {
   const body = document.getElementById('weekend-program-body');
   const dayNames = { fr: ['SAMEDI', 'DIMANCHE'], en: ['SATURDAY', 'SUNDAY'], es: ['SÁBADO', 'DOMINGO'], de: ['SAMSTAG', 'SONNTAG'], it: ['SABATO', 'DOMENICA'], pt: ['SÁBADO', 'DOMINGO'] };
   const days = dayNames[lang] || dayNames.fr;
   const typeIcons = { activite: '📍', repas: '🍽️', transport: '🚗', pause: '☕' };
+  const durMode = dur || _programDuration || 'soiree';
+
+  function renderSteps(steps) {
+    if (!steps?.length) return '';
+    let h = '';
+    steps.forEach((step, i) => {
+      h += `<div class="program-step">
+        <div class="program-time">${step.heure}</div>
+        <div class="program-step-content">
+          <div class="program-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
+          <div class="program-step-detail">⏱ ${step.duree}${step.note ? ' · ' + step.note : ''}</div>
+        </div>
+      </div>`;
+      if (step.transport && i < steps.length - 1) {
+        h += `<div class="program-transport">↓ ${step.transport}${step.trajet ? ' · ' + step.trajet : ''}</div>`;
+      }
+    });
+    return h;
+  }
+
+  const sectionTitles = {
+    soiree:  { fr:'🌙 SOIRÉE', en:'🌙 EVENING', es:'🌙 TARDE-NOCHE', de:'🌙 ABEND', it:'🌙 SERATA', pt:'🌙 NOITE' },
+    journee: { fr:'☀️ JOURNÉE', en:'☀️ DAY', es:'☀️ DÍA', de:'☀️ TAG', it:'☀️ GIORNATA', pt:'☀️ DIA' },
+  };
 
   let html = '';
 
-  // Samedi
-  if (program.samedi?.length) {
-    html += `<div class="program-day">
-      <div class="program-day-title">📅 ${days[0]}</div>`;
-    program.samedi.forEach((step, i) => {
-      html += `
-        <div class="program-step">
-          <div class="program-time">${step.heure}</div>
-          <div class="program-step-content">
-            <div class="program-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
-            <div class="program-step-detail">⏱ ${step.duree}${step.note ? ' · ' + step.note : ''}</div>
-          </div>
-        </div>`;
-      if (step.transport && i < program.samedi.length - 1) {
-        html += `<div class="program-transport">↓ ${step.transport}${step.trajet ? ' · ' + step.trajet : ''}</div>`;
+  if (durMode === 'soiree' && program.soiree?.length) {
+    const title = (sectionTitles.soiree[lang] || sectionTitles.soiree.fr);
+    html += `<div class="program-day"><div class="program-day-title">${title}</div>${renderSteps(program.soiree)}</div>`;
+  } else if (durMode === 'journee' && program.journee?.length) {
+    const title = (sectionTitles.journee[lang] || sectionTitles.journee.fr);
+    html += `<div class="program-day"><div class="program-day-title">${title}</div>${renderSteps(program.journee)}</div>`;
+  } else {
+    // Week-end (samedi + dimanche)
+    if (program.samedi?.length) {
+      html += `<div class="program-day"><div class="program-day-title">📅 ${days[0]}</div>${renderSteps(program.samedi)}</div>`;
+    }
+    if (program.dimanche?.length) {
+      html += `<div class="program-day"><div class="program-day-title">📅 ${days[1]}</div>${renderSteps(program.dimanche)}</div>`;
+    }
+    // Fallback si Claude a renvoyé soiree/journee en mode weekend
+    if (!program.samedi?.length && !program.dimanche?.length) {
+      const firstKey = Object.keys(program)[0];
+      if (firstKey && program[firstKey]?.length) {
+        html += `<div class="program-day"><div class="program-day-title">📋 Programme</div>${renderSteps(program[firstKey])}</div>`;
       }
-    });
-    html += '</div>';
+    }
   }
 
-  // Dimanche
-  if (program.dimanche?.length) {
-    html += `<div class="program-day">
-      <div class="program-day-title">📅 ${days[1]}</div>`;
-    program.dimanche.forEach((step, i) => {
-      html += `
-        <div class="program-step">
-          <div class="program-time">${step.heure}</div>
-          <div class="program-step-content">
-            <div class="program-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
-            <div class="program-step-detail">⏱ ${step.duree}${step.note ? ' · ' + step.note : ''}</div>
-          </div>
-        </div>`;
-      if (step.transport && i < program.dimanche.length - 1) {
-        html += `<div class="program-transport">↓ ${step.transport}${step.trajet ? ' · ' + step.trajet : ''}</div>`;
-      }
-    });
-    html += '</div>';
+  if (!html) {
+    html = `<p style="color:var(--muted);padding:20px;text-align:center">Impossible de générer le programme. Réessaie !</p>`;
   }
 
-  html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">${apt().programRegenerate||'🔄 Régénérer le programme'}</button>`;
+  html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">${apt().programRegenerate||'🔄 Régénérer'}</button>`;
   body.innerHTML = html;
 }
 
@@ -3819,7 +3882,7 @@ async function renderAccountActivities() {
 
   if (favs.length >= 2) {
     html += `<button class="generate-program-btn" onclick="openWeekendProgram()">
-      ${ta.programGenerate||'🗓 Générer mon programme week-end'}
+      ${ta.programGenerate||'🗓 Générer mon programme'}
       <span style="font-size:11px;opacity:0.8">(${favs.length} ❤️)</span>
     </button><div style="height:16px"></div>`;
   } else if (favs.length > 0) {
@@ -4137,7 +4200,14 @@ function reuseSearch(location, group, budget) {
   document.querySelectorAll('#group-type .pill').forEach(p => {
     p.classList.toggle('selected', p.dataset.val === group);
   });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Mémoriser les coords si on les a déjà
+  // Fermer le panneau compte et relancer directement la recherche
+  closeAccountPanel();
+  setTimeout(() => {
+    switchView('form');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => runSearch(false), 300);
+  }, 200);
 }
 
 // ── Note modal ──
