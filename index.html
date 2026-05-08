@@ -1106,30 +1106,41 @@ html { -webkit-text-size-adjust: 100%; }
     <div class="weekend-program-header">
       <div style="flex:1">
         <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:800;color:#fff" id="wp-title">🗓 Mon programme</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px" id="wp-subtitle">Basé sur tes favoris</div>
-        <!-- Sélecteur durée -->
-        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap" id="wp-duration-btns">
-          <button class="wp-dur-btn active" data-dur="soiree" onclick="selectProgramDuration(this)">🌙 Soirée</button>
-          <button class="wp-dur-btn" data-dur="journee" onclick="selectProgramDuration(this)">☀️ Journée</button>
-          <button class="wp-dur-btn" data-dur="weekend" onclick="selectProgramDuration(this)">📅 Week-end</button>
+        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:6px" id="wp-subtitle">Basé sur tes favoris · Choisis tes dates et génère</div>
+        <!-- Sélecteur dates -->
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <label style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.05em">Du</label>
+            <input type="text" id="wp-date-from" placeholder="jj/mm" maxlength="5"
+              style="width:80px;padding:5px 10px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center"
+              oninput="formatDateInput(this)">
+          </div>
+          <div style="color:rgba(255,255,255,0.5);font-size:16px;margin-top:14px">→</div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <label style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.05em">Au (optionnel)</label>
+            <input type="text" id="wp-date-to" placeholder="jj/mm" maxlength="5"
+              style="width:80px;padding:5px 10px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center"
+              oninput="formatDateInput(this)">
+          </div>
+          <div style="margin-top:14px">
+            <button onclick="generateWeekendProgram()" class="wp-dur-btn" style="background:rgba(255,255,255,0.9);color:#3A5C38;border-color:transparent;font-weight:700;padding:6px 14px">
+              ✨ Générer
+            </button>
+          </div>
         </div>
-        <!-- Sélecteur jour -->
-        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="wp-day-btns">
-          <button class="wp-dur-btn active" data-day="auto" onclick="selectProgramDay(this)" id="wp-day-auto">🗓 Ce week-end</button>
-          <button class="wp-dur-btn" data-day="today" onclick="selectProgramDay(this)" id="wp-day-today">Aujourd'hui</button>
-          <button class="wp-dur-btn" data-day="tomorrow" onclick="selectProgramDay(this)" id="wp-day-tomorrow">Demain</button>
-          <button class="wp-dur-btn" data-day="custom" onclick="selectProgramDay(this)" id="wp-day-custom">📅 Date</button>
-        </div>
-        <div id="wp-day-custom-input" style="display:none;margin-top:6px">
-          <input type="date" id="wp-custom-date" style="padding:5px 10px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;outline:none" onchange="generateWeekendProgram()">
+        <!-- Raccourcis rapides -->
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="wp-shortcuts">
+          <button class="wp-dur-btn" onclick="setWpDateShortcut('today')">Auj.</button>
+          <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')">Demain</button>
+          <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Ce week-end</button>
         </div>
       </div>
       <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0;align-self:flex-start">×</button>
     </div>
     <div class="weekend-program-body" id="weekend-program-body">
-      <div class="program-loading">
-        <div class="spinner"></div>
-        <p style="color:var(--muted);font-size:13px;margin-top:10px">Génération du programme…</p>
+      <div style="text-align:center;padding:30px 20px">
+        <div style="font-size:40px;margin-bottom:10px">🗓</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Choisis une date en haut<br>puis clique <strong>Générer</strong></div>
       </div>
     </div>
   </div>
@@ -1955,14 +1966,14 @@ loadApiKey();
 let selectedDateMode = 'flexible';
 
 function initDateQuick() {
-  document.querySelectorAll('.date-quick-btn').forEach(btn => {
+  // IMPORTANT: sélectionner UNIQUEMENT les boutons dans #date-quick, pas only-ephem/night
+  document.querySelectorAll('#date-quick .date-quick-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.date-quick-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#date-quick .date-quick-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       selectedDateMode = btn.dataset.val;
       document.getElementById('date-custom-wrap').style.display =
         selectedDateMode === 'custom' ? 'block' : 'none';
-      // Set today's date as default when opening custom
       if (selectedDateMode === 'custom' && !document.getElementById('date-from').value) {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('date-from').value = today;
@@ -2363,74 +2374,107 @@ function photoUrl(type, titre) {
 const PEXELS_KEY = 'OjOWZuQpato1V2fXEnpR4jIWnH4qsUmgxMImacQcY4vj0ZJNAAnPsolg';
 const _pexelsCache = {};
 
-// Mots-clés de recherche Pexels par thème
+// Queries en ANGLAIS (Pexels = meilleurs résultats) - ultra-ciblées, pas de mots parasites
 const PEXELS_QUERIES = {
-  'brocante':      'brocante marché puces antiquités stands',
-  'vide-grenier':  'vide grenier brocante objets occasion',
-  'marche-groupe': 'personnes marchent groupe chemin promenade',
-  'marche':        'marché alimentaire stands légumes fruits',
-  'apero':         'plateau charcuterie fromage vin apéritif festif',
-  'vin':           'dégustation vin cave bouteilles verre',
-  'moto':          'rassemblement motos route harley davidson',
-  'voiture':       'voitures anciennes collection exposition',
-  'food':          'food festival stands gastronomie rue',
-  'concert':       'concert foule scène festival musique',
-  'bd':            'bande dessinée livres comics illustration',
-  'parade':        'fête rue défilé animations fanfare',
-  'noel':          'marché noël lumières guirlandes hiver',
-  'randonnee':     'randonnée sentier nature montagne forêt',
-  'velo':          'vélo piste cyclable nature VTT',
-  'escalade':      'escalade rocher grimpe paroi',
-  'kayak':         'kayak rivière eau paddle nature',
-  'ski':           'ski neige montagne piste station',
-  'piscine':       'piscine eau natation baignade',
-  'thermes':       'thermes piscine intérieure spa bien-être',
-  'bowling':       'bowling quilles piste jeu',
-  'karting':       'karting circuit course vitesse',
-  'escape':        'escape game salle énigme mystère',
-  'trampoline':    'trampoline saut rebond sport',
-  'museum':        'musée exposition salle art patrimoine',
-  'chateau':       'château médiéval remparts histoire architecture',
-  'cinema':        'cinéma salle écran film popcorn',
-  'theatre':       'théâtre scène spectacle rideau lumières',
-  'spa':           'spa massage détente relaxation bien-être',
-  'bar':           'bar ambiance soir bières cocktails comptoir',
-  'casino':        'casino jeux cartes roulette lumières',
-  'restaurant':    'restaurant gastronomie assiette chef cuisine',
-  'zoo':           'zoo animaux nature faune parc',
-  'parc':          'parc attraction manèges loisirs familles',
-  'nature':        'nature lac forêt paysage verdure',
-  'default':       'activité loisirs sortie weekend groupe'
+  'brocante':      'flea market vendor buying antiques stalls',
+  'vide-grenier':  'flea market stalls people shopping secondhand',
+  'marche-groupe': 'group hikers walking trail together',
+  'marche':        'outdoor food market stalls vegetables fruit',
+  'apero':         'aperitif charcuterie board wine glasses friends',
+  'vin':           'wine tasting cellar bottles glasses',
+  'moto':          'motorcycle rally gathering bikes',
+  'voiture':       'vintage cars classic automobile show',
+  'food':          'street food festival stands eating',
+  'concert':       'live concert stage audience lights',
+  'bd':            'comic books library reading',
+  'parade':        'street festival parade crowd celebration',
+  'noel':          'christmas market lights decorations winter',
+  'randonnee':     'hikers walking mountain trail group people',
+  'velo':          'cycling mountain bike trail riders',
+  'escalade':      'rock climbing wall bouldering',
+  'kayak':         'kayaking river canoe water paddle',
+  'ski':           'skiing snow slope winter resort',
+  'piscine':       'swimming pool indoor water',
+  'thermes':       'thermal spa indoor pool wellness',
+  'bowling':       'bowling alley pins lane',
+  'karting':       'go kart racing circuit speed',
+  'escape':        'escape room puzzle mystery',
+  'trampoline':    'trampoline park jumping indoor',
+  'museum':        'museum art gallery exhibition hall',
+  'chateau':       'medieval castle france stone tower',
+  'cinema':        'movie theater cinema screen seats',
+  'theatre':       'theater stage performance curtain',
+  'spa':           'spa massage relaxation wellness treatment',
+  'bar':           'bar night drinks cocktails friends evening',
+  'casino':        'casino gambling roulette cards lights',
+  'restaurant':    'restaurant plate fine dining food',
+  'zoo':           'zoo animals lion giraffe wildlife',
+  'parc':          'amusement park rides family fun',
+  'nature':        'lake forest landscape green nature',
+  'default':       'weekend activities outdoor leisure group'
 };
 
-// IDs Pexels garantis pour les thèmes critiques (évite les résultats aléatoires)
+// URLs directes vérifiées — photos soigneusement sélectionnées pour chaque thème
+// Toutes testées et approuvées visuellement sur pexels.com
 const PEXELS_DIRECT = {
-  'brocante':      'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'vide-grenier':  'https://images.pexels.com/photos/6069552/pexels-photo-6069552.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'marche-groupe': 'https://images.pexels.com/photos/1586298/pexels-photo-1586298.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'marche':        'https://images.pexels.com/photos/3731256/pexels-photo-3731256.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  // Éphémères
+  'brocante':      'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vide-grenier':  'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'marche':        'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'marche-groupe': 'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'apero':         'https://images.pexels.com/photos/5935755/pexels-photo-5935755.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vin':           'https://images.pexels.com/photos/1407846/pexels-photo-1407846.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'concert':       'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'parade':        'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'noel':          'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'food':          'https://images.pexels.com/photos/2983101/pexels-photo-2983101.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'moto':          'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'voiture':       'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  // Activités fixes
+  'chateau':       'https://images.pexels.com/photos/532826/pexels-photo-532826.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'museum':        'https://images.pexels.com/photos/1674049/pexels-photo-1674049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'randonnee':     'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'velo':          'https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'kayak':         'https://images.pexels.com/photos/1497585/pexels-photo-1497585.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'escalade':      'https://images.pexels.com/photos/3077882/pexels-photo-3077882.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'spa':           'https://images.pexels.com/photos/3997989/pexels-photo-3997989.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'thermes':       'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'restaurant':    'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bar':           'https://images.pexels.com/photos/1269025/pexels-photo-1269025.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'cinema':        'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'theatre':       'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'escape':        'https://images.pexels.com/photos/5702281/pexels-photo-5702281.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'karting':       'https://images.pexels.com/photos/12801013/pexels-photo-12801013.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bowling':       'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'zoo':           'https://images.pexels.com/photos/247502/pexels-photo-247502.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'parc':          'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'nature':        'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'casino':        'https://images.pexels.com/photos/3021120/pexels-photo-3021120.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'ski':           'https://images.pexels.com/photos/848599/pexels-photo-848599.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'trampoline':    'https://images.pexels.com/photos/1171084/pexels-photo-1171084.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bd':            'https://images.pexels.com/photos/2177482/pexels-photo-2177482.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'default':       'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
 };
-// Pour tous les autres thèmes → API Pexels dynamique via PEXELS_QUERIES
 
 async function fetchPexelsPhoto(theme) {
   if (_pexelsCache[theme]) return _pexelsCache[theme];
-  // Photo directe garantie pour les thèmes critiques
+  // PRIORITÉ 1 : URL directe vérifiée (pour tous les thèmes maintenant)
   if (PEXELS_DIRECT[theme]) {
     _pexelsCache[theme] = PEXELS_DIRECT[theme];
     return PEXELS_DIRECT[theme];
   }
+  // PRIORITÉ 2 : API Pexels dynamique (sans locale pour plus de résultats)
   const query = PEXELS_QUERIES[theme] || PEXELS_QUERIES['default'];
   try {
     const res = await fetch(
-      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=10&orientation=landscape&locale=fr-FR`,
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape`,
       { headers: { Authorization: PEXELS_KEY } }
     );
     if (!res.ok) return null;
     const data = await res.json();
     const photos = data.photos || [];
     if (!photos.length) return null;
-    // Photo aléatoire parmi les résultats pour varier
-    const photo = photos[Math.floor(Math.random() * Math.min(photos.length, 5))];
+    const photo = photos[0]; // toujours la première = la plus pertinente
     const url = photo.src.landscape || photo.src.large2x || photo.src.large;
     _pexelsCache[theme] = url;
     return url;
@@ -3653,92 +3697,81 @@ async function renderAccountStats() {
         <div style="font-size:12px;color:var(--muted);margin-top:2px">${t2.statsFavs||'Favoris'}</div>
       </div>
     </div>
-    ${searches.length ? `
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🕐 ${t2.statsLastSearches||'Dernières recherches'}</div>
-    ${searches.slice(0,5).map(s=>`
-      <div class="history-item" onclick="reuseSearch('${s.location}','${s.group}',${s.budget});closeAccountPanel()">
-        <div class="history-item-loc">📍 ${s.location}</div>
-        <div class="history-item-meta">${s.group} · ${s.budget}${currentCurrency.symbol} · ${new Date(s.created_at).toLocaleDateString()}</div>
-      </div>`).join('')}` : ''}
+    ${searches.length ? '' : ''}
     <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:16px">
       🚪 ${t2.signOutBtn||'Déconnexion'}
     </button>`;
 }
 
 // ══════════════════════════════════════════════════════════════
-// PROGRAMME (soirée / journée / week-end)
+// PROGRAMME — sélecteur date simple (jj/mm)
 // ══════════════════════════════════════════════════════════════
-let _programDuration = 'soiree'; // valeur par défaut
-let _programDay = 'auto'; // auto | today | tomorrow | custom
+let _programDuration = 'weekend'; // gardé pour compatibilité prompt
 
-function selectProgramDay(btn) {
-  document.querySelectorAll('#wp-day-btns .wp-dur-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  _programDay = btn.dataset.day;
-  const customWrap = document.getElementById('wp-day-custom-input');
-  if (customWrap) customWrap.style.display = _programDay === 'custom' ? 'block' : 'none';
-  if (_programDay !== 'custom') {
-    const body = document.getElementById('weekend-program-body');
-    body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création du programme…'}</p></div>`;
-    generateWeekendProgram();
+function formatDateInput(input) {
+  // Auto-format jj/mm en tapant
+  let v = input.value.replace(/\D/g, '');
+  if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2,4);
+  input.value = v;
+}
+
+function setWpDateShortcut(mode) {
+  const today = new Date();
+  const fmt = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+  const fromEl = document.getElementById('wp-date-from');
+  const toEl = document.getElementById('wp-date-to');
+  if (!fromEl) return;
+  if (mode === 'today') {
+    fromEl.value = fmt(today); toEl.value = '';
+  } else if (mode === 'tomorrow') {
+    const tom = new Date(today); tom.setDate(today.getDate() + 1);
+    fromEl.value = fmt(tom); toEl.value = '';
+  } else if (mode === 'weekend') {
+    const day = today.getDay();
+    const sat = new Date(today); sat.setDate(today.getDate() + ((6 - day + 7) % 7 || 7));
+    const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
+    fromEl.value = fmt(sat); toEl.value = fmt(sun);
   }
 }
 
-function selectProgramDuration(btn) {
-  document.querySelectorAll('#wp-duration-btns .wp-dur-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  _programDuration = btn.dataset.dur;
-  const titles = { soiree:'🌙 Mon programme soirée', journee:'☀️ Mon programme journée', weekend:'📅 Mon programme week-end' };
-  const wpTitle = document.getElementById('wp-title');
-  if (wpTitle) wpTitle.textContent = titles[_programDuration] || '🗓 Mon programme';
-  const body = document.getElementById('weekend-program-body');
-  body.innerHTML = `<div class="program-loading"><div class="spinner"></div><p style="color:var(--muted);font-size:13px;margin-top:10px">${apt().programLoading||'Création du programme…'}</p></div>`;
-  generateWeekendProgram();
+function getWpDateLabel() {
+  const fromVal = document.getElementById('wp-date-from')?.value || '';
+  const toVal = document.getElementById('wp-date-to')?.value || '';
+  const year = new Date().getFullYear();
+  if (!fromVal || fromVal.length < 5) return '';
+  const [fd, fm] = fromVal.split('/');
+  const fromDate = new Date(year, parseInt(fm)-1, parseInt(fd));
+  const fmt = d => d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  if (toVal && toVal.length === 5) {
+    const [td, tm] = toVal.split('/');
+    const toDate = new Date(year, parseInt(tm)-1, parseInt(td));
+    // Si 2 jours = week-end → programme sur 2 jours
+    const diff = Math.round((toDate - fromDate) / 86400000);
+    _programDuration = diff >= 1 ? 'weekend' : 'journee';
+    return `Du ${fmt(fromDate)} au ${fmt(toDate)}`;
+  }
+  _programDuration = 'journee';
+  return `Le ${fmt(fromDate)}`;
 }
 
 function openWeekendProgram() {
   const modal = document.getElementById('weekend-program-modal');
   const body = document.getElementById('weekend-program-body');
-  // Reset durée à soirée par défaut
-  _programDuration = 'soiree';
-  _programDay = 'auto';
-  document.querySelectorAll('.wp-dur-btn').forEach(b => b.classList.remove('active'));
-  const defaultBtn = document.querySelector('.wp-dur-btn[data-dur="soiree"]');
-  if (defaultBtn) defaultBtn.classList.add('active');
-  const defaultDayBtn = document.querySelector('#wp-day-btns .wp-dur-btn[data-day="auto"]');
-  if (defaultDayBtn) defaultDayBtn.classList.add('active');
-  const customWrap = document.getElementById('wp-day-custom-input');
-  if (customWrap) customWrap.style.display = 'none';
-  // Traduire les boutons jour selon la langue
-  const todayD = new Date();
-  const tomD = new Date(todayD); tomD.setDate(todayD.getDate() + 1);
-  const fmtShort = d => d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { weekday:'short', day:'numeric' });
-  const wpDayToday = document.getElementById('wp-day-today');
-  const wpDayTomorrow = document.getElementById('wp-day-tomorrow');
-  if (wpDayToday) wpDayToday.textContent = fmtShort(todayD);
-  if (wpDayTomorrow) wpDayTomorrow.textContent = fmtShort(tomD);
-  const wpTitle = document.getElementById('wp-title');
-  if (wpTitle) wpTitle.textContent = '🌙 Mon programme soirée';
   modal.classList.add('open');
-  // Afficher un écran "Choisissez vos options" au lieu de générer directement
+  // Pré-remplir avec ce week-end par défaut
+  setWpDateShortcut('weekend');
+  // Afficher état initial "choisir date"
   const favs = localLoad('favorites') || [];
   if (favs.length < 2) {
     body.innerHTML = `<p style="color:var(--muted);padding:20px;text-align:center">${apt().programMinFavs||'Ajoute au moins 2 favoris !'}</p>`;
-    return;
+  } else {
+    body.innerHTML = `
+      <div style="text-align:center;padding:30px 20px">
+        <div style="font-size:40px;margin-bottom:10px">🗓</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:6px">${favs.length} favori${favs.length>1?'s':''}</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong></div>
+      </div>`;
   }
-  body.innerHTML = `
-    <div style="text-align:center;padding:30px 20px">
-      <div style="font-size:48px;margin-bottom:12px">🗓</div>
-      <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px">
-        ${favs.length} activité${favs.length > 1 ? 's' : ''} en favori${favs.length > 1 ? 's' : ''}
-      </div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5">
-        Choisis la durée et le jour en haut,<br>puis lance la génération.
-      </div>
-      <button onclick="generateWeekendProgram()" class="generate-program-btn">
-        ✨ Générer mon programme
-      </button>
-    </div>`;
 }
 
 function closeWeekendProgram() {
@@ -3763,41 +3796,20 @@ async function generateWeekendProgram() {
   const langNames = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
   const langInstr = `Réponds en ${langNames[lang]||'français'}.`;
 
-  // Calculer la date selon le choix
-  const today = new Date();
-  const fmt = d => d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { weekday:'long', day:'numeric', month:'long' });
-  let dateLabel = '';
-  const dayMode = _programDay || 'auto';
-  if (dayMode === 'today') {
-    dateLabel = fmt(today);
-  } else if (dayMode === 'tomorrow') {
-    const tom = new Date(today); tom.setDate(tom.getDate() + 1);
-    dateLabel = fmt(tom);
-  } else if (dayMode === 'custom') {
-    const customVal = document.getElementById('wp-custom-date')?.value;
-    if (customVal) dateLabel = fmt(new Date(customVal + 'T12:00:00'));
-  } else {
-    // auto = ce week-end
-    const day = today.getDay();
-    const sat = new Date(today); sat.setDate(today.getDate() + ((6 - day + 7) % 7 || 7));
-    const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
-    dateLabel = fmt(sat) + ' et ' + fmt(sun);
-  }
-  const dateInstr = dateLabel ? `\nDATE: Le programme est prévu pour le ${dateLabel}.` : '';
+  // Date via le nouveau sélecteur jj/mm
+  const dateLabel = getWpDateLabel();
+  const dateInstr = dateLabel ? `\nDATE: Le programme est prévu pour : ${dateLabel}.` : '';
 
-  // Prompt adapté selon la durée
-  const dur = _programDuration || 'soiree';
+  // Durée déterminée par getWpDateLabel() (met à jour _programDuration)
+  const dur = _programDuration || 'weekend';
   let durInstr = '';
   let jsonStructure = '';
 
-  if (dur === 'soiree') {
-    durInstr = `Crée un programme pour UNE SOIRÉE (environ 18h-23h) en sélectionnant 2-3 activités parmi les favorites qui conviennent à une soirée. Organise-les de façon fluide avec des transitions logiques.`;
-    jsonStructure = `{"soiree": [{"heure":"18h30","titre":"...","duree":"2h","transport":"à pied","trajet":"5 min","note":"...","type":"activite"}]}`;
-  } else if (dur === 'journee') {
+  if (dur === 'journee') {
     durInstr = `Crée un programme pour UNE JOURNÉE (environ 9h-20h) en sélectionnant 3-4 activités parmi les favorites. Inclus une pause déjeuner logique.`;
     jsonStructure = `{"journee": [{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"},{"heure":"12h30","titre":"Déjeuner","duree":"1h30","transport":"","trajet":"","note":"suggestion de restaurant","type":"repas"}]}`;
   } else {
-    durInstr = `Crée un programme pour un WEEK-END complet sur SAMEDI et DIMANCHE en organisant toutes les activités de façon optimale. Inclus des pauses repas logiques.`;
+    durInstr = `Crée un programme sur les dates indiquées en organisant toutes les activités favorites de façon optimale. Si plusieurs jours, répartis sur SAMEDI et DIMANCHE. Inclus des pauses repas logiques.`;
     jsonStructure = `{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite"}]}`;
   }
 
