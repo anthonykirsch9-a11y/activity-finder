@@ -2982,18 +2982,7 @@ async function runSearch(fromMap) {
         const langInstruction = `LANGUE: Réponds OBLIGATOIREMENT en ${LANG_NAMES[lang] || 'français'}. Tous les textes (titre, description, infos_pratiques, pourquoi_adapte) doivent être en ${LANG_NAMES[lang] || 'français'}.\n`;
         const strictRules = "REGLES CRITIQUES:\n1. LIEUX VERIFIES EN PRIORITE: Si des lieux certifies sont fournis, utilise-les en priorite. lieu_certain:true pour eux.\n2. LIEUX INVENTES INTERDITS: Bars/restos sans certitude = description generique sans nom invente. lieu_certain:false.\n3. BROCANTES/MARCHES: Ville exacte obligatoire.\n4. DATE: Chaque activite realisable le jour demande.\n5. METEO: Respecter strictement.\n6. GPS: lat/lng precis dans les champs JSON, jamais 0.0. NE PAS mentionner les coordonnees GPS dans la description ou les infos_pratiques.\n7. PAS DE GPS DANS LA DESCRIPTION: Ne jamais ecrire 'GPS: xx.xxxx, xx.xxxx' dans description ou infos_pratiques.\n8. EPHEMERE INTERDIT pour lieux PERMANENTS: casino, restaurant, musee, spa, bowling, karting, cinema, bar, theatre, parc = JAMAIS ephemere:true. 'ephemere:true' UNIQUEMENT si l'activite a une date precise et unique (brocante du dimanche, fete locale, concert ponctuel, marche saisonnier). Un casino qui 'propose des soirees regulieres' n'est PAS ephemere.";
 
-        // ── Variété forcée : exclure titres déjà vus pour cette ville ──
-        const recentSearches = localLoad('searches') || [];
-        const sameLocationRecent = recentSearches.filter(s =>
-          s.location && location &&
-          s.location.toLowerCase().split(',')[0].trim() === location.toLowerCase().split(',')[0].trim() &&
-          Date.now() - new Date(s.created_at).getTime() < 7 * 24 * 60 * 60 * 1000
-        );
-        const recentTitles = [];
-        sameLocationRecent.forEach(s => { if (s.titles && Array.isArray(s.titles)) recentTitles.push(...s.titles); });
-        const varietyInstruction = recentTitles.length > 0
-          ? `\nVARIÉTÉ OBLIGATOIRE: Ces activités ont déjà été proposées récemment, NE PAS les reproposer: ${recentTitles.slice(0,8).join(', ')}. Propose des activités DIFFÉRENTES.`
-          : '';
+        const varietyInstruction = ''; // variété gérée côté prompt
 
         const rawPrompt = fromMap && mapSearchCoords
           ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
