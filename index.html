@@ -2644,17 +2644,15 @@ async function loadGooglePhoto(imgEl, placeId) {
 
 function formatGooglePlacesForPrompt(places) {
   if (!places.length) return '';
-  // Limiter à 12 lieux max (Claude n'en utilise que 4-6) — réduit les tokens de ~60%
   const list = places.slice(0, 12).map((p, i) =>
-    (i+1) + '. ' + (p.displayName && p.displayName.text ? p.displayName.text : p.name || 'Lieu') +
+    (i+1) + '. ' + (p.displayName?.text || p.name || 'Lieu') +
     ' (' + (p.primaryType || 'lieu') + ')' +
-    (p.formattedAddress ? ' -- ' + p.formattedAddress : '') +
-    (p.rating ? ' -- Note: ' + p.rating + '/5' : '') +
-    (p.location ? ' [GPS: ' + p.location.latitude.toFixed(4) + ',' + p.location.longitude.toFixed(4) + ']' : '') +
-    (p.id ? ' [placeId:' + p.id + ']' : '')
+    (p.formattedAddress ? ' | ' + p.formattedAddress : '') +
+    (p.rating ? ' | ★' + p.rating : '') +
+    (p.location ? ' | GPS:' + p.location.latitude.toFixed(4) + ',' + p.location.longitude.toFixed(4) : '') +
+    (p.id ? ' | id:' + p.id : '')
   ).join('\n');
-  return "\n\nLIEUX GOOGLE MAPS CERTIFIES:\n" + list +
-    "\n\nCRUCIAL: Utilise CES lieux. Au moins 4 parmi cette liste. lieu_certain:true. GPS exacts fournis. Pour chaque lieu utilisé, copie exactement son placeId dans le champ \"placeId\" du JSON. Si escape game, karting ou bowling dans la liste, inclus-les.";
+  return list + '\nUtilise ces lieux(lieu_certain:true,placeId exact).';
 }
 
 // ── Couleurs et icônes par type d'activité ──
@@ -2894,8 +2892,8 @@ async function runSearch(fromMap) {
         const weatherContext = getWeatherContext();
         const weatherHeader = weatherContext ? '🌤 METEO: ' + weatherContext.replace('\n- Météo: ','') + '\n' : '';
         const LANG_NAMES = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
-        const langInstruction = `LANGUE: Réponds OBLIGATOIREMENT en ${LANG_NAMES[lang] || 'français'}. Tous les textes (titre, description, infos_pratiques, pourquoi_adapte) doivent être en ${LANG_NAMES[lang] || 'français'}.\n`;
-        const strictRules = "REGLES CRITIQUES:\n1. LIEUX VERIFIES EN PRIORITE: Si des lieux certifies sont fournis, utilise-les en priorite. lieu_certain:true pour eux.\n2. LIEUX INVENTES INTERDITS: Bars/restos sans certitude = description generique sans nom invente. lieu_certain:false.\n3. BROCANTES/MARCHES: Ville exacte obligatoire.\n4. DATE: Chaque activite realisable le jour demande.\n5. METEO: Respecter strictement.\n6. GPS: lat/lng precis dans les champs JSON, jamais 0.0. NE PAS mentionner les coordonnees GPS dans la description ou les infos_pratiques.\n7. PAS DE GPS DANS LA DESCRIPTION: Ne jamais ecrire 'GPS: xx.xxxx, xx.xxxx' dans description ou infos_pratiques.\n8. EPHEMERE INTERDIT pour lieux PERMANENTS: casino, restaurant, musee, spa, bowling, karting, cinema, bar, theatre, parc = JAMAIS ephemere:true. 'ephemere:true' UNIQUEMENT si l'activite a une date precise et unique (brocante du dimanche, fete locale, concert ponctuel, marche saisonnier). Un casino qui 'propose des soirees regulieres' n'est PAS ephemere.";
+        const langInstruction = `Réponds en ${LANG_NAMES[lang] || 'français'}.\n`;
+        const strictRules = "REGLES:1.Utilise les lieux certifiés fournis(lieu_certain:true).2.Pas de noms inventés(lieu_certain:false).3.GPS précis jamais 0.0.4.Pas de coords GPS dans description.5.ephemere:true SEULEMENT si date unique(brocante,fête locale,concert ponctuel).Casino/restaurant/musée/spa/bowling/karting/cinéma/bar=jamais ephemere:true.";
 
         const varietyInstruction = ''; // variété gérée côté prompt
 
@@ -2903,8 +2901,8 @@ async function runSearch(fromMap) {
           ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
           : t.promptFn(group, agesStr, ageStr, budgetContext, location, radius, moodsStr + doneContext, eph, night);
 
-        const placesHeader = realPlacesContext ?
-          '=== LIEUX REELS GOOGLE MAPS A UTILISER OBLIGATOIREMENT ===\n' + realPlacesContext + '\n=== FIN LIEUX REELS ===\n\n'
+        const placesHeader = realPlacesContext
+          ? 'LIEUX CERTIFIÉS:\n' + realPlacesContext + '\n\n'
           : '';
         const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + '\n\n' + rawPrompt;
 
@@ -2950,14 +2948,31 @@ async function runSearch(fromMap) {
       throw e;
     }
 
-    const text = _claudeData.content.map(i => i.text || '').filter(Boolean).join('');
+    // Parsing robuste — extraire le JSON peu importe le format de réponse
+    const text = _claudeData.content
+      .filter(i => i.type === 'text')
+      .map(i => i.text || '')
+      .join('');
 
-    // Parsing robuste — Haiku peut entourer le JSON de texte
+    if (!text.trim()) {
+      // Cas où Claude répond avec tool_use sans text (ancienne config Supabase)
+      // Essayer de récupérer le contenu des tool_results
+      const allText = _claudeData.content.map(i => i.text || i.content || '').join('');
+      if (!allText.includes('[') || !allText.includes('{')) {
+        throw new Error('Réponse Claude vide ou sans JSON. Réessaie dans quelques secondes.');
+      }
+    }
+
     let jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (!jsonMatch) {
-      // Essayer d'extraire depuis des backticks
       const backtickMatch = text.match(/```(?:json)?\s*(\[[\s\S]*\])\s*```/);
       if (backtickMatch) jsonMatch = [backtickMatch[1]];
+    }
+    // Dernier recours : chercher dans tout le contenu
+    if (!jsonMatch) {
+      const fullContent = _claudeData.content.map(i => i.text || JSON.stringify(i.content||'')).join('');
+      const fullMatch = fullContent.match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (fullMatch) jsonMatch = fullMatch;
     }
     if (!jsonMatch) throw new Error('Pas de JSON dans la reponse');
 
