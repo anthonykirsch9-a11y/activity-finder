@@ -1220,7 +1220,26 @@ const STRIPE_PUB_KEY   = 'COLLE_TON_STRIPE_PUBLISHABLE_KEY_ICI';
 const STRIPE_PRICE_ID  = 'COLLE_TON_STRIPE_PRICE_ID_ICI';
 const FREE_LIMIT       = 3;
 
-// ── STATE GLOBAL (déclaré en premier pour éviter les erreurs d'initialisation) ──
+// ══════════════════════════════════════════════════════════════
+// CACHE RÉSULTATS CLAUDE — localStorage 2h, évite appels répétés
+// ══════════════════════════════════════════════════════════════
+function _mkCacheKey(location, group, budget, moods, radius, onlyMode) {
+  const loc = (location||'').toLowerCase().split(',')[0].trim().substring(0,20);
+  return 'af_cache_' + [loc, group||'', budget||'', moods||'', radius||'', onlyMode||''].join('|').substring(0,100);
+}
+function _getCache(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (Date.now() - entry.ts > 2 * 60 * 60 * 1000) { localStorage.removeItem(key); return null; }
+    console.log('⚡ Cache hit!');
+    return entry.data;
+  } catch(e) { return null; }
+}
+function _setCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+}
 let currentUser = null;
 let userPlan = 'free';
 let searchCount = 0;
@@ -2904,6 +2923,7 @@ async function runSearch(fromMap) {
 
     // ── PARALLÉLISATION : Géocodage + Google Places simultanés ──
     let realPlacesContext = '';
+    let _ck = ''; // clé cache — déclarée ici pour être accessible après le try
     console.log('🚀 runSearch started, location:', location);
     try {
       let searchLat = (fromMap && mapSearchCoords) ? mapSearchCoords.lat : (_selectedCityCoords ? _selectedCityCoords.lat : null);
@@ -2969,17 +2989,46 @@ async function runSearch(fromMap) {
         const placesHeader = realPlacesContext ?
           '=== LIEUX REELS GOOGLE MAPS A UTILISER OBLIGATOIREMENT ===\n' + realPlacesContext + '\n=== FIN LIEUX REELS ===\n\n'
           : '';
-        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + getSpecialEventContext() + '\n\n' + rawPrompt;
+        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + '\n\n' + rawPrompt;
 
-        // Sonnet pour tous — Haiku trop peu fiable pour le JSON complexe
+        // ── Cache 2h : même recherche → résultats instantanés ──
+        _ck = _mkCacheKey(location, group, budget, moodsForSearch, radius, onlyMode);
+        const _cached = _getCache(_ck);
+        if (_cached) {
+          renderResults(_cached, location, radius, budget, group, ages);
+          window._lastActivities = _cached;
+          setTimeout(() => { if (map) placeActivityMarkers(_cached); else window._pendingMarkers = _cached; }, 500);
+          if (sb) { sb.disabled = false; document.getElementById('submit-label').textContent = t.submitLabel||'Trouver mes activités →'; }
+          return;
+        }
+
+        // ── Modèle adaptatif selon le contexte ──
+        // Sans éphémères → Sonnet sans web search (8-12s, ~$0.08)
+        // Avec éphémères → Sonnet avec web search (25-35s, ~$0.40) justifié
+        const needsWebSearch = ephemOn || onlyMode === 'ephem';
         const selectedModel = 'claude-sonnet-4-6';
+
+        // ── Variété forcée : si même ville récemment → exclure les titres déjà vus ──
+        const recentSearches = localLoad('searches') || [];
+        const sameLocationRecent = recentSearches.filter(s =>
+          s.location && location &&
+          s.location.toLowerCase().split(',')[0].trim() === location.toLowerCase().split(',')[0].trim() &&
+          Date.now() - new Date(s.created_at).getTime() < 7 * 24 * 60 * 60 * 1000 // 7 jours
+        );
+        const recentTitles = [];
+        sameLocationRecent.forEach(s => {
+          if (s.titles && Array.isArray(s.titles)) recentTitles.push(...s.titles);
+        });
+        const varietyInstruction = recentTitles.length > 0
+          ? `\nVARIÉTÉ OBLIGATOIRE: Ces activités ont déjà été proposées récemment pour cette ville, NE PAS les reproposer: ${recentTitles.slice(0,8).join(', ')}. Propose des activités DIFFÉRENTES.`
+          : '';
 
         // Appel Claude via Supabase Edge Function
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
         const res = await fetch(EDGE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-          body: JSON.stringify({ prompt, model: selectedModel })
+          body: JSON.stringify({ prompt, model: selectedModel, webSearch: needsWebSearch })
         });
 
         if (!res.ok) {
@@ -3016,8 +3065,9 @@ async function runSearch(fromMap) {
 
     // Stocker dans le cache Claude (2h) pour éviter les appels répétés
     renderResults(activities, location, radius, budget, group, ages);
+    _setCache(_ck, activities); // cache 2h
     await incrementSearchCount();
-    await saveSearch(location, group, budget);
+    await saveSearch(location, group, budget, activities);
 
     window._lastActivities = activities;
     setTimeout(() => {
@@ -3293,7 +3343,7 @@ function updateLimitBanner() {
     document.getElementById('limit-count').textContent = 'Passe en Pro pour continuer à explorer.';
     banner.classList.add('show');
   } else if (remaining <= 1) {
-    document.getElementById('limit-text').textContent = "Plus qu'1 recherche gratuite ce mois-ci.";
+    document.getElementById('limit-text').textContent = `Plus que ${Math.max(0, FREE_LIMIT - searchCount)} recherche${(FREE_LIMIT - searchCount) > 1 ? 's' : ''} gratuite${(FREE_LIMIT - searchCount) > 1 ? 's' : ''} ce mois-ci.`;
     document.getElementById('limit-count').textContent = '';
     banner.classList.add('show');
   } else {
@@ -3601,7 +3651,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
-    proFeatures:['✨ Suggestions plus riches et détaillées','♾️ Recherches illimitées','❤️ Favoris & album souvenirs avec photos','⭐ Notes sur chaque activité','🔁 Ne repropose plus les activités déjà faites','🗓 Programme week-end complet basé sur tes favoris','🎊 Occasions spéciales (EVJF, anniversaire, team building…)','📍 Ajoute tes événements locaux','🚫 Sans publicité'],
+    proFeatures:['✨ Suggestions plus riches et détaillées','♾️ Recherches illimitées','❤️ Favoris & album souvenirs avec photos','⭐ Notes sur chaque activité','🔁 Ne repropose plus les activités déjà faites','🗓 Programme week-end complet basé sur tes favoris','📍 Ajoute tes événements locaux','🚫 Sans publicité'],
     proBtn:'Passer Pro — 2,99 € / mois',
     loginBtn:'Se connecter',
     signOutBtn:'Déconnexion',
@@ -3633,7 +3683,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected',
     proTitle:'Activity Finder Pro', proPrice:'€2.99', proPerMonth:'/month',
-    proFeatures:['✨ Richer and more detailed suggestions','♾️ Unlimited searches','❤️ Favorites & photo memory book','⭐ Rate each activity','🔁 Won\'t suggest already done activities','🗓 Full weekend program based on your favorites','🎊 Special occasions (bachelorette, birthday, team building…)','📍 Add your local events','🚫 Ad-free'],
+    proFeatures:['✨ Richer and more detailed suggestions','♾️ Unlimited searches','❤️ Favorites & photo memory book','⭐ Rate each activity','🔁 Won\'t suggest already done activities','🗓 Full weekend program based on your favorites','📍 Add your local events','🚫 Ad-free'],
     proBtn:'Go Pro — €2.99 / month',
     loginBtn:'Sign in',
     signOutBtn:'Sign out',
@@ -3665,7 +3715,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mes',
-    proFeatures:['✨ Sugerencias más ricas y detalladas','♾️ Búsquedas ilimitadas','❤️ Favoritos & álbum de recuerdos','⭐ Valora cada actividad','🔁 No repropone actividades ya realizadas','🗓 Programa completo de fin de semana','🎊 Ocasiones especiales (EVJF, cumpleaños, team building…)','📍 Añade eventos locales','🚫 Sin publicidad'],
+    proFeatures:['✨ Sugerencias más ricas y detalladas','♾️ Búsquedas ilimitadas','❤️ Favoritos & álbum de recuerdos','⭐ Valora cada actividad','🔁 No repropone actividades ya realizadas','🗓 Programa completo de fin de semana','📍 Añade eventos locales','🚫 Sin publicidad'],
     proBtn:'Pasar a Pro — 2,99 € / mes',
     loginBtn:'Iniciar sesión',
     signOutBtn:'Cerrar sesión',
@@ -3697,7 +3747,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
-    proFeatures:['✨ Reichhaltigere Vorschläge','♾️ Unbegrenzte Suchen','❤️ Favoriten & Fotobuch','⭐ Aktivitäten bewerten','🔁 Keine Wiederholung erledigter Aktivitäten','🗓 Komplettes Wochenprogramm','🎊 Besondere Anlässe (JGA, Geburtstag, Team Building…)','📍 Lokale Events hinzufügen','🚫 Werbefrei'],
+    proFeatures:['✨ Reichhaltigere Vorschläge','♾️ Unbegrenzte Suchen','❤️ Favoriten & Fotobuch','⭐ Aktivitäten bewerten','🔁 Keine Wiederholung erledigter Aktivitäten','🗓 Komplettes Wochenprogramm','📍 Lokale Events hinzufügen','🚫 Werbefrei'],
     proBtn:'Pro werden — 2,99 € / Monat',
     loginBtn:'Anmelden',
     signOutBtn:'Abmelden',
@@ -3729,7 +3779,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connesso',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mese',
-    proFeatures:['✨ Suggerimenti più ricchi e dettagliati','♾️ Ricerche illimitate','❤️ Preferiti & album ricordi','⭐ Valuta ogni attività','🔁 Non ripropone attività già svolte','🗓 Programma weekend completo','🎊 Occasioni speciali (addio nubilato, compleanno, team building…)','📍 Aggiungi eventi locali','🚫 Senza pubblicità'],
+    proFeatures:['✨ Suggerimenti più ricchi e dettagliati','♾️ Ricerche illimitate','❤️ Preferiti & album ricordi','⭐ Valuta ogni attività','🔁 Non ripropone attività già svolte','🗓 Programma weekend completo','📍 Aggiungi eventi locali','🚫 Senza pubblicità'],
     proBtn:'Passa a Pro — 2,99 € / mese',
     loginBtn:'Accedi',
     signOutBtn:'Disconnetti',
@@ -3761,7 +3811,7 @@ const AP_TRANSLATIONS = {
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Não conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mês',
-    proFeatures:['✨ Sugestões mais ricas e detalhadas','♾️ Pesquisas ilimitadas','❤️ Favoritos & álbum de memórias','⭐ Avalia cada atividade','🔁 Não repropõe atividades já feitas','🗓 Programa completo de fim de semana','🎊 Ocasiões especiais (despedida, aniversário, team building…)','📍 Adiciona eventos locais','🚫 Sem publicidade'],
+    proFeatures:['✨ Sugestões mais ricas e detalhadas','♾️ Pesquisas ilimitadas','❤️ Favoritos & álbum de memórias','⭐ Avalia cada atividade','🔁 Não repropõe atividades já feitas','🗓 Programa completo de fim de semana','📍 Adiciona eventos locais','🚫 Sem publicidade'],
     proBtn:'Ir para Pro — 2,99 € / mês',
     loginBtn:'Entrar',
     signOutBtn:'Sair',
@@ -4600,11 +4650,14 @@ function canSearch() {
 }
 
 // ── History ──
-async function saveSearch(location, group, budget) {
-  if (userPlan !== 'pro') return;
+async function saveSearch(location, group, budget, activities) {
+  if (userPlan !== 'pro' && !currentUser) return; // sauvegarder aussi pour les beta
+  // Extraire les titres pour la variété future
+  const titles = Array.isArray(activities) ? activities.map(a => a.titre).filter(Boolean) : [];
   const searchData = {
     user_id: currentUser?.id||'beta',
     location, group, budget,
+    titles, // pour forcer la variété aux prochaines recherches
     created_at: new Date().toISOString()
   };
   if (_sb && currentUser && currentUser.id !== 'beta-user') {
