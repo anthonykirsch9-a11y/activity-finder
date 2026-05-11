@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<style> 
+<style>
 :root {
   /* Brand — Corail terracotta */
   --primary: #5C7A5A;        /* Sauge profond */
@@ -1830,9 +1830,9 @@ function renderAges() {
   if (agesSection) agesSection.style.display = '';
   if (participantsSection) participantsSection.style.display = 'none';
 
-  const ageOptions = Array.from({length:100}, (_,i) =>
-    `<option value="${i+1}">${i+1}</option>`
-  ).join('');
+  // 18 en premier → visible en haut, puis 19-100, puis 1-17 pour enfants
+  const ageNums = [...Array.from({length:83}, (_,i) => i+18), ...Array.from({length:17}, (_,i) => i+1)];
+  const ageOptions = ageNums.map(n => `<option value="${n}">${n}</option>`).join('');
 
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
