@@ -2398,9 +2398,46 @@ const PEXELS_QUERIES = {
   'default':'weekend activities outdoor leisure group'
 };
 
-// PEXELS_DIRECT vide — les URLs directes font 403 depuis GitHub Pages
-// L'API Pexels (Authorization header) fonctionne correctement depuis les navigateurs
-const PEXELS_DIRECT = {};
+// URLs directes Pexels — fonctionnent depuis le navigateur (pas depuis serveur)
+const PEXELS_DIRECT = {
+  // Éphémères
+  'brocante':      'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vide-grenier':  'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'marche':        'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'marche-groupe': 'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'apero':         'https://images.pexels.com/photos/5935755/pexels-photo-5935755.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vin':           'https://images.pexels.com/photos/1407846/pexels-photo-1407846.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'concert':       'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'parade':        'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'noel':          'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'food':          'https://images.pexels.com/photos/2983101/pexels-photo-2983101.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'moto':          'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'voiture':       'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  // Activités fixes
+  'chateau':       'https://images.pexels.com/photos/532826/pexels-photo-532826.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'museum':        'https://images.pexels.com/photos/1674049/pexels-photo-1674049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'randonnee':     'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'velo':          'https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'kayak':         'https://images.pexels.com/photos/1497585/pexels-photo-1497585.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'escalade':      'https://images.pexels.com/photos/3077882/pexels-photo-3077882.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'spa':           'https://images.pexels.com/photos/3997989/pexels-photo-3997989.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'thermes':       'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'restaurant':    'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bar':           'https://images.pexels.com/photos/1269025/pexels-photo-1269025.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'cinema':        'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'theatre':       'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'escape':        'https://images.pexels.com/photos/5702281/pexels-photo-5702281.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'karting':       'https://images.pexels.com/photos/12801013/pexels-photo-12801013.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bowling':       'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'zoo':           'https://images.pexels.com/photos/247502/pexels-photo-247502.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'parc':          'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'nature':        'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'casino':        'https://images.pexels.com/photos/3021120/pexels-photo-3021120.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'ski':           'https://images.pexels.com/photos/848599/pexels-photo-848599.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'trampoline':    'https://images.pexels.com/photos/1171084/pexels-photo-1171084.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bd':            'https://images.pexels.com/photos/2177482/pexels-photo-2177482.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'default':       'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+};
 
 async function fetchPexelsPhoto(theme) {
   if (_pexelsCache[theme]) return _pexelsCache[theme];
