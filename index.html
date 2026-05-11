@@ -101,6 +101,33 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .age-label { font-size: 13px; color: var(--muted); min-width: 90px; }
 .age-input { width: 70px; padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--input-bg); outline: none; transition: border-color 0.15s; }
 .age-input:focus { border-color: var(--primary); }
+/* Custom age picker */
+.age-picker-wrap { position: relative; width: 70px; }
+.age-picker-btn {
+  width: 70px; min-height: 44px; padding: 8px 10px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  color: var(--text); background: var(--input-bg); cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 4px;
+  transition: border-color 0.15s; user-select: none;
+}
+.age-picker-btn:hover, .age-picker-btn.open { border-color: var(--primary); }
+.age-picker-btn .age-arrow { font-size: 10px; color: var(--muted); }
+.age-picker-dropdown {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0;
+  width: 70px; max-height: 220px; overflow-y: auto;
+  background: var(--input-bg); border: 2px solid var(--primary);
+  border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 9999; scroll-behavior: auto;
+}
+.age-picker-dropdown.open { display: block; }
+.age-picker-option {
+  padding: 8px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+  color: var(--text); cursor: pointer; transition: background 0.1s;
+  text-align: center;
+}
+.age-picker-option:hover { background: var(--primary-light); color: var(--primary); }
+.age-picker-option.selected { background: var(--primary); color: #fff; font-weight: 700; }
 .add-person-btn { font-size: 12px; color: var(--primary); background: var(--primary-light); border: 1.5px dashed var(--primary); border-radius: 8px; padding: 5px 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all 0.15s; }
 .add-person-btn:hover { background: var(--primary-light); opacity: 0.85; }
 .remove-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 4px; transition: color 0.15s; }
@@ -1831,22 +1858,38 @@ function renderAges() {
   if (participantsSection) participantsSection.style.display = 'none';
 
   // 18 en premier → visible en haut, puis 19-100, puis 1-17 pour enfants
-  const ageOptions = Array.from({length:100}, (_,i) => `<option value="${i+1}">${i+1}</option>`).join('');
+  // Générer toutes les options 1-100
+  const allAges = Array.from({length:100}, (_,i) => i+1);
+  const ageOptionsHtml = allAges.map(n =>
+    `<div class="age-picker-option${n===18?' selected':''}" data-val="${n}" onclick="selectAge(this)">${n}</div>`
+  ).join('');
 
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
       <span class="age-label">${p.label}</span>
-      <select class="age-input" id="age-${p.id}" style="min-height:44px;padding:8px 10px">
-        <option value="">${tx().agePlaceholder||'—'}</option>
-        ${ageOptions}
-      </select>
+      <div class="age-picker-wrap" id="wrap-${p.id}">
+        <div class="age-picker-btn" id="age-btn-${p.id}" onclick="toggleAgePicker('${p.id}')">
+          <span id="age-val-${p.id}">18</span>
+          <span class="age-arrow">▾</span>
+        </div>
+        <input type="hidden" class="age-input" id="age-${p.id}" value="18">
+        <div class="age-picker-dropdown" id="age-drop-${p.id}">
+          ${ageOptionsHtml}
+        </div>
+      </div>
       ${persons.length > 1 ? `<button class="remove-btn" onclick="removePerson('${p.id}')">×</button>` : ''}
     </div>`).join('');
 
-  // Sélectionner 18 — le navigateur positionne automatiquement la liste sur la valeur sélectionnée
+  // Positionner chaque dropdown sur 18 dès le rendu
   persons.forEach(p => {
-    const sel = document.getElementById('age-' + p.id);
-    if (sel && !sel.value) sel.value = '18';
+    const drop = document.getElementById('age-drop-' + p.id);
+    if (drop) {
+      const opt18 = drop.querySelector('[data-val="18"]');
+      if (opt18) {
+        // Scroll pour que 18 soit en haut du dropdown
+        drop.scrollTop = opt18.offsetTop;
+      }
+    }
   });
 }
 syncAgesUI();
@@ -1865,6 +1908,52 @@ function toggleOnlyMode(mode) {
     if (mode === 'night' && !nightOn) { nightOn = true; document.getElementById('night-track').classList.add('on-night'); }
   }
 }
+
+function toggleAgePicker(personId) {
+  const drop = document.getElementById('age-drop-' + personId);
+  const btn = document.getElementById('age-btn-' + personId);
+  if (!drop) return;
+  const isOpen = drop.classList.contains('open');
+  // Fermer tous les autres
+  document.querySelectorAll('.age-picker-dropdown.open').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.age-picker-btn.open').forEach(b => b.classList.remove('open'));
+  if (!isOpen) {
+    drop.classList.add('open');
+    btn.classList.add('open');
+    // Scroller pour que la valeur sélectionnée soit en haut
+    const selected = drop.querySelector('.age-picker-option.selected');
+    if (selected) {
+      setTimeout(() => { drop.scrollTop = selected.offsetTop; }, 0);
+    }
+  }
+}
+
+function selectAge(optEl) {
+  const val = optEl.dataset.val;
+  const drop = optEl.closest('.age-picker-dropdown');
+  const wrap = optEl.closest('.age-picker-wrap');
+  if (!drop || !wrap) return;
+  // Mettre à jour la sélection visuelle
+  drop.querySelectorAll('.age-picker-option').forEach(o => o.classList.remove('selected'));
+  optEl.classList.add('selected');
+  // Mettre à jour le bouton et l'input hidden
+  const personId = wrap.id.replace('wrap-', '');
+  const valEl = document.getElementById('age-val-' + personId);
+  const hiddenInput = document.getElementById('age-' + personId);
+  if (valEl) valEl.textContent = val;
+  if (hiddenInput) hiddenInput.value = val;
+  // Fermer le dropdown
+  drop.classList.remove('open');
+  wrap.querySelector('.age-picker-btn')?.classList.remove('open');
+}
+
+// Fermer les pickers au clic extérieur
+document.addEventListener('click', e => {
+  if (!e.target.closest('.age-picker-wrap')) {
+    document.querySelectorAll('.age-picker-dropdown.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.age-picker-btn.open').forEach(b => b.classList.remove('open'));
+  }
+});
 
 function toggleEphem() {
   ephemOn = !ephemOn;
