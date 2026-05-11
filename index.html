@@ -1220,6 +1220,27 @@ const STRIPE_PUB_KEY   = 'COLLE_TON_STRIPE_PUBLISHABLE_KEY_ICI';
 const STRIPE_PRICE_ID  = 'COLLE_TON_STRIPE_PRICE_ID_ICI';
 const FREE_LIMIT       = 3;
 
+// ══════════════════════════════════════════════════════════════
+// CACHE RÉSULTATS CLAUDE — évite les appels répétés (2h, $0)
+// ══════════════════════════════════════════════════════════════
+const _claudeCache = {};
+function _claudeCacheKey(location, group, ages, budget, moods, radius, dateStr, onlyMode) {
+  const loc = (location||'').toLowerCase().split(',')[0].trim();
+  const ag = Array.isArray(ages) ? ages.join('-') : (ages||'');
+  return [loc, group||'', ag, budget||'', moods||'', radius||'', dateStr||'flex', onlyMode||''].join('|');
+}
+function _getCachedResults(key) {
+  const e = _claudeCache[key];
+  if (!e) return null;
+  if (Date.now() - e.ts > 2 * 60 * 60 * 1000) { delete _claudeCache[key]; return null; }
+  console.log('⚡ Cache Claude hit! (' + Math.round((Date.now()-e.ts)/1000) + 's ago)');
+  return e.data;
+}
+function _setCachedResults(key, data) {
+  if (!key || !data) return;
+  _claudeCache[key] = { data, ts: Date.now() };
+}
+
 // ── STATE GLOBAL (déclaré en premier pour éviter les erreurs d'initialisation) ──
 let currentUser = null;
 let userPlan = 'free';
@@ -2930,7 +2951,8 @@ async function runSearch(fromMap) {
         const r = parseInt(radius) || 25;
 
         // ── Cache Claude : si même recherche dans les 2h → résultats instantanés ──
-        const cacheKey = _claudeCacheKey(location, group, ages, budget, moodsForSearch, radius, dateStr, onlyMode);
+        // Clé de cache — assignée au let déclaré plus haut
+        cacheKey = _claudeCacheKey(location, group, ages, budget, moodsForSearch, radius, dateStr, onlyMode);
         const cached = _getCachedResults(cacheKey);
         if (cached) {
           renderResults(cached, location, radius, budget, group, ages);
