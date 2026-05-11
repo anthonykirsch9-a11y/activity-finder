@@ -2471,7 +2471,62 @@ async function loadPexelsPhoto(imgEl, type, titre) {
   const theme = getPhotoTheme(type, titre);
   const url = await fetchPexelsPhoto(theme);
   if (url) imgEl.src = url;
-  // Si pas d'URL Pexels → le SVG thématique reste affiché
+}
+
+function makePhotoSvg(theme) {
+  const th = PHOTO_THEMES[theme] || PHOTO_THEMES['default'];
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="280" viewBox="0 0 600 280">
+  <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${th.bg}"/><stop offset="100%" style="stop-color:${th.bg2}"/></linearGradient><filter id="blur"><feGaussianBlur stdDeviation="8"/></filter></defs>
+  <rect width="600" height="280" fill="url(#g)"/>
+  <circle cx="480" cy="60" r="120" fill="rgba(255,255,255,0.06)" filter="url(#blur)"/>
+  <text x="300" y="130" text-anchor="middle" font-size="72" opacity="0.9">${th.emoji}</text>
+  <text x="300" y="178" text-anchor="middle" font-size="18" font-family="Georgia,serif" font-weight="bold" fill="rgba(255,255,255,0.85)">${th.label}</text>
+</svg>`)}`;
+}
+
+function getPhotoTheme(type, titre) {
+  const t = (titre || '').toLowerCase();
+  if (type === 'Éphémère' || type === 'Ephemeral') {
+    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail')) return 'apero';
+    if (t.includes('vin') || t.includes('dégustation') || t.includes('cave')) return 'vin';
+    if (t.includes('moto') || t.includes('harley')) return 'moto';
+    if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer')) return 'voiture';
+    if (t.includes('food') || t.includes('burger') || t.includes('barbecue')) return 'food';
+    if (t.includes('concert') || t.includes('festival') || t.includes('rock') || t.includes('jazz')) return 'concert';
+    if (t.includes('bd') || t.includes('comics') || t.includes('manga')) return 'bd';
+    if (t.includes('parade') || t.includes('carnaval') || t.includes('défilé')) return 'parade';
+    if (t.includes('noël') || t.includes('noel')) return 'noel';
+    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie')) return 'brocante';
+    return 'marche';
+  }
+  if (t.includes('randonnée') || t.includes('randonn') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
+  if (t.includes('vélo') || t.includes('vtt') || t.includes('cycl')) return 'velo';
+  if (t.includes('escalad') || t.includes('grimpe')) return 'escalade';
+  if (t.includes('kayak') || t.includes('canoë') || t.includes('paddle')) return 'kayak';
+  if (t.includes('ski') || t.includes('snowboard')) return 'ski';
+  if (t.includes('piscine') || t.includes('natation') || t.includes('thermes') || t.includes('thermal')) return 'thermes';
+  if (t.includes('bowling')) return 'bowling';
+  if (t.includes('karting') || t.includes('kart')) return 'karting';
+  if (t.includes('escape') || t.includes('énigme')) return 'escape';
+  if (t.includes('trampoline')) return 'trampoline';
+  if (t.includes('musée') || t.includes('museum') || t.includes('galerie') || t.includes('expo')) return 'museum';
+  if (t.includes('château') || t.includes('abbaye') || t.includes('fort') || t.includes('maginot') || t.includes('ouvrage')) return 'chateau';
+  if (t.includes('cinéma') || t.includes('cinema') || t.includes('film')) return 'cinema';
+  if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
+  if (t.includes('spa') || t.includes('massage') || t.includes('hammam') || t.includes('sauna')) return 'spa';
+  if (t.includes('bar') || t.includes('pub') || t.includes('brasserie') || t.includes('cocktail')) return 'bar';
+  if (t.includes('casino')) return 'casino';
+  if (t.includes('concert') || t.includes('festival') || t.includes('musique')) return 'concert';
+  if (t.includes('restaurant') || t.includes('gastronomie') || t.includes('dîner')) return 'restaurant';
+  if (t.includes('zoo') || t.includes('aquarium') || t.includes('animal')) return 'zoo';
+  if (t.includes('parc') || t.includes('attraction') || t.includes('amusement')) return 'parc';
+  if (t.includes('nature') || t.includes('lac') || t.includes('forêt') || t.includes('balade')) return 'nature';
+  const typeMap = {'Nature':'nature','Culture':'museum','Sport':'randonnee','Gastronomie':'restaurant','Bien-être':'spa','Divertissement':'parc','Nocturne':'bar','Nightlife':'bar','Food':'restaurant','Wellness':'spa','Entertainment':'parc'};
+  return typeMap[type] || 'default';
+}
+
+function photoUrl(type, titre) {
+  return makePhotoSvg(getPhotoTheme(type, titre));
 }
 
 
