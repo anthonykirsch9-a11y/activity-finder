@@ -204,7 +204,6 @@ input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
   .form-section { padding: 1.2rem; }
   .card-top { flex-direction: column; }
   .card-badges { flex-direction: row; align-items: flex-start; }
-  .tab-label { display: none; }
 }
 /* ---- RICH RESULT CARDS ---- */
 .rc-summary {
@@ -280,7 +279,6 @@ html { -webkit-text-size-adjust: 100%; }
   #leaflet-map { height: 300px; }
   #results-section { padding: 0 0.8rem 3rem; }
   .rc-grid { grid-template-columns: 1fr !important; }
-  .tab-label { display: none; }
 }
 @media (min-width: 601px) {
   .rc-grid { grid-template-columns: repeat(2, 1fr); }
@@ -854,8 +852,10 @@ html { -webkit-text-size-adjust: 100%; }
     <div class="section-head"><div class="section-icon">📍</div><span class="section-title" id="lbl-location">Localisation</span></div>
     <div class="location-row">
       <div class="location-wrap">
-        <input class="location-input" type="text" id="location" autocomplete="off" placeholder="Tape une ville ou un code postal…">
+        <input class="location-input" type="text" id="location" autocomplete="off" placeholder="Tape une ville ou un code postal…"
+          onfocus="showRecentCities()" onblur="setTimeout(()=>hideRecentCities(),200)">
         <div class="city-dropdown" id="city-dropdown"></div>
+        <div id="recent-cities-wrap" style="display:none;margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
       </div>
       <select class="radius-select" id="radius">
         <option value="0" id="rad-0">Ville uniquement</option>
@@ -1830,11 +1830,19 @@ function renderAges() {
   if (agesSection) agesSection.style.display = '';
   if (participantsSection) participantsSection.style.display = 'none';
 
-  // Options 1-100, juste le chiffre
-  const ageOptions = Array.from({length:100},(_,i) => {
-    const val = i + 1;
-    return `<option value="${val}">${val}</option>`;
-  }).join('');
+  // Options : 18 en premier (valeur par défaut), puis 19-100, puis 1-17
+  // Comme ça 18 est en haut du select et sélectionné par défaut
+  const ageOptions = [
+    // D'abord 18 à 100 (les plus courants)
+    ...Array.from({length:83}, (_,i) => i + 18),
+    // Séparateur visuel
+    null,
+    // Puis 1 à 17 (enfants)
+    ...Array.from({length:17}, (_,i) => i + 1),
+  ].map(val => val === null
+    ? `<option disabled>── Enfants ──</option>`
+    : `<option value="${val}">${val} ans</option>`
+  ).join('');
 
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
@@ -1846,10 +1854,10 @@ function renderAges() {
       ${persons.length > 1 ? `<button class="remove-btn" onclick="removePerson('${p.id}')">×</button>` : ''}
     </div>`).join('');
 
-  // Mettre le curseur sur 18 par défaut
+  // 18 est maintenant index 1 (après l'option vide) → sélectionner directement
   persons.forEach(p => {
     const sel = document.getElementById('age-' + p.id);
-    if (sel && !sel.value) sel.selectedIndex = 18; // index 18 = valeur 18
+    if (sel && !sel.value) sel.value = '18';
   });
 }
 syncAgesUI();
@@ -2012,6 +2020,50 @@ async function searchFromMap() {
 
 // ---- API KEY ----
 const _KEY = 'af_key';
+// ── Villes récentes sous le champ localisation ──
+function showRecentCities() {
+  const wrap = document.getElementById('recent-cities-wrap');
+  if (!wrap) return;
+  const searches = localLoad('searches') || [];
+  const seen = new Set();
+  const cities = [];
+  for (const s of searches) {
+    const city = (s.location || '').split(',')[0].trim();
+    if (city && !seen.has(city.toLowerCase())) {
+      seen.add(city.toLowerCase());
+      cities.push(city);
+      if (cities.length >= 3) break;
+    }
+  }
+  if (!cities.length) { wrap.style.display = 'none'; return; }
+  wrap.innerHTML = `<span style="font-size:11px;color:var(--muted);align-self:center">Récent :</span>` + cities.map(c =>
+    `<button onmousedown="selectRecentCity('${c.replace(/'/g,"\\'")}');return false;"
+      style="border:1.5px solid var(--border);border-radius:99px;padding:4px 12px;font-size:12px;
+      font-family:'DM Sans',sans-serif;background:var(--input-bg);color:var(--muted);
+      cursor:pointer;white-space:nowrap;transition:all .15s"
+      onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      📍 ${c}</button>`
+  ).join('');
+  wrap.style.display = 'flex';
+}
+
+function selectRecentCity(city) {
+  const input = document.getElementById('location');
+  if (input) {
+    input.value = city;
+    fetchCities(city).then(data => {
+      if (data.length) {
+        const c = data[0];
+        if (c.lat && c.lon) {
+          _selectedCityCoords = { lat: parseFloat(c.lat), lng: parseFloat(c.lon) };
+          onCitySelectedWeather(parseFloat(c.lat), parseFloat(c.lon));
+        }
+      }
+    });
+  }
+}
+
 function loadApiKey() {
   try {
     const k = localStorage.getItem(_KEY) || localStorage.getItem('wp_api_key') || localStorage.getItem('wp_apikey') || '';
@@ -4838,8 +4890,8 @@ window.testGooglePlaces = async function() {
 // Run gate on load
 window.addEventListener('load', () => {
   initBetaGate();
-  // Vérifier "Ce jour il y a X ans" après un délai
   setTimeout(checkOnThisDayNotification, 2000);
+  setTimeout(showRecentCities, 600);
 });
 
 function checkOnThisDayNotification() {
