@@ -3796,46 +3796,126 @@ function openAccountPanel() {
   const panel = document.getElementById('account-panel');
   const overlay = document.getElementById('account-overlay');
 
-  // Header
   const isConnected = !!currentUser;
   const isPro = userPlan === 'pro';
-  const isBeta = userPlan === 'pro' && !currentUser; // beta gate
+  const isBetaUser = currentUser?.id === 'beta-user';
 
+  // Header
   document.getElementById('ap-avatar').textContent = isConnected
-    ? (currentUser.email||'?')[0].toUpperCase() : '✦';
+    ? (isBetaUser ? '✦' : (currentUser.email||'?')[0].toUpperCase()) : '?';
   document.getElementById('ap-name').textContent = isConnected
-    ? (currentUser.email||'').split('@')[0] : 'Activity Finder';
+    ? (isBetaUser ? 'Beta' : (currentUser.email||'').split('@')[0]) : 'Activity Finder';
   document.getElementById('ap-email').textContent = isConnected
-    ? currentUser.email : '';
+    ? (isBetaUser ? 'beta@activityfinder.app' : currentUser.email) : '';
   const badge = document.getElementById('ap-badge');
-  badge.textContent = isPro ? t.badgePro : t.badgeFree;
+  badge.textContent = isPro ? (t.badgePro||'Pro ✦') : (t.badgeFree||'Gratuit');
   badge.className = 'account-panel-badge ' + (isPro ? 'badge-pro-panel' : 'badge-free-panel');
 
-  // Tabs — seulement pour Pro connecté
-  document.getElementById('ap-tabs').style.display = (isPro && isConnected) ? 'flex' : 'none';
+  // Tabs — seulement pour Pro
+  document.getElementById('ap-tabs').style.display = isPro ? 'flex' : 'none';
 
   // Traduire les tabs
-  const apTabStats = document.getElementById('ap-tab-stats-lbl');
-  const apTabMem = document.getElementById('ap-tab-memories-lbl');
-  const apTabAct = document.getElementById('ap-tab-activities-lbl');
-  const apTabAdd = document.getElementById('ap-tab-add-lbl');
-  const apTabSet = document.getElementById('ap-tab-settings-lbl');
-  if (apTabStats) apTabStats.textContent = t.tabStats||'Stats';
-  if (apTabMem) apTabMem.textContent = t.tabMemories||'Mémoires';
-  if (apTabAct) apTabAct.textContent = t.tabActivities||'Activités';
-  if (apTabAdd) apTabAdd.textContent = t.tabAdd||'Ajouter';
-  if (apTabSet) apTabSet.textContent = t.tabSettings||'Réglages';
-  document.getElementById('ap-setting-theme-lbl').textContent = t.settingTheme||'Thème';
-  document.getElementById('ap-signout-lbl').textContent = t.signOutBtn||'Déconnexion';
-  document.getElementById('ap-delete-lbl').textContent = t.deleteBtn||'Supprimer mon compte';
-
-  // Contenu non-connecté / gratuit
-  renderAccountProfile();
+  const tabMap = {
+    'ap-tab-stats-lbl': t.tabStats||'Stats',
+    'ap-tab-memories-lbl': t.tabMemories||'Mémoires',
+    'ap-tab-activities-lbl': t.tabActivities||'Activités',
+    'ap-tab-add-lbl': t.tabAdd||'Ajouter',
+    'ap-tab-settings-lbl': t.tabSettings||'Réglages',
+  };
+  Object.entries(tabMap).forEach(([id, txt]) => { const el = document.getElementById(id); if(el) el.textContent = txt; });
+  const signoutLbl = document.getElementById('ap-signout-lbl');
+  if (signoutLbl) signoutLbl.textContent = t.signOutBtn||'Déconnexion';
+  const deleteLbl = document.getElementById('ap-delete-lbl');
+  if (deleteLbl) deleteLbl.textContent = t.deleteBtn||'Supprimer mon compte';
+  const themeLbl = document.getElementById('ap-setting-theme-lbl');
+  if (themeLbl) themeLbl.textContent = t.settingTheme||'Thème';
 
   // Ouvrir
   overlay.classList.add('open');
   panel.classList.add('open');
-  switchAccountTab('profile');
+
+  // Afficher le bon contenu selon l'état
+  if (isPro) {
+    // Pro → aller sur Stats (onglets visibles)
+    switchAccountTab('stats');
+  } else {
+    // Non-Pro → afficher le panneau promo dans ap-pane-stats (sans tabs)
+    document.querySelectorAll('.account-pane').forEach(p => p.classList.remove('active'));
+    const statsPane = document.getElementById('ap-pane-stats');
+    if (statsPane) statsPane.classList.add('active');
+    renderAccountProfile();
+  }
+}
+
+function renderAccountProfile() {
+  const t = apt();
+  const isConnected = !!currentUser;
+  const isPro = userPlan === 'pro';
+  const statsEl = document.getElementById('ap-stats-content');
+  if (!statsEl) return;
+
+  statsEl.innerHTML = `
+    <div>
+      <!-- Promo Pro -->
+      <div class="pro-promo">
+        <div class="pro-promo-title">✦ ${t.proTitle||'Activity Finder Pro'}</div>
+        <div class="pro-promo-price">${t.proPrice||'2,99 €'} <small>${t.proPerMonth||'/mois'}</small></div>
+        <ul class="pro-promo-features">
+          ${(t.proFeatures||[]).map(f=>`<li><span>${f}</span></li>`).join('')}
+        </ul>
+        <button class="pro-promo-btn" onclick="closeAccountPanel();openUpgrade()">${t.proBtn||'Passer Pro'}</button>
+      </div>
+
+      <!-- Séparateur -->
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+
+      ${!isConnected ? `
+        <!-- Non connecté : connexion + code bêta -->
+        <button onclick="closeAccountPanel();openAuth('login')"
+          style="width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">
+          🔑 ${t.loginBtn||'Se connecter'}
+        </button>
+        <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px">— ou —</div>
+        <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">🔐 Code d'accès bêta</div>
+          <div style="display:flex;gap:8px">
+            <input id="inline-beta-input" type="text" placeholder="Code invitation…"
+              style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none;text-transform:uppercase;letter-spacing:.08em"
+              oninput="this.value=this.value.toUpperCase()"
+              onkeydown="if(event.key==='Enter')checkInlineBetaCode()">
+            <button onclick="checkInlineBetaCode()"
+              style="padding:9px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+              OK →
+            </button>
+          </div>
+          <div id="inline-beta-error" style="font-size:12px;color:#C0392B;margin-top:6px;min-height:16px"></div>
+        </div>
+      ` : `
+        <!-- Connecté gratuit : déconnexion -->
+        <button onclick="signOut()"
+          style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--muted)">
+          🚪 ${t.signOutBtn||'Déconnexion'}
+        </button>
+      `}
+    </div>`;
+}
+
+function checkInlineBetaCode() {
+  const input = document.getElementById('inline-beta-input');
+  const errEl = document.getElementById('inline-beta-error');
+  if (!input) return;
+  const val = input.value.trim().toUpperCase();
+  if (!val) { if(errEl) errEl.textContent = 'Entre un code.'; return; }
+  if (BETA_CODES.includes(val)) {
+    try { localStorage.setItem(BETA_STORAGE_KEY, '1'); } catch(e) {}
+    hideBetaScreen();
+    closeAccountPanel();
+    setTimeout(() => openAccountPanel(), 200);
+  } else {
+    if (errEl) errEl.textContent = 'Code incorrect. Réessaie.';
+    input.value = '';
+    input.focus();
+  }
 }
 
 function closeAccountPanel() {
@@ -3851,34 +3931,10 @@ function switchAccountTab(tab) {
   const paneEl = document.getElementById('ap-pane-' + tab);
   if (tabEl) tabEl.classList.add('active');
   if (paneEl) paneEl.classList.add('active');
-
   if (tab === 'stats') renderAccountStats();
   if (tab === 'activities') renderAccountActivities();
   if (tab === 'memories') renderMemoriesPane();
   if (tab === 'add') renderAddEventForm();
-}
-
-function renderAccountProfile() {
-  const t = apt();
-  const isConnected = !!currentUser;
-  const isPro = userPlan === 'pro';
-  // Pour les non-connectés et gratuits, afficher la promo Pro dans stats
-  if (!isPro || !isConnected) {
-    const statsEl = document.getElementById('ap-stats-content');
-    if (statsEl) statsEl.innerHTML = `
-      <div id="ap-pro-promo">
-        <div class="pro-promo">
-          <div class="pro-promo-title">✦ ${t.proTitle||'Activity Finder Pro'}</div>
-          <div class="pro-promo-price">${t.proPrice||'2,99 €'} <small>${t.proPerMonth||'/mois'}</small></div>
-          <ul class="pro-promo-features">
-            ${(t.proFeatures||[]).map(f=>`<li><span>${f}</span></li>`).join('')}
-          </ul>
-          <button class="pro-promo-btn" onclick="closeAccountPanel();openUpgrade()">${t.proBtn||'Passer Pro'}</button>
-        </div>
-        ${!isConnected ? `<button onclick="closeAccountPanel();openAuth('login')" style="width:100%;padding:12px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);margin-top:8px">${t.loginBtn||'Se connecter'}</button>` : ''}
-        ${isConnected && !isPro ? `<button onclick="signOut()" style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--muted);margin-top:8px">🚪 ${t.signOutBtn||'Déconnexion'}</button>` : ''}
-      </div>`;
-  }
 }
 
 async function renderAccountStats() {
@@ -4244,7 +4300,9 @@ async function renderAccountActivities() {
 
   const photos = localLoad('activity_photos') || {};
 
-  // Bouton Mémoires en haut si des photos existent
+  let html = '';
+
+  // Bouton Mémoires en haut si des activités faites existent
   const allNotes = localLoad('notes') || [];
   const doneCnt = allNotes.filter(n => n.done).length;
   if (doneCnt > 0) {
@@ -4256,7 +4314,6 @@ async function renderAccountActivities() {
 
   // Si on a des photos → afficher la grille album EN PREMIER
   const photoEntries = Object.entries(photos);
-  let html = '';
 
   if (photoEntries.length) {
     html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📸 ${ta.albumTitle||'Album Souvenirs'}</div>`;
