@@ -2317,11 +2317,9 @@ function formatPlacesForPrompt(places) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// PHOTOS — SVG thématiques inline (aucune dépendance externe)
-// + Google Places photos quand disponibles
+// PHOTOS — SVG thématiques inline + API Pexels dynamique
 // ══════════════════════════════════════════════════════════════
 const PHOTO_THEMES = {
-  // Éphémères
   'brocante':    { bg:'#8B6914', bg2:'#C4974A', emoji:'🛍️', label:'Brocante' },
   'vide-grenier':{ bg:'#8B6914', bg2:'#C4974A', emoji:'📦', label:'Vide-grenier' },
   'marche-groupe':{ bg:'#2E6B3E', bg2:'#5C9E6A', emoji:'🚶', label:'Marche' },
@@ -2335,13 +2333,13 @@ const PHOTO_THEMES = {
   'bd':          { bg:'#1A3E6B', bg2:'#2A6EAB', emoji:'📚', label:'BD' },
   'parade':      { bg:'#6B1A6B', bg2:'#AB4AAB', emoji:'🎪', label:'Fête' },
   'noel':        { bg:'#1A4A1A', bg2:'#2A7A2A', emoji:'🎄', label:'Noël' },
-  // Activités fixes
   'randonnee':   { bg:'#2E5C2E', bg2:'#4E8C4E', emoji:'🥾', label:'Randonnée' },
   'velo':        { bg:'#1A3E5C', bg2:'#2A6E8C', emoji:'🚵', label:'Vélo' },
   'escalade':    { bg:'#4E2E1A', bg2:'#8E5E3A', emoji:'🧗', label:'Escalade' },
   'kayak':       { bg:'#1A4E6E', bg2:'#2A7EAE', emoji:'🛶', label:'Kayak' },
   'ski':         { bg:'#2E4E6E', bg2:'#4E7EAE', emoji:'⛷️', label:'Ski' },
   'piscine':     { bg:'#1A4E6E', bg2:'#2A8EBE', emoji:'🏊', label:'Piscine' },
+  'thermes':     { bg:'#2E4E5E', bg2:'#4E7E9E', emoji:'♨️', label:'Thermes' },
   'bowling':     { bg:'#3E1A4E', bg2:'#6E3A8E', emoji:'🎳', label:'Bowling' },
   'karting':     { bg:'#4E1A1A', bg2:'#8E3A3A', emoji:'🏎️', label:'Karting' },
   'escape':      { bg:'#1A1A4E', bg2:'#3A3A8E', emoji:'🔐', label:'Escape' },
@@ -2351,7 +2349,6 @@ const PHOTO_THEMES = {
   'cinema':      { bg:'#1A1A1A', bg2:'#3A3A3A', emoji:'🎬', label:'Cinéma' },
   'theatre':     { bg:'#3E1A3E', bg2:'#6E3A6E', emoji:'🎭', label:'Théâtre' },
   'spa':         { bg:'#2E4E4E', bg2:'#4E7E7E', emoji:'🧖', label:'Spa' },
-  'thermes':     { bg:'#2E4E5E', bg2:'#4E7E9E', emoji:'♨️', label:'Thermes' },
   'restaurant':  { bg:'#4E2E1A', bg2:'#8E5E3A', emoji:'🍽️', label:'Restaurant' },
   'bar':         { bg:'#2E1A3E', bg2:'#5E3A7E', emoji:'🍺', label:'Bar' },
   'casino':      { bg:'#1A3E1A', bg2:'#2A7E2A', emoji:'🎰', label:'Casino' },
@@ -2361,171 +2358,49 @@ const PHOTO_THEMES = {
   'default':     { bg:'#3E4E3E', bg2:'#5E7E5E', emoji:'📍', label:'Activité' },
 };
 
-function makePhotoSvg(theme) {
-  const th = PHOTO_THEMES[theme] || PHOTO_THEMES['default'];
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="280" viewBox="0 0 600 280">
-  <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:${th.bg}"/>
-      <stop offset="100%" style="stop-color:${th.bg2}"/>
-    </linearGradient>
-    <filter id="blur"><feGaussianBlur stdDeviation="8"/></filter>
-  </defs>
-  <rect width="600" height="280" fill="url(#g)"/>
-  <circle cx="480" cy="60" r="120" fill="rgba(255,255,255,0.06)" filter="url(#blur)"/>
-  <circle cx="80" cy="220" r="90" fill="rgba(255,255,255,0.04)" filter="url(#blur)"/>
-  <text x="300" y="130" text-anchor="middle" font-size="72" opacity="0.9">${th.emoji}</text>
-  <text x="300" y="178" text-anchor="middle" font-size="18" font-family="Georgia,serif" font-weight="bold" fill="rgba(255,255,255,0.85)" letter-spacing="1">${th.label}</text>
-</svg>`)}`;
-}
-
-function getPhotoTheme(type, titre) {
-  const t = (titre || '').toLowerCase();
-
-  // Éphémères — détection par titre
-  if (type === 'Éphémère' || type === 'Ephemeral') {
-    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail') || t.includes('spiritueux')) return 'apero';
-    if (t.includes('vin') || t.includes('bière') || t.includes('biere') || t.includes('dégustation') || t.includes('cave') || t.includes('vignoble')) return 'vin';
-    if (t.includes('marche') && (t.includes('groupe') || t.includes('populaire') || t.includes('nordique') || t.includes('rochonvillers') || t.includes('pedestre'))) return 'marche-groupe';
-    if (t.includes('moto') || t.includes('harley') || t.includes('motard') || t.includes('bikers')) return 'moto';
-    if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer') || t.includes('collection')) return 'voiture';
-    if (t.includes('burger') || t.includes('food') || t.includes('barbecue') || t.includes('bbq') || t.includes('gastronomique') || t.includes('street food')) return 'food';
-    if (t.includes('concert') || t.includes('festival') || t.includes('musique') || t.includes('rock') || t.includes('jazz')) return 'concert';
-    if (t.includes('bd') || t.includes('comics') || t.includes('manga') || t.includes('bande dessinée')) return 'bd';
-    if (t.includes('parade') || t.includes('fanfare') || t.includes('carnaval') || t.includes('défilé') || t.includes('arts de rue')) return 'parade';
-    if (t.includes('noël') || t.includes('noel')) return 'noel';
-    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('vide grenier') || t.includes('puces') || t.includes('antiquités') || t.includes('braderie')) return 'brocante';
-    return 'marche'; // marché par défaut pour les éphémères
-  }
-
-  // Activités fixes — détection par titre
-  if (t.includes('randonnée') || t.includes('randonn') || t.includes('hiking') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
-  if (t.includes('vélo') || t.includes('vtt') || t.includes('cycl') || t.includes('bike')) return 'velo';
-  if (t.includes('escalad') || t.includes('grimpe') || t.includes('via ferrata')) return 'escalade';
-  if (t.includes('kayak') || t.includes('canoë') || t.includes('paddle') || t.includes('rafting')) return 'kayak';
-  if (t.includes('ski') || t.includes('snowboard') || t.includes('luge')) return 'ski';
-  if (t.includes('piscine') || t.includes('natation') || t.includes('baignade') || t.includes('thermes') || t.includes('thermal')) return 'thermes';
-  if (t.includes('bowling')) return 'bowling';
-  if (t.includes('karting') || t.includes('kart')) return 'karting';
-  if (t.includes('escape') || t.includes('énigme')) return 'escape';
-  if (t.includes('trampoline') || t.includes('saut')) return 'trampoline';
-  if (t.includes('musée') || t.includes('museum') || t.includes('galerie') || t.includes('expo')) return 'museum';
-  if (t.includes('château') || t.includes('abbaye') || t.includes('cathédrale') || t.includes('fort') || t.includes('ouvrage') || t.includes('maginot')) return 'chateau';
-  if (t.includes('cinéma') || t.includes('cinema') || t.includes('film')) return 'cinema';
-  if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
-  if (t.includes('spa') || t.includes('massage') || t.includes('hammam') || t.includes('sauna') || t.includes('bien-être')) return 'spa';
-  if (t.includes('thermes') || t.includes('thermal') || t.includes('mondorf') || t.includes('bain')) return 'thermes';
-  if (t.includes('bar') || t.includes('pub') || t.includes('brasserie') || t.includes('beaux jours') || t.includes('cocktail') || t.includes('bière')) return 'bar';
-  if (t.includes('casino')) return 'casino';
-  if (t.includes('concert') || t.includes('festival') || t.includes('musique')) return 'concert';
-  if (t.includes('restaurant') || t.includes('gastronomie') || t.includes('chef') || t.includes('étoilé') || t.includes('dîner') || t.includes('diner')) return 'restaurant';
-  if (t.includes('zoo') || t.includes('aquarium') || t.includes('animal')) return 'zoo';
-  if (t.includes('parc') || t.includes('attraction') || t.includes('amusement') || t.includes('walygator') || t.includes('amnéville')) return 'parc';
-  if (t.includes('nature') || t.includes('lac') || t.includes('forêt') || t.includes('promenade') || t.includes('balade')) return 'nature';
-
-  // Fallback par type
-  const typeMap = {
-    'Nature': 'nature', 'Culture': 'museum', 'Sport': 'randonnee',
-    'Gastronomie': 'restaurant', 'Bien-être': 'spa', 'Divertissement': 'parc',
-    'Nocturne': 'bar', 'Nightlife': 'bar', 'Food': 'restaurant',
-    'Wellness': 'spa', 'Entertainment': 'parc'
-  };
-  return typeMap[type] || 'default';
-}
-
-function photoUrl(type, titre) {
-  const theme = getPhotoTheme(type, titre);
-  // Toujours utiliser le SVG thématique comme source initiale (100% fiable, pas de requête externe)
-  // Les vraies photos (Google Places / Pexels) sont chargées en async après le rendu
-  return makePhotoSvg(theme);
-}
-// ══════════════════════════════════════════════════════════════
-// PEXELS API — vraies photos dynamiques
-// ══════════════════════════════════════════════════════════════
-const PEXELS_KEY = 'OjOWZuQpato1V2fXEnpR4jIWnH4qsUmgxMImacQcY4vj0ZJNAAnPsolg';
-const _pexelsCache = {};
-
-// Queries en ANGLAIS (Pexels = meilleurs résultats) - ultra-ciblées, pas de mots parasites
+// Queries Pexels en anglais — meilleurs résultats que le français
 const PEXELS_QUERIES = {
-  'brocante':      'flea market vendor buying antiques stalls',
-  'vide-grenier':  'flea market stalls people shopping secondhand',
-  'marche-groupe': 'group hikers walking trail together',
-  'marche':        'outdoor food market stalls vegetables fruit',
-  'apero':         'aperitif charcuterie board wine glasses friends',
-  'vin':           'wine tasting cellar bottles glasses',
-  'moto':          'motorcycle rally gathering bikes',
-  'voiture':       'vintage cars classic automobile show',
-  'food':          'street food festival stands eating',
-  'concert':       'live concert stage audience lights',
-  'bd':            'comic books library reading',
-  'parade':        'street festival parade crowd celebration',
-  'noel':          'christmas market lights decorations winter',
-  'randonnee':     'hikers walking mountain trail group people',
-  'velo':          'cycling mountain bike trail riders',
-  'escalade':      'rock climbing wall bouldering',
-  'kayak':         'kayaking river canoe water paddle',
-  'ski':           'skiing snow slope winter resort',
-  'piscine':       'swimming pool indoor water',
-  'thermes':       'thermal spa indoor pool wellness',
-  'bowling':       'bowling alley pins lane',
-  'karting':       'go kart racing circuit speed',
-  'escape':        'escape room puzzle mystery',
-  'trampoline':    'trampoline park jumping indoor',
-  'museum':        'museum art gallery exhibition hall',
-  'chateau':       'medieval castle france stone tower',
-  'cinema':        'movie theater cinema screen seats',
-  'theatre':       'theater stage performance curtain',
-  'spa':           'spa massage relaxation wellness treatment',
-  'bar':           'bar night drinks cocktails friends evening',
-  'casino':        'casino gambling roulette cards lights',
-  'restaurant':    'restaurant plate fine dining food',
-  'zoo':           'zoo animals lion giraffe wildlife',
-  'parc':          'amusement park rides family fun',
-  'nature':        'lake forest landscape green nature',
-  'default':       'weekend activities outdoor leisure group'
+  'brocante':'flea market vendor buying antiques stalls',
+  'vide-grenier':'flea market stalls people shopping secondhand',
+  'marche-groupe':'group hikers walking trail together',
+  'marche':'outdoor food market stalls vegetables fruit',
+  'apero':'aperitif charcuterie board wine glasses friends',
+  'vin':'wine tasting cellar bottles glasses',
+  'moto':'motorcycle rally gathering bikes',
+  'voiture':'vintage cars classic automobile show',
+  'food':'street food festival stands eating',
+  'concert':'live concert stage audience lights',
+  'bd':'comic books library reading',
+  'parade':'street festival parade crowd celebration',
+  'noel':'christmas market lights decorations winter',
+  'randonnee':'hikers walking mountain trail group people',
+  'velo':'cycling mountain bike trail riders',
+  'escalade':'rock climbing wall bouldering',
+  'kayak':'kayaking river canoe water paddle',
+  'ski':'skiing snow slope winter resort',
+  'piscine':'swimming pool indoor water',
+  'thermes':'thermal spa indoor pool wellness',
+  'bowling':'bowling alley pins lane',
+  'karting':'go kart racing circuit speed',
+  'escape':'escape room puzzle mystery clues',
+  'trampoline':'trampoline park jumping indoor',
+  'museum':'museum art gallery exhibition hall',
+  'chateau':'medieval castle france stone tower',
+  'cinema':'movie theater cinema screen seats',
+  'theatre':'theater stage performance curtain',
+  'spa':'spa massage relaxation wellness treatment',
+  'bar':'bar night drinks cocktails friends evening',
+  'casino':'casino gambling roulette cards lights',
+  'restaurant':'restaurant plate fine dining food',
+  'zoo':'zoo animals lion giraffe wildlife',
+  'parc':'amusement park rides family fun',
+  'nature':'lake forest landscape green nature',
+  'default':'weekend activities outdoor leisure group'
 };
 
-// URLs directes vérifiées — photos soigneusement sélectionnées pour chaque thème
-// Toutes testées et approuvées visuellement sur pexels.com
-const PEXELS_DIRECT = {
-  // Éphémères
-  'brocante':      'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'vide-grenier':  'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'marche':        'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'marche-groupe': 'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'apero':         'https://images.pexels.com/photos/5935755/pexels-photo-5935755.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'vin':           'https://images.pexels.com/photos/1407846/pexels-photo-1407846.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'concert':       'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'parade':        'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'noel':          'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'food':          'https://images.pexels.com/photos/2983101/pexels-photo-2983101.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'moto':          'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'voiture':       'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  // Activités fixes
-  'chateau':       'https://images.pexels.com/photos/532826/pexels-photo-532826.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'museum':        'https://images.pexels.com/photos/1674049/pexels-photo-1674049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'randonnee':     'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'velo':          'https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'kayak':         'https://images.pexels.com/photos/1497585/pexels-photo-1497585.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'escalade':      'https://images.pexels.com/photos/3077882/pexels-photo-3077882.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'spa':           'https://images.pexels.com/photos/3997989/pexels-photo-3997989.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'thermes':       'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'restaurant':    'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'bar':           'https://images.pexels.com/photos/1269025/pexels-photo-1269025.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'cinema':        'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'theatre':       'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'escape':        'https://images.pexels.com/photos/5702281/pexels-photo-5702281.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'karting':       'https://images.pexels.com/photos/12801013/pexels-photo-12801013.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'bowling':       'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'zoo':           'https://images.pexels.com/photos/247502/pexels-photo-247502.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'parc':          'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'nature':        'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'casino':        'https://images.pexels.com/photos/3021120/pexels-photo-3021120.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'ski':           'https://images.pexels.com/photos/848599/pexels-photo-848599.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'trampoline':    'https://images.pexels.com/photos/1171084/pexels-photo-1171084.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'bd':            'https://images.pexels.com/photos/2177482/pexels-photo-2177482.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'default':       'https://images.pexels.com/photos/1268558/pexels-photo-1268558.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-};
+// PEXELS_DIRECT vide — les URLs directes font 403 depuis GitHub Pages
+// L'API Pexels (Authorization header) fonctionne correctement depuis les navigateurs
+const PEXELS_DIRECT = {};
 
 async function fetchPexelsPhoto(theme) {
   if (_pexelsCache[theme]) return _pexelsCache[theme];
