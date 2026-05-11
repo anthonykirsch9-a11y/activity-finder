@@ -1831,8 +1831,7 @@ function renderAges() {
   if (participantsSection) participantsSection.style.display = 'none';
 
   // 18 en premier → visible en haut, puis 19-100, puis 1-17 pour enfants
-  const ageNums = [...Array.from({length:83}, (_,i) => i+18), ...Array.from({length:17}, (_,i) => i+1)];
-  const ageOptions = ageNums.map(n => `<option value="${n}">${n}</option>`).join('');
+  const ageOptions = Array.from({length:100}, (_,i) => `<option value="${i+1}">${i+1}</option>`).join('');
 
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
