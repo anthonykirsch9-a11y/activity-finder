@@ -2982,6 +2982,19 @@ async function runSearch(fromMap) {
         const langInstruction = `LANGUE: Réponds OBLIGATOIREMENT en ${LANG_NAMES[lang] || 'français'}. Tous les textes (titre, description, infos_pratiques, pourquoi_adapte) doivent être en ${LANG_NAMES[lang] || 'français'}.\n`;
         const strictRules = "REGLES CRITIQUES:\n1. LIEUX VERIFIES EN PRIORITE: Si des lieux certifies sont fournis, utilise-les en priorite. lieu_certain:true pour eux.\n2. LIEUX INVENTES INTERDITS: Bars/restos sans certitude = description generique sans nom invente. lieu_certain:false.\n3. BROCANTES/MARCHES: Ville exacte obligatoire.\n4. DATE: Chaque activite realisable le jour demande.\n5. METEO: Respecter strictement.\n6. GPS: lat/lng precis dans les champs JSON, jamais 0.0. NE PAS mentionner les coordonnees GPS dans la description ou les infos_pratiques.\n7. PAS DE GPS DANS LA DESCRIPTION: Ne jamais ecrire 'GPS: xx.xxxx, xx.xxxx' dans description ou infos_pratiques.\n8. EPHEMERE INTERDIT pour lieux PERMANENTS: casino, restaurant, musee, spa, bowling, karting, cinema, bar, theatre, parc = JAMAIS ephemere:true. 'ephemere:true' UNIQUEMENT si l'activite a une date precise et unique (brocante du dimanche, fete locale, concert ponctuel, marche saisonnier). Un casino qui 'propose des soirees regulieres' n'est PAS ephemere.";
 
+        // ── Variété forcée : exclure titres déjà vus pour cette ville ──
+        const recentSearches = localLoad('searches') || [];
+        const sameLocationRecent = recentSearches.filter(s =>
+          s.location && location &&
+          s.location.toLowerCase().split(',')[0].trim() === location.toLowerCase().split(',')[0].trim() &&
+          Date.now() - new Date(s.created_at).getTime() < 7 * 24 * 60 * 60 * 1000
+        );
+        const recentTitles = [];
+        sameLocationRecent.forEach(s => { if (s.titles && Array.isArray(s.titles)) recentTitles.push(...s.titles); });
+        const varietyInstruction = recentTitles.length > 0
+          ? `\nVARIÉTÉ OBLIGATOIRE: Ces activités ont déjà été proposées récemment, NE PAS les reproposer: ${recentTitles.slice(0,8).join(', ')}. Propose des activités DIFFÉRENTES.`
+          : '';
+
         const rawPrompt = fromMap && mapSearchCoords
           ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
           : t.promptFn(group, agesStr, ageStr, budgetContext, location, radius, moodsStr + doneContext, eph, night);
@@ -2991,7 +3004,11 @@ async function runSearch(fromMap) {
           : '';
         const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + '\n\n' + rawPrompt;
 
-        // ── Cache 2h : même recherche → résultats instantanés ──
+        // ── Modèle adaptatif ──
+        const needsWebSearch = ephemOn || onlyMode === 'ephem';
+        const selectedModel = 'claude-sonnet-4-6';
+
+        // ── Cache 2h ──
         _ck = _mkCacheKey(location, group, budget, moodsForSearch, radius, onlyMode);
         const _cached = _getCache(_ck);
         if (_cached) {
@@ -3001,27 +3018,6 @@ async function runSearch(fromMap) {
           if (sb) { sb.disabled = false; document.getElementById('submit-label').textContent = t.submitLabel||'Trouver mes activités →'; }
           return;
         }
-
-        // ── Modèle adaptatif selon le contexte ──
-        // Sans éphémères → Sonnet sans web search (8-12s, ~$0.08)
-        // Avec éphémères → Sonnet avec web search (25-35s, ~$0.40) justifié
-        const needsWebSearch = ephemOn || onlyMode === 'ephem';
-        const selectedModel = 'claude-sonnet-4-6';
-
-        // ── Variété forcée : si même ville récemment → exclure les titres déjà vus ──
-        const recentSearches = localLoad('searches') || [];
-        const sameLocationRecent = recentSearches.filter(s =>
-          s.location && location &&
-          s.location.toLowerCase().split(',')[0].trim() === location.toLowerCase().split(',')[0].trim() &&
-          Date.now() - new Date(s.created_at).getTime() < 7 * 24 * 60 * 60 * 1000 // 7 jours
-        );
-        const recentTitles = [];
-        sameLocationRecent.forEach(s => {
-          if (s.titles && Array.isArray(s.titles)) recentTitles.push(...s.titles);
-        });
-        const varietyInstruction = recentTitles.length > 0
-          ? `\nVARIÉTÉ OBLIGATOIRE: Ces activités ont déjà été proposées récemment pour cette ville, NE PAS les reproposer: ${recentTitles.slice(0,8).join(', ')}. Propose des activités DIFFÉRENTES.`
-          : '';
 
         // Appel Claude via Supabase Edge Function
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
