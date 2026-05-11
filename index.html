@@ -2104,8 +2104,11 @@ const WEATHER_LABELS = {
 
 async function fetchWeather(lat, lon) {
   try {
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 4000); // timeout 4s
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m&wind_speed_unit=kmh`;
-    const r = await fetch(url);
+    const r = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(timeout);
     const d = await r.json();
     const cur = d.current;
     weatherData = {
