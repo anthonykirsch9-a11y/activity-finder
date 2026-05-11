@@ -3007,6 +3007,7 @@ async function runSearch(fromMap) {
           renderResults(_cached, location, radius, budget, group, ages);
           window._lastActivities = _cached;
           setTimeout(() => { if (map) placeActivityMarkers(_cached); else window._pendingMarkers = _cached; }, 500);
+          setTimeout(() => loadPhotosForResults(_cached), 300);
           if (sb) { sb.disabled = false; document.getElementById('submit-label').textContent = t.submitLabel||'Trouver mes activités →'; }
           return;
         }
@@ -3064,35 +3065,7 @@ async function runSearch(fromMap) {
     }, 500);
 
     // Photos : charger selon le type
-    setTimeout(() => {
-      document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
-        const placeId = img.dataset.placeid;
-        const isEphemere = img.dataset.ephemere === '1';
-
-        // Éphémères → toujours Pexels thématique (Google Places = photo du bâtiment, pas de l'événement)
-        if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
-          loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
-          return;
-        }
-
-        // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
-        const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
-        if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
-          const photoName = gPlace.photos[0].name;
-          if (photoName) {
-            const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
-            const testImg = new Image();
-            testImg.onload = () => { img.src = photoUrlG; };
-            testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
-            testImg.src = photoUrlG;
-          } else {
-            loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
-          }
-        } else {
-          loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
-        }
-      });
-    }, 300);
+    setTimeout(() => loadPhotosForResults(activities), 300);
 
   } catch(e) {
     const errMsg = typeof e === 'string' ? e : (e.message || JSON.stringify(e));
@@ -3100,6 +3073,36 @@ async function runSearch(fromMap) {
   } finally {
     if (sb) { sb.disabled = false; document.getElementById('submit-label').textContent = t.submitLabel || 'Trouver mes activités →'; }
   }
+}
+
+function loadPhotosForResults(activities) {
+  document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
+    const placeId = img.dataset.placeid;
+    const isEphemere = img.dataset.ephemere === '1';
+
+    // Éphémères → toujours Pexels thématique
+    if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
+      loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      return;
+    }
+
+    // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
+    const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
+    if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
+      const photoName = gPlace.photos[0].name;
+      if (photoName) {
+        const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+        const testImg = new Image();
+        testImg.onload = () => { img.src = photoUrlG; };
+        testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
+        testImg.src = photoUrlG;
+      } else {
+        loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      }
+    } else {
+      loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
+    }
+  });
 }
 
 
