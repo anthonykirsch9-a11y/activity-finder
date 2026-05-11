@@ -621,6 +621,7 @@ html { -webkit-text-size-adjust: 100%; }
 /* Bouton "Mémoires" dans le panneau activités */
 .memories-btn { display:inline-flex; align-items:center; gap:7px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:12px; padding:11px 18px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; width:100%; justify-content:center; margin-bottom:12px; transition:all 0.2s; box-shadow:0 4px 16px rgba(196,113,74,0.3); }
 .memories-btn:hover { opacity:0.9; transform:translateY(-1px); }
+@keyframes slideUp { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 
 /* ── Programme week-end ── */
 .weekend-program-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:25000; align-items:flex-start; justify-content:center; overflow-y:auto; padding:20px; backdrop-filter:blur(3px); }
@@ -935,8 +936,8 @@ html { -webkit-text-size-adjust: 100%; }
     </div>
     <!-- Boutons rapides -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-      <button class="date-quick-btn" id="only-ephem-btn" onclick="toggleOnlyMode('ephem')" id="only-ephem-lbl">🗓 Que des éphémères</button>
-      <button class="date-quick-btn" id="only-night-btn" onclick="toggleOnlyMode('night')">🌙 Que des nocturnes</button>
+      <button class="date-quick-btn" id="only-ephem-btn" onclick="toggleOnlyMode('ephem')">🗓 Uniquement éphémères</button>
+      <button class="date-quick-btn" id="only-night-btn" onclick="toggleOnlyMode('night')">🌙 Uniquement nocturnes</button>
     </div>
   </div>
 
@@ -1061,6 +1062,10 @@ html { -webkit-text-size-adjust: 100%; }
       <span class="tab-icon">📊</span>
       <span id="ap-tab-stats-lbl">Stats</span>
     </button>
+    <button class="account-tab" id="ap-tab-memories" onclick="switchAccountTab('memories')">
+      <span class="tab-icon">🎞️</span>
+      <span id="ap-tab-memories-lbl">Mémoires</span>
+    </button>
     <button class="account-tab" id="ap-tab-activities" onclick="switchAccountTab('activities')">
       <span class="tab-icon">⭐</span>
       <span id="ap-tab-activities-lbl">Activités</span>
@@ -1081,6 +1086,11 @@ html { -webkit-text-size-adjust: 100%; }
     <!-- Pane: Stats -->
     <div class="account-pane active" id="ap-pane-stats">
       <div id="ap-stats-content"></div>
+    </div>
+
+    <!-- Pane: Mémoires -->
+    <div class="account-pane" id="ap-pane-memories">
+      <div id="ap-memories-content"></div>
     </div>
 
     <!-- Pane: Mes activités + Album -->
@@ -1274,8 +1284,8 @@ const LANGS = {
     noEphemExtra:'',
     nightExtra:`\n- Inclure 1 à 2 SORTIES NOCTURNES adaptées au groupe (bars tendance, concerts, clubs, restaurants ouverts tard, soirées thématiques…). "nocturne":true.`,
     noNightExtra:'',
-    onlyEphem:'🗓 Que des éphémères',
-    onlyNight:'🌙 Que des nocturnes',
+    onlyEphem:'🗓 Uniquement éphémères',
+    onlyNight:'🌙 Uniquement nocturnes',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
       `Tu es un expert en loisirs et activités de week-end. Génère exactement 6 idées d'activités VARIÉES.\n\nCONTEXTE:\n- Groupe: ${group}\n- ${agesStr}${ageStr}\n- Budget: ${budget}\n- Lieu: ${location}${radius==='0' ? ' (dans la ville uniquement)' : ', rayon ' + radius + 'km'}\n- ${moods}\n\nRÈGLES STRICTES:\n- VÉRIFIE via web search que chaque lieu existe VRAIMENT.\n- Pour les éphémères: vérifie la date EXACTE sur le web. Ne jamais inventer une date.\n- Si tu n'es pas sûr à 100%, indique "à vérifier".\n- Adapte CHAQUE activité aux âges.\n- VARIES ABSOLUMENT les types: pense escape game, zoo, aquarium, mini-golf, laser game, accrobranche, karting, bowling, spa, musée, château, cinéma, restaurant gastronomique, marché, concert, atelier créatif, randonnée, vélo, kayak, trampoline. Ne propose pas toujours les mêmes activités classiques.${eph}${night}\n\nJSON valide uniquement, sans backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Gastronomie|Bien-être|Divertissement|Éphémère|Nocturne","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases concrètes avec lieux réels vérifiés.","pourquoi_adapte":"1 phrase pour CE groupe et CES âges.","infos_pratiques":["...","...","..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
@@ -3562,7 +3572,7 @@ function closeMemory() {
 }
 const AP_TRANSLATIONS = {
   fr: {
-    tabStats:'Stats', tabActivities:'Activités', tabSettings:'Réglages', tabAdd:'Ajouter',
+    tabStats:'Stats', tabMemories:'Mémoires', tabActivities:'Activités', tabSettings:'Réglages', tabAdd:'Ajouter',
     addEventTitle:'Ajouter un événement local',
     addEventDesc:'Partage un événement de ton village ou quartier avec la communauté.',
     addEventName:'Nom de l\'événement',
@@ -3596,8 +3606,8 @@ const AP_TRANSLATIONS = {
     programMinFavs:'Ajoute au moins 2 favoris pour générer un programme !',
     programError:'Erreur lors de la génération. Réessaie !',
     // Filtres rapides
-    onlyEphem:'🗓 Que des éphémères',
-    onlyNight:'🌙 Que des nocturnes',
+    onlyEphem:'🗓 Uniquement éphémères',
+    onlyNight:'🌙 Uniquement nocturnes',
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
@@ -3616,7 +3626,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Supprimer définitivement ton compte et toutes tes données ?',
   },
   en: {
-    tabStats:'Stats', tabActivities:'Activities', tabSettings:'Settings', tabAdd:'Add',
+    tabStats:'Stats', tabMemories:'Memories', tabActivities:'Activities', tabSettings:'Settings', tabAdd:'Add',
     addEventTitle:'Add a local event', addEventDesc:'Share a village or neighborhood event with the community.', addEventName:'Event name', addEventNamePh:'Ex: Street party, Village walk…', addEventType:'Type', addEventTypes:['Walk/Hike','Village fete','Flea market','Market','Sports event','Concert/Show','Other'], addEventDate:'Date', addEventLocation:'Exact location', addEventLocationPh:'Street, village, town…', addEventDesc2:'Description (optional)', addEventDesc2Ph:'A few words about the event…', addEventSubmit:'Submit event', addEventSuccess:'✅ Event submitted! It will be verified and visible in searches.', addEventError:'Submission error. Please try again.',
     statsDone:'Activities done', statsAvg:'Avg rating', statsSearches:'Searches', statsFavs:'Favorites',
     statsLastSearches:'Recent searches',
@@ -3648,7 +3658,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Permanently delete your account and all data?',
   },
   es: {
-    tabStats:'Stats', tabActivities:'Actividades', tabSettings:'Ajustes', tabAdd:'Añadir',
+    tabStats:'Stats', tabMemories:'Memorias', tabActivities:'Actividades', tabSettings:'Ajustes', tabAdd:'Añadir',
     addEventTitle:'Añadir evento local', addEventDesc:'Comparte un evento de tu pueblo o barrio.', addEventName:'Nombre del evento', addEventNamePh:'Ej: Fiesta de vecinos, Marcha popular…', addEventType:'Tipo', addEventTypes:['Marcha/Senderismo','Fiesta de pueblo','Mercadillo','Mercado','Evento deportivo','Concierto/Espectáculo','Otro'], addEventDate:'Fecha', addEventLocation:'Lugar exacto', addEventLocationPh:'Calle, pueblo, municipio…', addEventDesc2:'Descripción (opcional)', addEventDesc2Ph:'Unas palabras sobre el evento…', addEventSubmit:'Enviar evento', addEventSuccess:'✅ ¡Evento enviado! Será verificado y visible en las búsquedas.', addEventError:'Error al enviar. Inténtalo de nuevo.',
     statsDone:'Actividades hechas', statsAvg:'Nota media', statsSearches:'Búsquedas', statsFavs:'Favoritos',
     statsLastSearches:'Últimas búsquedas',
@@ -3680,7 +3690,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'¿Eliminar definitivamente tu cuenta y todos tus datos?',
   },
   de: {
-    tabStats:'Stats', tabActivities:'Aktivitäten', tabSettings:'Einstellungen', tabAdd:'Hinzufügen',
+    tabStats:'Stats', tabMemories:'Erinnerungen', tabActivities:'Aktivitäten', tabSettings:'Einstellungen', tabAdd:'Hinzufügen',
     addEventTitle:'Lokales Event hinzufügen', addEventDesc:'Teile ein Dorf- oder Nachbarschaftsevent.', addEventName:'Eventname', addEventNamePh:'z.B. Dorffest, Wanderung…', addEventType:'Typ', addEventTypes:['Wanderung','Dorffest','Flohmarkt','Markt','Sportevent','Konzert/Show','Sonstiges'], addEventDate:'Datum', addEventLocation:'Genauer Ort', addEventLocationPh:'Straße, Dorf, Gemeinde…', addEventDesc2:'Beschreibung (optional)', addEventDesc2Ph:'Kurze Beschreibung…', addEventSubmit:'Event einreichen', addEventSuccess:'✅ Event eingereicht! Es wird geprüft und in Suchen sichtbar.', addEventError:'Fehler beim Einreichen. Bitte erneut versuchen.',
     statsDone:'Erledigte Aktivitäten', statsAvg:'Ø Bewertung', statsSearches:'Suchen', statsFavs:'Favoriten',
     statsLastSearches:'Letzte Suchen',
@@ -3712,7 +3722,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Konto und alle Daten dauerhaft löschen?',
   },
   it: {
-    tabStats:'Stats', tabActivities:'Attività', tabSettings:'Impostazioni', tabAdd:'Aggiungi',
+    tabStats:'Stats', tabMemories:'Memorie', tabActivities:'Attività', tabSettings:'Impostazioni', tabAdd:'Aggiungi',
     addEventTitle:'Aggiungi evento locale', addEventDesc:'Condividi un evento del tuo paese o quartiere.', addEventName:'Nome evento', addEventNamePh:'Es: Festa di quartiere, Camminata…', addEventType:'Tipo', addEventTypes:['Camminata/Escursione','Festa di paese','Mercatino','Mercato','Evento sportivo','Concerto/Spettacolo','Altro'], addEventDate:'Data', addEventLocation:'Luogo esatto', addEventLocationPh:'Via, paese, comune…', addEventDesc2:'Descrizione (opzionale)', addEventDesc2Ph:'Poche parole sull evento…', addEventSubmit:'Invia evento', addEventSuccess:'✅ Evento inviato! Sarà verificato e visibile nelle ricerche.', addEventError:'Errore invio. Riprova.',
     statsDone:'Attività fatte', statsAvg:'Voto medio', statsSearches:'Ricerche', statsFavs:'Preferiti',
     statsLastSearches:'Ultime ricerche',
@@ -3744,7 +3754,7 @@ const AP_TRANSLATIONS = {
     deleteConfirm:'Eliminare definitivamente il tuo account e tutti i dati?',
   },
   pt: {
-    tabStats:'Stats', tabActivities:'Atividades', tabSettings:'Definições', tabAdd:'Adicionar',
+    tabStats:'Stats', tabMemories:'Memórias', tabActivities:'Atividades', tabSettings:'Definições', tabAdd:'Adicionar',
     addEventTitle:'Adicionar evento local', addEventDesc:'Partilha um evento da tua aldeia ou bairro.', addEventName:'Nome do evento', addEventNamePh:'Ex: Festa de vizinhos, Caminhada…', addEventType:'Tipo', addEventTypes:['Caminhada/Passeio','Festa de aldeia','Feira/Alfarrabista','Mercado','Evento desportivo','Concerto/Espetáculo','Outro'], addEventDate:'Data', addEventLocation:'Local exato', addEventLocationPh:'Rua, aldeia, concelho…', addEventDesc2:'Descrição (opcional)', addEventDesc2Ph:'Algumas palavras sobre o evento…', addEventSubmit:'Submeter evento', addEventSuccess:'✅ Evento submetido! Será verificado e visível nas pesquisas.', addEventError:'Erro ao submeter. Tenta novamente.',
     statsDone:'Atividades feitas', statsAvg:'Nota média', statsSearches:'Pesquisas', statsFavs:'Favoritos',
     statsLastSearches:'Últimas pesquisas',
@@ -3806,10 +3816,12 @@ function openAccountPanel() {
 
   // Traduire les tabs
   const apTabStats = document.getElementById('ap-tab-stats-lbl');
+  const apTabMem = document.getElementById('ap-tab-memories-lbl');
   const apTabAct = document.getElementById('ap-tab-activities-lbl');
   const apTabAdd = document.getElementById('ap-tab-add-lbl');
   const apTabSet = document.getElementById('ap-tab-settings-lbl');
   if (apTabStats) apTabStats.textContent = t.tabStats||'Stats';
+  if (apTabMem) apTabMem.textContent = t.tabMemories||'Mémoires';
   if (apTabAct) apTabAct.textContent = t.tabActivities||'Activités';
   if (apTabAdd) apTabAdd.textContent = t.tabAdd||'Ajouter';
   if (apTabSet) apTabSet.textContent = t.tabSettings||'Réglages';
@@ -3842,6 +3854,7 @@ function switchAccountTab(tab) {
 
   if (tab === 'stats') renderAccountStats();
   if (tab === 'activities') renderAccountActivities();
+  if (tab === 'memories') renderMemoriesPane();
   if (tab === 'add') renderAddEventForm();
 }
 
@@ -4126,6 +4139,91 @@ function renderWeekendProgram(program, dur) {
 
   html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">${apt().programRegenerate||'🔄 Régénérer'}</button>`;
   body.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANNEAU MÉMOIRES — grille + stories style Snapchat
+// ══════════════════════════════════════════════════════════════
+function renderMemoriesPane() {
+  const el = document.getElementById('ap-memories-content');
+  if (!el) return;
+
+  const items = buildMemoryItems();
+  const photos = localLoad('activity_photos') || {};
+
+  if (!items.length) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:40px 20px">
+        <div style="font-size:52px;margin-bottom:12px">🎞️</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px">Pas encore de mémoires</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Marque des activités comme "Déjà fait"<br>et ajoute des photos pour créer tes mémoires.</div>
+      </div>`;
+    return;
+  }
+
+  // Vérifier "Ce jour il y a X ans"
+  const onThisDay = items.filter(m => {
+    const d = new Date(m.date);
+    const now = new Date();
+    return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() !== now.getFullYear();
+  });
+
+  let html = '';
+
+  // Notif "Ce jour il y a X ans"
+  if (onThisDay.length > 0) {
+    const m = onThisDay[0];
+    const years = new Date().getFullYear() - new Date(m.date).getFullYear();
+    html += `
+      <div onclick="openMemory('${m.activityId}')"
+        style="background:linear-gradient(135deg,#C4714A,#D4855C);border-radius:14px;padding:14px 16px;margin-bottom:16px;cursor:pointer;display:flex;align-items:center;gap:12px">
+        <div style="font-size:36px">🎉</div>
+        <div>
+          <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:800;color:#fff;margin-bottom:2px">Ce jour il y a ${years} an${years>1?'s':''}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.9)">${m.title}</div>
+        </div>
+        <div style="margin-left:auto;font-size:18px">→</div>
+      </div>`;
+  }
+
+  // Bouton "Voir toutes mes mémoires" (mode story)
+  html += `
+    <button onclick="openMemoriesAll()"
+      style="width:100%;padding:12px;background:linear-gradient(135deg,#3A5C38,#5C7A5A);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s">
+      ▶ Voir toutes mes mémoires
+      <span style="font-size:11px;opacity:0.85;font-weight:400">${items.length} souvenir${items.length>1?'s':''}</span>
+    </button>`;
+
+  // Grille des mémoires 2 colonnes
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
+  html += items.map(m => {
+    const ago = getTimeAgoLabel(m.date);
+    const isAnniv = ago && ago.includes('an');
+    const photo = m.photo;
+    const theme = getPhotoTheme('', m.title);
+    const emojiMap = {brocante:'🛍',marche:'🛒',apero:'🍻',restaurant:'🍽️',spa:'🧖',chateau:'🏰',museum:'🏛️',cinema:'🎬',escape:'🔐',karting:'🏎️',bowling:'🎳',concert:'🎵',bar:'🍺',randonnee:'🥾',velo:'🚵',kayak:'🛶',zoo:'🦁',parc:'🎡',nature:'🌿',theatre:'🎭',ski:'⛷️'};
+    const emoji = emojiMap[theme] || '📍';
+    return `
+      <div onclick="openMemory('${m.activityId}')"
+        style="border-radius:12px;overflow:hidden;cursor:pointer;border:1.5px solid ${isAnniv?'#C4714A':'var(--border)'};background:var(--card);transition:transform 0.15s;position:relative"
+        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        ${isAnniv ? `<div style="position:absolute;top:6px;right:6px;z-index:2;font-size:14px">🎉</div>` : ''}
+        <!-- Photo ou emoji -->
+        <div style="height:90px;background:${photo?'#000':'linear-gradient(135deg,var(--primary-light),var(--bg2))'};display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+          ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover">
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,0.2)"></div>` : `<span style="font-size:32px">${emoji}</span>`}
+        </div>
+        <!-- Info -->
+        <div style="padding:8px 10px">
+          <div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:3px">${m.title.substring(0,28)}${m.title.length>28?'…':''}</div>
+          ${m.stars > 0 ? `<div style="font-size:11px;color:#F5A623;margin-bottom:2px">${'⭐'.repeat(m.stars)}</div>` : ''}
+          <div style="font-size:10px;color:${isAnniv?'#C4714A':'var(--muted)'};font-weight:${isAnniv?700:400}">${ago}</div>
+        </div>
+      </div>`;
+  }).join('');
+  html += `</div>`;
+
+  el.innerHTML = html;
 }
 
 async function renderAccountActivities() {
@@ -4667,7 +4765,32 @@ window.testGooglePlaces = async function() {
 // Run gate on load
 window.addEventListener('load', () => {
   initBetaGate();
+  // Vérifier "Ce jour il y a X ans" après un délai
+  setTimeout(checkOnThisDayNotification, 2000);
 });
+
+function checkOnThisDayNotification() {
+  try {
+    const notes = localLoad('notes') || [];
+    const now = new Date();
+    const match = notes.find(n => {
+      if (!n.done || !n.created_at) return false;
+      const d = new Date(n.created_at);
+      return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() !== now.getFullYear();
+    });
+    if (!match) return;
+    const years = now.getFullYear() - new Date(match.created_at).getFullYear();
+    // Afficher une bannière discrète en haut
+    const banner = document.createElement('div');
+    banner.id = 'on-this-day-banner';
+    banner.onclick = () => { banner.remove(); openAccountPanel(); setTimeout(() => switchAccountTab('memories'), 300); };
+    banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:linear-gradient(135deg,#C4714A,#D4855C);color:#fff;border-radius:14px;padding:12px 20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(196,113,74,0.4);display:flex;align-items:center;gap:10px;white-space:nowrap;max-width:90vw;animation:slideUp 0.4s ease';
+    banner.innerHTML = `<span style="font-size:20px">🎉</span><div><div style="font-weight:700">Ce jour il y a ${years} an${years>1?'s':''}</div><div style="font-size:11px;opacity:0.9">${(match.activity_title||'').substring(0,35)}</div></div><span style="margin-left:8px;opacity:0.7">→</span>`;
+    document.body.appendChild(banner);
+    // Auto-disparaît après 6s
+    setTimeout(() => { if (banner.parentNode) { banner.style.opacity='0'; banner.style.transition='opacity 0.4s'; setTimeout(() => banner.remove(), 400); }}, 6000);
+  } catch(e) {}
+}
 
 </script>
 </body>
