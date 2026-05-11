@@ -1830,7 +1830,6 @@ function renderAges() {
   if (agesSection) agesSection.style.display = '';
   if (participantsSection) participantsSection.style.display = 'none';
 
-  // Toutes les options 1-100 — 18 sélectionné par défaut
   const ageOptions = Array.from({length:100}, (_,i) =>
     `<option value="${i+1}">${i+1}</option>`
   ).join('');
