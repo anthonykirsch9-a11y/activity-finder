@@ -1830,18 +1830,9 @@ function renderAges() {
   if (agesSection) agesSection.style.display = '';
   if (participantsSection) participantsSection.style.display = 'none';
 
-  // Options : 18 en premier (valeur par défaut), puis 19-100, puis 1-17
-  // Comme ça 18 est en haut du select et sélectionné par défaut
-  const ageOptions = [
-    // D'abord 18 à 100 (les plus courants)
-    ...Array.from({length:83}, (_,i) => i + 18),
-    // Séparateur visuel
-    null,
-    // Puis 1 à 17 (enfants)
-    ...Array.from({length:17}, (_,i) => i + 1),
-  ].map(val => val === null
-    ? `<option disabled>── Enfants ──</option>`
-    : `<option value="${val}">${val} ans</option>`
+  // Toutes les options 1-100 — 18 sélectionné par défaut
+  const ageOptions = Array.from({length:100}, (_,i) =>
+    `<option value="${i+1}">${i+1}</option>`
   ).join('');
 
   document.getElementById('ages-list').innerHTML = persons.map(p => `
@@ -1854,7 +1845,7 @@ function renderAges() {
       ${persons.length > 1 ? `<button class="remove-btn" onclick="removePerson('${p.id}')">×</button>` : ''}
     </div>`).join('');
 
-  // 18 est maintenant index 1 (après l'option vide) → sélectionner directement
+  // Sélectionner 18 — le navigateur positionne automatiquement la liste sur la valeur sélectionnée
   persons.forEach(p => {
     const sel = document.getElementById('age-' + p.id);
     if (sel && !sel.value) sel.value = '18';
