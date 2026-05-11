@@ -855,7 +855,7 @@ html { -webkit-text-size-adjust: 100%; }
         <input class="location-input" type="text" id="location" autocomplete="off" placeholder="Tape une ville ou un code postal…"
           onfocus="showRecentCities()" onblur="setTimeout(()=>hideRecentCities(),200)">
         <div class="city-dropdown" id="city-dropdown"></div>
-        <div id="recent-cities-wrap" style="display:none;margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
+        <div id="recent-cities-wrap" style="display:none;margin-top:6px;flex-wrap:wrap;gap:6px"></div>
       </div>
       <select class="radius-select" id="radius">
         <option value="0" id="rad-0">Ville uniquement</option>
@@ -2048,6 +2048,11 @@ function showRecentCities() {
   wrap.style.display = 'flex';
 }
 
+function hideRecentCities() {
+  const wrap = document.getElementById('recent-cities-wrap');
+  if (wrap) wrap.style.display = 'none';
+}
+
 function selectRecentCity(city) {
   const input = document.getElementById('location');
   if (input) {
@@ -2062,6 +2067,7 @@ function selectRecentCity(city) {
       }
     });
   }
+  hideRecentCities();
 }
 
 function loadApiKey() {
