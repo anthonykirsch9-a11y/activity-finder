@@ -1236,10 +1236,9 @@ html { -webkit-text-size-adjust: 100%; }
   </div>
 </div>
 
-<!-- Input file global pour upload photos activités - label visible pour iOS/Android -->
-<label id="global-photo-label" style="display:none;position:fixed;z-index:-1">
-  <input type="file" accept="image/*" id="global-photo-input" onchange="handleGlobalPhotoUpload(this)">
-</label>
+<!-- Input statique unique pour upload photos — iOS/Safari compatible -->
+<input type="file" accept="image/*" id="static-photo-input" style="display:none"
+  onchange="handleStaticPhotoUpload(this)">
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -1983,9 +1982,10 @@ const mapDd = document.getElementById('map-city-dropdown');
 
 async function fetchCities(q) {
   try {
-    // Sans paramètre lang → Photon accepte les noms dans TOUTES les langues
-    // (sevilla, cologne, münchen, firenze... tout fonctionne)
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`;
+    // lang= pour que les résultats soient dans la langue de l'interface
+    // Photon accepte aussi les noms locaux (sevilla, münchen...) sans lang
+    const photonLang = ['fr','en','de','it'].includes(lang) ? lang : 'en';
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=${photonLang}`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('photon fail');
     const data = await r.json();
@@ -4538,9 +4538,9 @@ async function renderAccountActivities() {
           <span>${new Date(n.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}</span>
           ${!isAnniversary && ago ? `<span style="color:var(--primary);font-weight:500">${ago}</span>` : ''}
         </div>
-        <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
+        <label for="static-photo-input" onclick="document.getElementById('static-photo-input').dataset.activityId='${n.activity_id}'"
+          style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
           📷 ${photo ? (apt().photoChange||'Changer la photo') : (apt().photoAdd||'Ajouter une photo')}
-          <input type="file" accept="image/*" style="display:none" onchange="uploadActivityPhoto(this,'${n.activity_id}')">
         </label>
       </div>`;
     }).join('');
@@ -4575,6 +4575,24 @@ function triggerPhotoUpload(activityId) {
   newInput.onchange = function() { handleGlobalPhotoUpload(this); document.body.removeChild(this); };
   document.body.appendChild(newInput);
   newInput.click();
+}
+
+function handleStaticPhotoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const actId = input.dataset.activityId;
+  if (!actId) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const photos = localLoad('activity_photos') || {};
+    photos[actId] = e.target.result;
+    localSave('activity_photos', photos);
+    if (_memoryItems[_memoryIndex]) _memoryItems[_memoryIndex].photo = e.target.result;
+    renderAccountActivities();
+  };
+  reader.readAsDataURL(file);
+  // Reset pour permettre re-sélection du même fichier
+  setTimeout(() => { input.value = ''; }, 100);
 }
 
 function handleGlobalPhotoUpload(input) {
