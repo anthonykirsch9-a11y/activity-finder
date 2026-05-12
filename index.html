@@ -1988,18 +1988,21 @@ async function fetchCities(q) {
     const r = await fetch(url, { headers: { 'Accept-Language': nominatimLang, 'User-Agent': 'ActivityFinder/1.0' } });
     if (!r.ok) throw new Error('nominatim fail');
     const data = await r.json();
-    return data.map(item => ({
-      display_name: item.display_name,
-      address: {
-        city: item.address?.city || item.address?.town || item.address?.village || item.name,
-        town: item.address?.town,
-        state: item.address?.state || item.address?.county || '',
-        country: item.address?.country || '',
-        country_code: (item.address?.country_code || '').toUpperCase()
-      },
-      lat: item.lat,
-      lon: item.lon
-    }));
+    return data.map(item => {
+      const cityName = item.address?.city || item.address?.town || item.address?.village || item.address?.municipality || item.name || item.display_name.split(',')[0].trim();
+      return {
+        display_name: item.display_name,
+        address: {
+          city: cityName,
+          town: item.address?.town,
+          state: item.address?.state || item.address?.county || '',
+          country: item.address?.country || '',
+          country_code: (item.address?.country_code || '').toUpperCase()
+        },
+        lat: item.lat,
+        lon: item.lon
+      };
+    });
   } catch(e) {
     return [];
   }
@@ -4535,10 +4538,7 @@ async function renderAccountActivities() {
           <span>${new Date(n.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}</span>
           ${!isAnniversary && ago ? `<span style="color:var(--primary);font-weight:500">${ago}</span>` : ''}
         </div>
-        <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
-          📷 ${photo ? (apt().photoChange||'Changer la photo') : (apt().photoAdd||'Ajouter une photo')}
-          <input type="file" accept="image/*" data-activity-id="${n.activity_id}" class="activity-photo-input" style="position:absolute;opacity:0;width:0;height:0">
-        </label>
+        <button onclick="setPhotoTarget('${n.activity_id}')" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">📷 ${photo ? (apt().photoChange||'Changer la photo') : (apt().photoAdd||'Ajouter une photo')}</button>
       </div>`;
     }).join('');
   }
@@ -5089,6 +5089,37 @@ window.testGooglePlaces = async function() {
   }
 };
 
+
+// ── UPLOAD PHOTO — input statique, seule méthode fiable iOS Safari ──
+let _photoTargetId = null;
+
+function setPhotoTarget(activityId) {
+  _photoTargetId = activityId;
+  const inp = document.getElementById('the-photo-input');
+  if (inp) inp.click();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const inp = document.getElementById('the-photo-input');
+  if (!inp) return;
+  inp.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file || !_photoTargetId) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const photos = localLoad('activity_photos') || {};
+      photos[_photoTargetId] = e.target.result;
+      localSave('activity_photos', photos);
+      _photoTargetId = null;
+      this.value = '';
+      renderAccountActivities();
+    }.bind(reader);
+    reader.readAsDataURL(file);
+    // Reset pour permettre re-sélection
+    setTimeout(() => { this.value = ''; }, 500);
+  });
+});
+
 // Run gate on load
 window.addEventListener('load', () => {
   initBetaGate();
@@ -5120,5 +5151,9 @@ function checkOnThisDayNotification() {
 }
 
 </script>
+
+<!-- Input photo statique — seule méthode fiable iOS Safari -->
+<input type="file" accept="image/*" id="the-photo-input" 
+  style="position:fixed;top:-200px;left:-200px;opacity:0;pointer-events:none">
 </body>
 </html>
