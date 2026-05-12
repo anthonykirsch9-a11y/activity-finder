@@ -1982,25 +1982,26 @@ const mapDd = document.getElementById('map-city-dropdown');
 
 async function fetchCities(q) {
   try {
-    // Nominatim respecte Accept-Language → Sevilla en ES, Köln en DE, etc.
-    const nominatimLang = {'es':'es','de':'de','it':'it','pt':'pt','en':'en','fr':'fr'}[lang] || 'fr';
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`;
-    const r = await fetch(url, { headers: { 'Accept-Language': nominatimLang, 'User-Agent': 'ActivityFinder/1.0' } });
-    if (!r.ok) throw new Error('nominatim fail');
+    // Photon sans lang → noms locaux natifs (Sevilla, Köln, Firenze)
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('photon fail');
     const data = await r.json();
-    return data.map(item => {
-      const cityName = item.address?.city || item.address?.town || item.address?.village || item.address?.municipality || item.name || item.display_name.split(',')[0].trim();
+    return (data.features || []).map(f => {
+      const p = f.properties;
+      // nom natif : name > city > locality
+      const cityName = p.name || p.city || p.locality || '';
       return {
-        display_name: item.display_name,
+        display_name: cityName,
         address: {
           city: cityName,
-          town: item.address?.town,
-          state: item.address?.state || item.address?.county || '',
-          country: item.address?.country || '',
-          country_code: (item.address?.country_code || '').toUpperCase()
+          town: p.city,
+          state: p.state || p.county || '',
+          country: p.country || '',
+          country_code: (p.countrycode || '').toUpperCase()
         },
-        lat: item.lat,
-        lon: item.lon
+        lat: f.geometry.coordinates[1],
+        lon: f.geometry.coordinates[0]
       };
     });
   } catch(e) {
