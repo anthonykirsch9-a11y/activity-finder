@@ -1236,8 +1236,10 @@ html { -webkit-text-size-adjust: 100%; }
   </div>
 </div>
 
-<!-- Input file global pour upload photos activités -->
-<input type="file" accept="image/*" id="global-photo-input" style="display:none" onchange="handleGlobalPhotoUpload(this)">
+<!-- Input file global pour upload photos activités - label visible pour iOS/Android -->
+<label id="global-photo-label" style="display:none;position:fixed;z-index:-1">
+  <input type="file" accept="image/*" id="global-photo-input" onchange="handleGlobalPhotoUpload(this)">
+</label>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -4563,8 +4565,15 @@ function triggerPhotoUpload(activityId) {
   const input = document.getElementById('global-photo-input');
   if (!input) return;
   input.dataset.activityId = activityId;
-  input.value = ''; // reset pour permettre de resélectionner le même fichier
-  input.click();
+  // Créer un nouvel input à chaque fois pour contourner les restrictions iOS
+  const newInput = document.createElement('input');
+  newInput.type = 'file';
+  newInput.accept = 'image/*';
+  newInput.style.display = 'none';
+  newInput.dataset.activityId = activityId;
+  newInput.onchange = function() { handleGlobalPhotoUpload(this); document.body.removeChild(this); };
+  document.body.appendChild(newInput);
+  newInput.click();
 }
 
 function handleGlobalPhotoUpload(input) {
