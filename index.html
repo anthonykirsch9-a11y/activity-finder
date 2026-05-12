@@ -894,7 +894,7 @@ html { -webkit-text-size-adjust: 100%; }
       </select>
     </div>
     <!-- Météo auto -->
-    <div id="weather-bar" style="display:none">
+    <div id="weather-bar" style="display:none;visibility:hidden;height:0;overflow:hidden;margin:0;padding:0">
       <div class="weather-bar">
         <div class="weather-icon" id="weather-icon">🌤</div>
         <div class="weather-info">
@@ -1773,12 +1773,11 @@ function switchView(v) {
 function initMap() {
   if (map) return;
   map = L.map('leaflet-map').setView([46.6, 2.3], 5);
-  // Tile layer avec noms de villes dans la langue de l'interface
-  const mapLang = lang === 'fr' ? 'fr' : lang === 'es' ? 'es' : lang === 'de' ? 'de' : lang === 'it' ? 'it' : lang === 'pt' ? 'pt' : 'en';
-  L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`, {
-    attribution: '© OpenStreetMap © CartoDB',
+  // Tile layer OpenStreetMap localisé selon la langue de l'interface
+  const mapLangCode = lang === 'fr' ? 'fr' : lang === 'es' ? 'es' : lang === 'de' ? 'de' : lang === 'it' ? 'it' : lang === 'pt' ? 'pt' : 'en';
+  L.tileLayer(`https://tile.openstreetmap.org/{z}/{x}/{y}.png`, {
+    attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
     maxZoom: 19,
-    subdomains: 'abcd'
   }).addTo(map);
   map.on('click', e => placeMapPoint(e.latlng.lat, e.latlng.lng, null));
 }
@@ -2854,7 +2853,18 @@ function formatGooglePlacesForPrompt(places) {
   return list + '\nUtilise ces lieux(lieu_certain:true,placeId exact).';
 }
 
-// ── Couleurs et icônes par type d'activité ──
+// Traduire les types d'activités pour les badges
+function translateType(type) {
+  const typeTranslations = {
+    fr: { 'Nature':'Nature','Culture':'Culture','Sport':'Sport','Gastronomie':'Gastronomie','Bien-être':'Bien-être','Divertissement':'Divertissement','Éphémère':'Éphémère','Nocturne':'Nocturne','Food':'Gastronomie','Wellness':'Bien-être','Entertainment':'Divertissement','Nightlife':'Nocturne' },
+    en: { 'Nature':'Nature','Culture':'Culture','Sport':'Sport','Gastronomie':'Food','Bien-être':'Wellness','Divertissement':'Entertainment','Éphémère':'Event','Nocturne':'Nightlife','Food':'Food','Wellness':'Wellness','Entertainment':'Entertainment','Nightlife':'Nightlife' },
+    es: { 'Nature':'Naturaleza','Culture':'Cultura','Sport':'Deporte','Gastronomie':'Gastronomía','Bien-être':'Bienestar','Divertissement':'Entretenimiento','Éphémère':'Evento','Nocturne':'Nocturno','Food':'Gastronomía','Wellness':'Bienestar','Entertainment':'Entretenimiento','Nightlife':'Nocturno' },
+    de: { 'Nature':'Natur','Culture':'Kultur','Sport':'Sport','Gastronomie':'Kulinarik','Bien-être':'Wellness','Divertissement':'Unterhaltung','Éphémère':'Event','Nocturne':'Nachtleben','Food':'Kulinarik','Wellness':'Wellness','Entertainment':'Unterhaltung','Nightlife':'Nachtleben' },
+    it: { 'Nature':'Natura','Culture':'Cultura','Sport':'Sport','Gastronomie':'Gastronomia','Bien-être':'Benessere','Divertissement':'Intrattenimento','Éphémère':'Evento','Nocturne':'Notturno','Food':'Gastronomia','Wellness':'Benessere','Entertainment':'Intrattenimento','Nightlife':'Notturno' },
+    pt: { 'Nature':'Natureza','Culture':'Cultura','Sport':'Desporto','Gastronomie':'Gastronomia','Bien-être':'Bem-estar','Divertissement':'Entretenimento','Éphémère':'Evento','Nocturne':'Noturno','Food':'Gastronomia','Wellness':'Bem-estar','Entertainment':'Entretenimento','Nightlife':'Noturno' },
+  };
+  return (typeTranslations[lang] || typeTranslations.fr)[type] || type;
+}
 const TYPE_COLORS = {
   'Nature':        '#4A8C52',
   'Culture':       '#8B6914',
@@ -3254,7 +3264,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
           onerror="this.style.display='none';this.parentElement.classList.add('rc-photo-fallback')">
         <div class="rc-photo-overlay"></div>
         <div class="rc-photo-top">
-          <span class="rc-badge-type">${a.type}</span>
+          <span class="rc-badge-type">${translateType(a.type)}</span>
           ${a.ephemere?`<span class="rc-badge-ephem">🗓 ${a.frequence||'Éphémère'}</span>`:''}
           ${a.nocturne?`<span class="rc-badge-night">🌙 Nocturne</span>`:''}
         </div>
@@ -4526,7 +4536,10 @@ async function renderAccountActivities() {
           <span>${new Date(n.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}</span>
           ${!isAnniversary && ago ? `<span style="color:var(--primary);font-weight:500">${ago}</span>` : ''}
         </div>
-        <div style="font-size:11px;color:var(--primary);margin-top:4px">📷 ${photo ? 'Voir / changer la photo' : 'Ajouter une photo'} →</div>
+        <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
+          📷 ${photo ? (apt().photoChange||'Changer la photo') : (apt().photoAdd||'Ajouter une photo')}
+          <input type="file" accept="image/*" style="display:none" onchange="uploadActivityPhoto(this,'${n.activity_id}')">
+        </label>
       </div>`;
     }).join('');
   }
