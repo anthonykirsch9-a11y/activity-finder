@@ -4538,9 +4538,10 @@ async function renderAccountActivities() {
           <span>${new Date(n.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}</span>
           ${!isAnniversary && ago ? `<span style="color:var(--primary);font-weight:500">${ago}</span>` : ''}
         </div>
-        <button onclick="triggerPhotoUpload('${n.activity_id}')" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
+        <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
           📷 ${photo ? (apt().photoChange||'Changer la photo') : (apt().photoAdd||'Ajouter une photo')}
-        </button>
+          <input type="file" accept="image/*" style="display:none" onchange="uploadActivityPhoto(this,'${n.activity_id}')">
+        </label>
       </div>`;
     }).join('');
   }
