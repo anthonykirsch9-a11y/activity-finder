@@ -2049,7 +2049,7 @@ locEl.addEventListener('input', () => {
     acItems = data; acHighlight = -1;
     if (data.length) renderDropdown(locDd, data, selectCity);
     else locDd.classList.remove('open');
-  }, 150);
+  }, 100);
 });
 locEl.addEventListener('keydown', e => {
   if (!locDd.classList.contains('open')) return;
@@ -2082,7 +2082,7 @@ mapLocEl.addEventListener('input', () => {
     mapAcItems = data;
     if (data.length) renderDropdown(mapDd, data, selectMapCity);
     else mapDd.classList.remove('open');
-  }, 150);
+  }, 100);
 });
 mapLocEl.addEventListener('blur', () => setTimeout(() => mapDd.classList.remove('open'), 200));
 
@@ -5097,7 +5097,9 @@ let _photoTargetId = null;
 function setPhotoTarget(activityId) {
   _photoTargetId = activityId;
   const inp = document.getElementById('the-photo-input');
-  if (inp) inp.click();
+  if (!inp) return;
+  inp.value = ''; // reset obligatoire pour re-sélectionner le même fichier ou changer
+  inp.click();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
