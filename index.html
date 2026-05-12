@@ -2045,7 +2045,7 @@ locEl.addEventListener('input', () => {
     acItems = data; acHighlight = -1;
     if (data.length) renderDropdown(locDd, data, selectCity);
     else locDd.classList.remove('open');
-  }, 300);
+  }, 150);
 });
 locEl.addEventListener('keydown', e => {
   if (!locDd.classList.contains('open')) return;
@@ -2078,7 +2078,7 @@ mapLocEl.addEventListener('input', () => {
     mapAcItems = data;
     if (data.length) renderDropdown(mapDd, data, selectMapCity);
     else mapDd.classList.remove('open');
-  }, 300);
+  }, 150);
 });
 mapLocEl.addEventListener('blur', () => setTimeout(() => mapDd.classList.remove('open'), 200));
 
@@ -4548,7 +4548,7 @@ async function renderAccountActivities() {
   }
   el.innerHTML = html;
 
-  // iOS Safari bloque onchange inline → addEventListener après injection
+  // Attacher les listeners APRES injection (iOS Safari)
   el.querySelectorAll('.activity-photo-input').forEach(input => {
     input.addEventListener('change', function() {
       const file = this.files[0];
@@ -4565,6 +4565,38 @@ async function renderAccountActivities() {
       reader.readAsDataURL(file);
     });
   });
+
+  // Fallback iOS : event delegation sur le container
+  el.addEventListener('click', function(e) {
+    const label = e.target.closest('label');
+    if (!label) return;
+    const input = label.querySelector('.activity-photo-input');
+    if (!input) return;
+    // Sur iOS le label→input ne marche pas via innerHTML, on force manuellement
+    e.preventDefault();
+    // Créer un input temporaire hors DOM
+    const tmp = document.createElement('input');
+    tmp.type = 'file';
+    tmp.accept = 'image/*';
+    tmp.style.cssText = 'position:fixed;top:-100px;left:-100px;opacity:0';
+    tmp.dataset.activityId = input.dataset.activityId;
+    document.body.appendChild(tmp);
+    tmp.addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) { document.body.removeChild(tmp); return; }
+      const actId = this.dataset.activityId;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const photos = localLoad('activity_photos') || {};
+        photos[actId] = ev.target.result;
+        localSave('activity_photos', photos);
+        document.body.removeChild(tmp);
+        renderAccountActivities();
+      };
+      reader.readAsDataURL(file);
+    });
+    tmp.click();
+  }, { capture: true });
 }
 
 function removeFavorite(activityId) {
