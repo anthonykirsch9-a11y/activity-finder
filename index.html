@@ -1987,9 +1987,8 @@ async function fetchCities(q) {
     const r = await fetch(url);
     if (!r.ok) throw new Error('photon fail');
     const data = await r.json();
-    return (data.features || []).map(f => {
+    const results = (data.features || []).map(f => {
       const p = f.properties;
-      // nom natif : name > city > locality
       const cityName = p.name || p.city || p.locality || '';
       return {
         display_name: cityName,
@@ -2004,8 +2003,26 @@ async function fetchCities(q) {
         lon: f.geometry.coordinates[0]
       };
     });
+    if (results.length) return results;
+    throw new Error('no results');
   } catch(e) {
-    return [];
+    // Fallback Nominatim si Photon échoue
+    try {
+      const r2 = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1`);
+      const d2 = await r2.json();
+      return d2.map(item => ({
+        display_name: item.display_name,
+        address: {
+          city: item.address?.city || item.address?.town || item.address?.village || item.name,
+          town: item.address?.town,
+          state: item.address?.state || '',
+          country: item.address?.country || '',
+          country_code: (item.address?.country_code || '').toUpperCase()
+        },
+        lat: item.lat,
+        lon: item.lon
+      }));
+    } catch(e2) { return []; }
   }
 }
 
@@ -5096,9 +5113,28 @@ let _photoTargetId = null;
 
 function setPhotoTarget(activityId) {
   _photoTargetId = activityId;
-  const inp = document.getElementById('the-photo-input');
-  if (!inp) return;
-  inp.value = ''; // reset obligatoire pour re-sélectionner le même fichier ou changer
+  // Recréer l'input à chaque fois — seul moyen fiable sur iOS Safari
+  const old = document.getElementById('the-photo-input');
+  if (old) old.remove();
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.id = 'the-photo-input';
+  inp.style.cssText = 'position:fixed;top:-200px;left:-200px;opacity:0;pointer-events:none';
+  inp.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const photos = localLoad('activity_photos') || {};
+      photos[_photoTargetId] = e.target.result;
+      localSave('activity_photos', photos);
+      _photoTargetId = null;
+      renderAccountActivities();
+    };
+    reader.readAsDataURL(file);
+  });
+  document.body.appendChild(inp);
   inp.click();
 }
 
