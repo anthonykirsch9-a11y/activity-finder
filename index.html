@@ -1982,10 +1982,13 @@ const mapDd = document.getElementById('map-city-dropdown');
 
 async function fetchCities(q) {
   try {
-    // lang= pour que les résultats soient dans la langue de l'interface
-    // Photon accepte aussi les noms locaux (sevilla, münchen...) sans lang
-    const photonLang = ['fr','en','de','it'].includes(lang) ? lang : 'en';
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=${photonLang}`;
+    // Photon: sans lang= → retourne les noms dans la langue locale du pays
+    // Avec lang=fr → retourne Séville au lieu de Sevilla
+    // DONC: on n'envoie PAS de lang pour avoir les noms locaux
+    // Exception: si l'utilisateur tape en français (app en français) on garde lang=fr
+    const url = lang === 'fr'
+      ? `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=fr`
+      : `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('photon fail');
     const data = await r.json();
@@ -4538,9 +4541,9 @@ async function renderAccountActivities() {
           <span>${new Date(n.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}</span>
           ${!isAnniversary && ago ? `<span style="color:var(--primary);font-weight:500">${ago}</span>` : ''}
         </div>
-        <label for="static-photo-input" onclick="document.getElementById('static-photo-input').dataset.activityId='${n.activity_id}'"
-          style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
+        <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
           📷 ${photo ? (apt().photoChange||'Changer la photo') : (apt().photoAdd||'Ajouter une photo')}
+          <input type="file" accept="image/*" style="position:absolute;opacity:0;width:0;height:0" onchange="handleStaticPhotoUpload(this,'${n.activity_id}')">
         </label>
       </div>`;
     }).join('');
@@ -4577,10 +4580,10 @@ function triggerPhotoUpload(activityId) {
   newInput.click();
 }
 
-function handleStaticPhotoUpload(input) {
+function handleStaticPhotoUpload(input, activityId) {
   const file = input.files[0];
   if (!file) return;
-  const actId = input.dataset.activityId;
+  const actId = activityId || input.dataset.activityId;
   if (!actId) return;
   const reader = new FileReader();
   reader.onload = e => {
