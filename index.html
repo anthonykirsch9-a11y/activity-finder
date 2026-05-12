@@ -1228,7 +1228,7 @@ html { -webkit-text-size-adjust: 100%; }
       <!-- Upload photo -->
       <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap">
         📷 <span id="memory-photo-btn-lbl">Ajouter</span>
-        <input type="file" accept="image/*" capture="environment" style="display:none" id="memory-photo-input" onchange="uploadMemoryPhoto(this)">
+        <input type="file" accept="image/*" style="display:none" id="memory-photo-input" onchange="uploadMemoryPhoto(this)">
       </label>
       <!-- Counter -->
       <div id="memory-counter" style="font-size:11px;color:var(--muted);white-space:nowrap"></div>
@@ -1775,10 +1775,7 @@ function initMap() {
   map = L.map('leaflet-map').setView([46.6, 2.3], 5);
   // Tile layer OpenStreetMap localisé selon la langue de l'interface
   const mapLangCode = lang === 'fr' ? 'fr' : lang === 'es' ? 'es' : lang === 'de' ? 'de' : lang === 'it' ? 'it' : lang === 'pt' ? 'pt' : 'en';
-  L.tileLayer(`https://tile.openstreetmap.org/{z}/{x}/{y}.png`, {
-    attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
-    maxZoom: 19,
-  }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap © CartoDB', maxZoom: 19, subdomains: 'abcd' }).addTo(map);
   map.on('click', e => placeMapPoint(e.latlng.lat, e.latlng.lng, null));
 }
 
