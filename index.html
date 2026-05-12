@@ -1228,7 +1228,7 @@ html { -webkit-text-size-adjust: 100%; }
       <!-- Upload photo -->
       <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap">
         📷 <span id="memory-photo-btn-lbl">Ajouter</span>
-        <input type="file" accept="image/*" style="display:none" id="memory-photo-input" onchange="uploadMemoryPhoto(this)">
+        <input type="file" accept="image/*" capture="environment" style="display:none" id="memory-photo-input" onchange="uploadMemoryPhoto(this)">
       </label>
       <!-- Counter -->
       <div id="memory-counter" style="font-size:11px;color:var(--muted);white-space:nowrap"></div>
@@ -1773,14 +1773,20 @@ function switchView(v) {
 function initMap() {
   if (map) return;
   map = L.map('leaflet-map').setView([46.6, 2.3], 5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap © CartoDB', maxZoom: 19, subdomains: 'abcd' }).addTo(map);
+  // Tile layer avec noms de villes dans la langue de l'interface
+  const mapLang = lang === 'fr' ? 'fr' : lang === 'es' ? 'es' : lang === 'de' ? 'de' : lang === 'it' ? 'it' : lang === 'pt' ? 'pt' : 'en';
+  L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`, {
+    attribution: '© OpenStreetMap © CartoDB',
+    maxZoom: 19,
+    subdomains: 'abcd'
+  }).addTo(map);
   map.on('click', e => placeMapPoint(e.latlng.lat, e.latlng.lng, null));
 }
 
 function placeMapPoint(lat, lng, name) {
   mapSearchCoords = { lat, lng };
   if (!name) {
-    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=${lang}`)
       .then(r => r.json())
       .then(d => { mapSearchName = d.address?.city || d.address?.town || d.address?.village || d.display_name?.split(',')[0] || `${lat.toFixed(3)},${lng.toFixed(3)}`; drawMapCircle(lat, lng); })
       .catch(() => { mapSearchName = `${lat.toFixed(3)},${lng.toFixed(3)}`; drawMapCircle(lat, lng); });
@@ -1977,7 +1983,7 @@ const mapDd = document.getElementById('map-city-dropdown');
 async function fetchCities(q) {
   // Try Photon (no CORS issues), fallback to Nominatim
   try {
-    const langParam = (lang === 'fr' || lang === 'en' || lang === 'de') ? lang : 'fr';
+    const langParam = ['fr','en','de','it'].includes(lang) ? lang : 'fr';
     const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=${langParam}`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('photon fail');
@@ -2662,7 +2668,9 @@ function getPhotoTheme(type, titre) {
 }
 
 function photoUrl(type, titre) {
-  return makePhotoSvg(getPhotoTheme(type, titre));
+  const theme = getPhotoTheme(type, titre);
+  // Utiliser l'URL Pexels directe si disponible, sinon SVG comme placeholder
+  return PEXELS_DIRECT[theme] || makePhotoSvg(theme);
 }
 
 
