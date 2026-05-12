@@ -1982,29 +1982,23 @@ const mapDd = document.getElementById('map-city-dropdown');
 
 async function fetchCities(q) {
   try {
-    // Photon: sans lang= → retourne les noms dans la langue locale du pays
-    // Avec lang=fr → retourne Séville au lieu de Sevilla
-    // DONC: on n'envoie PAS de lang pour avoir les noms locaux
-    // Exception: si l'utilisateur tape en français (app en français) on garde lang=fr
-    const url = lang === 'fr'
-      ? `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=fr`
-      : `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('photon fail');
+    // Nominatim respecte Accept-Language → Sevilla en ES, Köln en DE, etc.
+    const nominatimLang = {'es':'es','de':'de','it':'it','pt':'pt','en':'en','fr':'fr'}[lang] || 'fr';
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`;
+    const r = await fetch(url, { headers: { 'Accept-Language': nominatimLang, 'User-Agent': 'ActivityFinder/1.0' } });
+    if (!r.ok) throw new Error('nominatim fail');
     const data = await r.json();
-    // Convert Photon format to our format
-    return (data.features || []).map(f => ({
-      _photon: true,
-      display_name: f.properties.name || '',
+    return data.map(item => ({
+      display_name: item.display_name,
       address: {
-        city: f.properties.city || f.properties.name,
-        town: f.properties.city,
-        state: f.properties.state || '',
-        country: f.properties.country || '',
-        country_code: (f.properties.countrycode || '').toUpperCase()
+        city: item.address?.city || item.address?.town || item.address?.village || item.name,
+        town: item.address?.town,
+        state: item.address?.state || item.address?.county || '',
+        country: item.address?.country || '',
+        country_code: (item.address?.country_code || '').toUpperCase()
       },
-      lat: f.geometry.coordinates[1],
-      lon: f.geometry.coordinates[0]
+      lat: item.lat,
+      lon: item.lon
     }));
   } catch(e) {
     return [];
@@ -4543,7 +4537,7 @@ async function renderAccountActivities() {
         </div>
         <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px">
           📷 ${photo ? (apt().photoChange||'Changer la photo') : (apt().photoAdd||'Ajouter une photo')}
-          <input type="file" accept="image/*" style="position:absolute;opacity:0;width:0;height:0" onchange="handleStaticPhotoUpload(this,'${n.activity_id}')">
+          <input type="file" accept="image/*" data-activity-id="${n.activity_id}" class="activity-photo-input" style="position:absolute;opacity:0;width:0;height:0">
         </label>
       </div>`;
     }).join('');
@@ -4553,6 +4547,24 @@ async function renderAccountActivities() {
     html = `<p style="color:var(--muted);font-size:13px;padding:10px 0">${t.noActivities||'Aucune activité encore.'}</p>`;
   }
   el.innerHTML = html;
+
+  // iOS Safari bloque onchange inline → addEventListener après injection
+  el.querySelectorAll('.activity-photo-input').forEach(input => {
+    input.addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const actId = this.dataset.activityId;
+      if (!actId) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const photos = localLoad('activity_photos') || {};
+        photos[actId] = ev.target.result;
+        localSave('activity_photos', photos);
+        renderAccountActivities();
+      };
+      reader.readAsDataURL(file);
+    });
+  });
 }
 
 function removeFavorite(activityId) {
