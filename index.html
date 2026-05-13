@@ -1973,8 +1973,9 @@ const mapDd = document.getElementById('map-city-dropdown');
 
 async function fetchCities(q) {
   try {
-    // Photon sans lang → noms locaux natifs (Sevilla, Köln, Firenze)
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`;
+    // Photon lang=de → noms natifs locaux (Sevilla, Köln, Firenze, Lyon)
+    // DE est la seule langue qui retourne les vrais noms locaux sans traduction
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=de`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('photon fail');
     const data = await r.json();
@@ -3599,13 +3600,25 @@ function getTimeAgoLabel(dateStr) {
   const diffDays = Math.floor(diffMs / 86400000);
   const diffMonths = Math.floor(diffDays / 30);
   const diffYears = Math.floor(diffDays / 365);
-  if (diffDays < 1) return "Aujourd'hui";
-  if (diffDays === 1) return 'Il y a 1 jour';
-  if (diffDays < 7) return `Il y a ${diffDays} jours`;
-  if (diffDays < 30) return `Il y a ${Math.floor(diffDays/7)} semaine${Math.floor(diffDays/7)>1?'s':''}`;
-  if (diffMonths < 12) return `Il y a ${diffMonths} mois`;
-  if (diffYears === 1) return 'Il y a 1 an 🎉';
-  return `Il y a ${diffYears} ans 🎉`;
+  const ta = apt().timeAgo;
+  if (!ta) {
+    // fallback français
+    if (diffDays < 1) return "Aujourd'hui";
+    if (diffDays === 1) return 'Il y a 1 jour';
+    if (diffDays < 7) return `Il y a ${diffDays} jours`;
+    if (diffDays < 30) return `Il y a ${Math.floor(diffDays/7)} semaine${Math.floor(diffDays/7)>1?'s':''}`;
+    if (diffMonths < 12) return `Il y a ${diffMonths} mois`;
+    return diffYears === 1 ? 'Il y a 1 an 🎉' : `Il y a ${diffYears} ans 🎉`;
+  }
+  const n = (tpl, v) => tpl.replace('{n}', v);
+  if (diffDays < 1) return ta[0];
+  if (diffDays === 1) return ta[1];
+  if (diffDays < 7) return n(ta[2], diffDays);
+  const w = Math.floor(diffDays/7);
+  if (diffDays < 30) return w === 1 ? ta[3] : n(ta[4], w);
+  if (diffMonths < 12) return n(ta[5], diffMonths);
+  if (diffYears === 1) return ta[6];
+  return n(ta[7], diffYears);
 }
 
 function openMemory(activityId) {
@@ -3786,7 +3799,7 @@ const AP_TRANSLATIONS = {
     // Filtres rapides
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
-    or:'ou', betaCode:'Code d\'accès bêta', betaPlaceholder:'Code invitation…',
+    or:'ou', memoriesBtn:'✨ Mes Mémoires', timeAgo:['Aujourd\'hui','Il y a {n} jour','Il y a {n} jours','Il y a {n} semaine','Il y a {n} semaines','Il y a {n} mois','Il y a 1 an 🎉','Il y a {n} ans 🎉'], betaCode:'Code d\'accès bêta', betaPlaceholder:'Code invitation…',
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
@@ -3819,7 +3832,7 @@ const AP_TRANSLATIONS = {
     programMinFavs:'Add at least 2 favorites to generate a program!',
     programError:'Generation error. Please try again!',
     onlyEphem:'🗓 Ephemeral only', onlyNight:'🌙 Nightlife only',
-    or:'or', betaCode:'Beta access code', betaPlaceholder:'Invitation code…',
+    or:'or', memoriesBtn:'✨ My Memories', timeAgo:['Today','1 day ago','{n} days ago','1 week ago','{n} weeks ago','{n} months ago','1 year ago 🎉','{n} years ago 🎉'], betaCode:'Beta access code', betaPlaceholder:'Invitation code…',
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected',
     proTitle:'Activity Finder Pro', proPrice:'€2.99', proPerMonth:'/month',
@@ -3887,7 +3900,7 @@ const AP_TRANSLATIONS = {
     programMinFavs:'Füge mindestens 2 Favoriten hinzu!',
     programError:'Fehler bei der Erstellung. Bitte erneut versuchen!',
     onlyEphem:'🗓 Nur kurzfristige Events', onlyNight:'🌙 Nur Nachtleben',
-    or:'oder', betaCode:'Beta-Zugangscode', betaPlaceholder:'Einladungscode…',
+    or:'oder', memoriesBtn:'✨ Meine Erinnerungen', timeAgo:['Heute','Vor 1 Tag','Vor {n} Tagen','Vor 1 Woche','Vor {n} Wochen','Vor {n} Monaten','Vor 1 Jahr 🎉','Vor {n} Jahren 🎉'], betaCode:'Beta-Zugangscode', betaPlaceholder:'Einladungscode…',
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
@@ -4490,9 +4503,11 @@ async function renderAccountActivities() {
   const allNotes = localLoad('notes') || [];
   const doneCnt = allNotes.filter(n => n.done).length;
   if (doneCnt > 0) {
+    const memLabel = apt().memoriesBtn || '✨ Mes Mémoires';
+    const souvenirWord = {'fr':'souvenir','en':'memory','es':'recuerdo','de':'Erinnerung','it':'ricordo','pt':'memória'}[lang] || 'souvenir';
     html += `<button class="memories-btn" onclick="openMemoriesAll()">
-      ✨ Mes Mémoires
-      <span style="font-size:11px;opacity:0.85;font-weight:400">${doneCnt} souvenir${doneCnt>1?'s':''}</span>
+      ${memLabel}
+      <span style="font-size:11px;opacity:0.85;font-weight:400">${doneCnt} ${souvenirWord}${doneCnt>1&&lang==='fr'?'s':''}</span>
     </button>`;
   }
 
