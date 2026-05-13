@@ -879,7 +879,7 @@ html { -webkit-text-size-adjust: 100%; }
     <div class="section-head"><div class="section-icon">📍</div><span class="section-title" id="lbl-location">Localisation</span></div>
     <div class="location-row">
       <div class="location-wrap">
-        <input class="location-input" type="text" id="location" autocomplete="off" placeholder="Tape une ville ou un code postal…"
+        <input class="location-input" type="text" id="location" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Tape une ville ou un code postal…"
           onfocus="showRecentCities()" onblur="setTimeout(()=>hideRecentCities(),200)">
         <div class="city-dropdown" id="city-dropdown"></div>
         <div id="recent-cities-wrap" style="display:none;margin-top:6px;flex-wrap:wrap;gap:6px"></div>
@@ -983,7 +983,7 @@ html { -webkit-text-size-adjust: 100%; }
   <div class="form-wrap" style="padding-bottom:0">
     <div class="map-form">
       <div class="map-form-wrap">
-        <input class="map-form-input" type="text" id="map-location" autocomplete="off" placeholder="Ville ou code postal…">
+        <input class="map-form-input" type="text" id="map-location" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Ville ou code postal…">
         <div class="city-dropdown" id="map-city-dropdown"></div>
       </div>
       <select class="radius-select" id="map-radius" onchange="onMapRadiusChange()">
@@ -1089,11 +1089,7 @@ html { -webkit-text-size-adjust: 100%; }
       <span class="tab-icon">📊</span>
       <span id="ap-tab-stats-lbl">Stats</span>
     </button>
-    <button class="account-tab" id="ap-tab-memories" onclick="switchAccountTab('memories')">
-      <span class="tab-icon">🎞️</span>
-      <span id="ap-tab-memories-lbl">Mémoires</span>
-    </button>
-    <button class="account-tab" id="ap-tab-activities" onclick="switchAccountTab('activities')">
+<button class="account-tab" id="ap-tab-activities" onclick="switchAccountTab('activities')">
       <span class="tab-icon">⭐</span>
       <span id="ap-tab-activities-lbl">Activités</span>
     </button>
@@ -1115,12 +1111,7 @@ html { -webkit-text-size-adjust: 100%; }
       <div id="ap-stats-content"></div>
     </div>
 
-    <!-- Pane: Mémoires -->
-    <div class="account-pane" id="ap-pane-memories">
-      <div id="ap-memories-content"></div>
-    </div>
-
-    <!-- Pane: Mes activités + Album -->
+<!-- Pane: Mes activités + Album -->
     <div class="account-pane" id="ap-pane-activities">
       <div id="ap-activities-list"></div>
     </div>
@@ -3795,6 +3786,7 @@ const AP_TRANSLATIONS = {
     // Filtres rapides
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
+    or:'ou', betaCode:'Code d\'accès bêta', betaPlaceholder:'Code invitation…',
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mois',
@@ -3827,6 +3819,7 @@ const AP_TRANSLATIONS = {
     programMinFavs:'Add at least 2 favorites to generate a program!',
     programError:'Generation error. Please try again!',
     onlyEphem:'🗓 Ephemeral only', onlyNight:'🌙 Nightlife only',
+    or:'or', betaCode:'Beta access code', betaPlaceholder:'Invitation code…',
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected',
     proTitle:'Activity Finder Pro', proPrice:'€2.99', proPerMonth:'/month',
@@ -3859,6 +3852,9 @@ const AP_TRANSLATIONS = {
     programMinFavs:'Añade al menos 2 favoritos para generar un programa!',
     programError:'Error de generación. ¡Inténtalo de nuevo!',
     onlyEphem:'🗓 Solo efímeros', onlyNight:'🌙 Solo nocturno',
+    or:'o', betaCode:'Código de acceso beta', betaPlaceholder:'Código de invitación…',
+    or:'o', betaCode:'Codice accesso beta', betaPlaceholder:'Codice invito…',
+    or:'ou', betaCode:'Código de acesso beta', betaPlaceholder:'Código de convite…',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mes',
@@ -3891,6 +3887,7 @@ const AP_TRANSLATIONS = {
     programMinFavs:'Füge mindestens 2 Favoriten hinzu!',
     programError:'Fehler bei der Erstellung. Bitte erneut versuchen!',
     onlyEphem:'🗓 Nur kurzfristige Events', onlyNight:'🌙 Nur Nachtleben',
+    or:'oder', betaCode:'Beta-Zugangscode', betaPlaceholder:'Einladungscode…',
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
@@ -4062,11 +4059,11 @@ function renderAccountProfile() {
           style="width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">
           🔑 ${t.loginBtn||'Se connecter'}
         </button>
-        <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px">— ou —</div>
+        <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px">— ${t.or||"ou"} —</div>
         <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px">
-          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">🔐 Code d'accès bêta</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">🔐 ${t.betaCode||"Code d'accès bêta"}</div>
           <div style="display:flex;gap:8px">
-            <input id="inline-beta-input" type="text" placeholder="Code invitation…"
+            <input id="inline-beta-input" type="text" placeholder="${t.betaPlaceholder||'Code invitation…'}"
               style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none;text-transform:uppercase;letter-spacing:.08em"
               oninput="this.value=this.value.toUpperCase()"
               onkeydown="if(event.key==='Enter')checkInlineBetaCode()">
