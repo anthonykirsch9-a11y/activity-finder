@@ -1973,12 +1973,31 @@ const mapDd = document.getElementById('map-city-dropdown');
 
 async function fetchCities(q) {
   try {
-    // Photon lang=de → noms natifs locaux (Sevilla, Köln, Firenze, Lyon)
-    // DE est la seule langue qui retourne les vrais noms locaux sans traduction
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=de`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('photon fail');
+    // Photon supporte fr/de/it nativement
+    // Pour es/en/pt → Nominatim avec Accept-Language
+    const photonSupported = ['fr','de','it'].includes(lang);
+    const url = photonSupported
+      ? `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=${lang}`
+      : `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`;
+    const fetchOpts = photonSupported ? {} : { headers: { 'Accept-Language': lang } };
+    const r = await fetch(url, fetchOpts);
+    if (!r.ok) throw new Error('fetch fail');
     const data = await r.json();
+    // Nominatim retourne tableau JSON, Photon retourne {features:[]}
+    if (!data.features) {
+      return (data || []).map(item => ({
+        display_name: item.display_name,
+        address: {
+          city: item.address?.city || item.address?.town || item.address?.village || item.name,
+          town: item.address?.town,
+          state: item.address?.state || item.address?.county || '',
+          country: item.address?.country || '',
+          country_code: (item.address?.country_code || '').toUpperCase()
+        },
+        lat: item.lat,
+        lon: item.lon
+      }));
+    }
     const results = (data.features || []).map(f => {
       const p = f.properties;
       const cityName = p.name || p.city || p.locality || '';
@@ -3865,9 +3884,9 @@ const AP_TRANSLATIONS = {
     programMinFavs:'Añade al menos 2 favoritos para generar un programa!',
     programError:'Error de generación. ¡Inténtalo de nuevo!',
     onlyEphem:'🗓 Solo efímeros', onlyNight:'🌙 Solo nocturno',
-    or:'o', betaCode:'Código de acceso beta', betaPlaceholder:'Código de invitación…',
-    or:'o', betaCode:'Codice accesso beta', betaPlaceholder:'Codice invito…',
-    or:'ou', betaCode:'Código de acesso beta', betaPlaceholder:'Código de convite…',
+    or:'o', memoriesBtn:'✨ Mis Recuerdos', timeAgo:['Hoy','Hace 1 día','Hace {n} días','Hace 1 semana','Hace {n} semanas','Hace {n} meses','Hace 1 año 🎉','Hace {n} años 🎉'], betaCode:'Código de acceso beta', betaPlaceholder:'Código de invitación…',
+    or:'o', memoriesBtn:'✨ I miei ricordi', timeAgo:['Oggi','1 giorno fa','{n} giorni fa','1 settimana fa','{n} settimane fa','{n} mesi fa','1 anno fa 🎉','{n} anni fa 🎉'], betaCode:'Codice accesso beta', betaPlaceholder:'Codice invito…',
+    or:'ou', memoriesBtn:'✨ As minhas memórias', timeAgo:['Hoje','Há 1 dia','Há {n} dias','Há 1 semana','Há {n} semanas','Há {n} meses','Há 1 ano 🎉','Há {n} anos 🎉'], betaCode:'Código de acesso beta', betaPlaceholder:'Código de convite…',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado',
     proTitle:'Activity Finder Pro', proPrice:'2,99 €', proPerMonth:'/mes',
