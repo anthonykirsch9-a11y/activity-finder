@@ -1209,7 +1209,7 @@ html { -webkit-text-size-adjust: 100%; }
       <div class="setting-row" style="cursor:pointer" onclick="openAvatarPicker()">
         <div>
           <div class="setting-label">Avatar</div>
-          <div class="setting-sub">Voyage, aventure, exploration</div>
+          <div class="setting-sub" id="avatar-setting-sub">Voyage, aventure, exploration</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="font-size:28px;width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;background:var(--bg)" id="settings-avatar-display">🧭</div>
@@ -1798,6 +1798,8 @@ function setLang(l) {
   // Bouton connexion topbar
   const changeAvatarLbl = document.getElementById('stats-change-avatar-lbl');
   if (changeAvatarLbl) changeAvatarLbl.textContent = apt().changeAvatar || 'Changer mon avatar';
+  const avatarSettingSub = document.getElementById('avatar-setting-sub');
+  if (avatarSettingSub) avatarSettingSub.textContent = apt().avatarSub || 'Voyage, aventure, exploration';
   const loginBtnTopbar = document.getElementById('login-btn');
   if (loginBtnTopbar) loginBtnTopbar.textContent = apt().loginBtn || t.loginBtn || 'Connexion';
   // Titre historique
@@ -4275,9 +4277,7 @@ async function renderAccountStats() {
       </div>
     </div>
     ${searches.length ? '' : ''}
-    <button onclick="openAvatarPicker()" style="width:100%;padding:11px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--primary);margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px">
-      <span id="stats-avatar-preview" style="font-size:20px">🧭</span> <span id="stats-change-avatar-lbl">${apt().changeAvatar||'Changer mon avatar'}</span>
-    </button>
+
     <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:8px">
       🚪 ${t2.signOutBtn||'Déconnexion'}
     </button>`;
@@ -5363,25 +5363,28 @@ function saveAvatar() {
 function updateAvatarDisplay(avatarData) {
   if (!avatarData) return;
   const url = (typeof avatarData === 'string') ? avatarData : avatarData.url;
-  const isEmoji = typeof avatarData === 'string' && avatarData.length <= 2;
-  // Mettre à jour tous les avatars
-  ['ap-avatar', 'user-avatar'].forEach(function(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const badge = el.querySelector('.user-plan');
-    if (isEmoji) {
-      el.innerHTML = url;
-    } else {
-      el.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-    }
-    if (badge) el.appendChild(badge);
-  });
-  // Settings display
+  const isEmoji = typeof avatarData === 'string' && url && url.length <= 2;
+  const imgHtml = isEmoji ? url : '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
+
+  // ap-avatar (header panneau compte)
+  const apAvatar = document.getElementById('ap-avatar');
+  if (apAvatar) {
+    const badge = apAvatar.querySelector('.account-panel-badge');
+    apAvatar.innerHTML = imgHtml;
+    if (badge) apAvatar.appendChild(badge);
+  }
+
+  // user-avatar (topbar)
+  const userAvatar = document.getElementById('user-avatar');
+  if (userAvatar) {
+    const badge = userAvatar.querySelector('.user-plan');
+    userAvatar.innerHTML = imgHtml;
+    if (badge) userAvatar.appendChild(badge);
+  }
+
+  // settings-avatar-display
   const sd = document.getElementById('settings-avatar-display');
   if (sd) sd.innerHTML = isEmoji ? url : '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-  // Stats preview
-  const sp = document.getElementById('stats-avatar-preview');
-  if (sp) sp.innerHTML = isEmoji ? url : '<img src="' + url + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover">';
 }
 
 // Fermer en cliquant dehors
