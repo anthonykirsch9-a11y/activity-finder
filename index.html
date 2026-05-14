@@ -788,7 +788,7 @@ html { -webkit-text-size-adjust: 100%; }
 
 <div class="topbar">
   <div class="topbar-logo" style="display:flex;align-items:center;gap:8px">
-  <svg width="28" height="30" viewBox="0 0 120 130">
+  <svg width="36" height="39" viewBox="0 0 120 130">
     <defs>
       <linearGradient id="tlg" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" style="stop-color:#3A7A36"/>
@@ -4206,6 +4206,16 @@ function switchAccountTab(tab) {
 }
 
 async function renderAccountStats() {
+  // Mettre à jour preview avatar
+  const saved = localLoad('user_avatar');
+  if (saved) {
+    const preview = document.getElementById('stats-avatar-preview');
+    if (preview) {
+      const url = (typeof saved === 'string') ? saved : saved.url;
+      const isEmoji = typeof saved === 'string' && saved.length <= 2;
+      preview.innerHTML = isEmoji ? url : '<img src="' + url + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover">';
+    }
+  }
   const el = document.getElementById('ap-stats-content');
   const t = apt();
   const isPro = userPlan === 'pro';
@@ -4248,7 +4258,10 @@ async function renderAccountStats() {
       </div>
     </div>
     ${searches.length ? '' : ''}
-    <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:16px">
+    <button onclick="openAvatarPicker()" style="width:100%;padding:11px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--primary);margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px">
+      <span id="stats-avatar-preview" style="font-size:20px">🧭</span> Changer mon avatar
+    </button>
+    <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:8px">
       🚪 ${t2.signOutBtn||'Déconnexion'}
     </button>`;
 }
@@ -5247,7 +5260,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // ── AVATARS VOYAGE & AVENTURE — vraies photos ──
-const AVATAR_PHOTOS = [{"id": "hiker", "url": "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Rando"}, {"id": "jungle", "url": "https://images.pexels.com/photos/2387418/pexels-photo-2387418.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Jungle"}, {"id": "mountain", "url": "https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Montagne"}, {"id": "beach", "url": "https://images.pexels.com/photos/1032650/pexels-photo-1032650.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Plage"}, {"id": "kayak", "url": "https://images.pexels.com/photos/1497585/pexels-photo-1497585.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Kayak"}, {"id": "bike", "url": "https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "V\u00e9lo"}, {"id": "climb", "url": "https://images.pexels.com/photos/3077882/pexels-photo-3077882.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Escalade"}, {"id": "ski", "url": "https://images.pexels.com/photos/848599/pexels-photo-848599.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Ski"}, {"id": "camp", "url": "https://images.pexels.com/photos/776113/pexels-photo-776113.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Camping"}, {"id": "road", "url": "https://images.pexels.com/photos/217272/pexels-photo-217272.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Road trip"}, {"id": "forest", "url": "https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "For\u00eat"}, {"id": "surf", "url": "https://images.pexels.com/photos/390051/surfer-wave-sunset-the-sea-390051.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Surf"}, {"id": "desert", "url": "https://images.pexels.com/photos/1001435/pexels-photo-1001435.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "D\u00e9sert"}, {"id": "lake", "url": "https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Lac"}, {"id": "travel", "url": "https://images.pexels.com/photos/1008155/pexels-photo-1008155.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Voyage"}, {"id": "party", "url": "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "F\u00eate"}, {"id": "food", "url": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Gastro"}, {"id": "stars", "url": "https://images.pexels.com/photos/1252869/pexels-photo-1252869.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "\u00c9toiles"}, {"id": "city", "url": "https://images.pexels.com/photos/466685/pexels-photo-466685.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Ville"}, {"id": "river", "url": "https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Rivi\u00e8re"}];
+const AVATAR_PHOTOS = [{"id": "hiker", "url": "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Rando"}, {"id": "mountain", "url": "https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Montagne"}, {"id": "beach", "url": "https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Plage"}, {"id": "lake", "url": "https://images.pexels.com/photos/147411/italy-mountains-dawn-daybreak-147411.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Lac"}, {"id": "kayak", "url": "https://images.pexels.com/photos/1497585/pexels-photo-1497585.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Kayak"}, {"id": "bike", "url": "https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "V\u00e9lo"}, {"id": "climb", "url": "https://images.pexels.com/photos/3077882/pexels-photo-3077882.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Escalade"}, {"id": "ski", "url": "https://images.pexels.com/photos/848599/pexels-photo-848599.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Ski"}, {"id": "camp", "url": "https://images.pexels.com/photos/685674/pexels-photo-685674.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Camping"}, {"id": "road", "url": "https://images.pexels.com/photos/1192671/pexels-photo-1192671.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Road trip"}, {"id": "forest", "url": "https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "For\u00eat"}, {"id": "surf", "url": "https://images.pexels.com/photos/1654489/pexels-photo-1654489.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Surf"}, {"id": "desert", "url": "https://images.pexels.com/photos/1001435/pexels-photo-1001435.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "D\u00e9sert"}, {"id": "travel", "url": "https://images.pexels.com/photos/1008155/pexels-photo-1008155.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Voyage"}, {"id": "party", "url": "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "F\u00eate"}, {"id": "food", "url": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Gastro"}, {"id": "stars", "url": "https://images.pexels.com/photos/1252869/pexels-photo-1252869.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "\u00c9toiles"}, {"id": "city", "url": "https://images.pexels.com/photos/466685/pexels-photo-466685.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Ville"}, {"id": "river", "url": "https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Rivi\u00e8re"}, {"id": "jungle", "url": "https://images.pexels.com/photos/975771/pexels-photo-975771.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Jungle"}];
 
 let _selectedAvatar = null;
 
