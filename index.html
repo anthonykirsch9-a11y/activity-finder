@@ -4276,7 +4276,7 @@ async function renderAccountStats() {
     </div>
     ${searches.length ? '' : ''}
     <button onclick="openAvatarPicker()" style="width:100%;padding:11px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--primary);margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px">
-      <span id="stats-avatar-preview" style="font-size:20px">🧭</span> <span id="stats-change-avatar-lbl">Changer mon avatar</span>
+      <span id="stats-avatar-preview" style="font-size:20px">🧭</span> <span id="stats-change-avatar-lbl">${apt().changeAvatar||'Changer mon avatar'}</span>
     </button>
     <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:8px">
       🚪 ${t2.signOutBtn||'Déconnexion'}
@@ -5180,15 +5180,14 @@ function hideBetaScreen() {
   if (!currentUser) {
     currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' };
   }
-  // Charger les données locales
   initFavorites();
   const savedNotes = localLoad('notes') || [];
   alreadyDoneIds = new Set(savedNotes.filter(n=>n.done).map(n=>n.activity_id));
-  // Charger avatar sauvegardé
-  const savedAvatar = localLoad('user_avatar');
-  if (savedAvatar) setTimeout(() => updateAvatarDisplay(savedAvatar), 100);
   renderAuthUI();
   updateLimitBanner();
+  // Avatar APRÈS renderAuthUI sinon écrasé
+  const savedAvatar = localLoad('user_avatar');
+  if (savedAvatar) setTimeout(function() { updateAvatarDisplay(savedAvatar); }, 250);
 }
 
 function initBetaGate() {
@@ -5202,7 +5201,11 @@ function initBetaGate() {
     initFavorites();
     const savedNotes = localLoad('notes') || [];
     alreadyDoneIds = new Set(savedNotes.filter(n=>n.done).map(n=>n.activity_id));
-    setTimeout(() => { renderAuthUI(); updateLimitBanner(); }, 100);
+    renderAuthUI();
+    updateLimitBanner();
+    // Avatar APRÈS renderAuthUI
+    const savedAv = localLoad('user_avatar');
+    if (savedAv) setTimeout(function() { updateAvatarDisplay(savedAv); }, 250);
   } else {
     document.getElementById('beta-screen').classList.add('show');
   }
@@ -5278,6 +5281,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ── AVATARS VOYAGE & AVENTURE — vraies photos ──
 const AVATAR_PHOTOS = [{"id": "hiker", "url": "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Rando"}, {"id": "mountain", "url": "https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Montagne"}, {"id": "beach", "url": "https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Plage"}, {"id": "lake", "url": "https://images.pexels.com/photos/147411/italy-mountains-dawn-daybreak-147411.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Lac"}, {"id": "kayak", "url": "https://images.pexels.com/photos/1497585/pexels-photo-1497585.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Kayak"}, {"id": "bike", "url": "https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "V\u00e9lo"}, {"id": "climb", "url": "https://images.pexels.com/photos/3077882/pexels-photo-3077882.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Escalade"}, {"id": "ski", "url": "https://images.pexels.com/photos/848599/pexels-photo-848599.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Ski"}, {"id": "camp", "url": "https://images.pexels.com/photos/685674/pexels-photo-685674.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Camping"}, {"id": "road", "url": "https://images.pexels.com/photos/1192671/pexels-photo-1192671.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Road trip"}, {"id": "forest", "url": "https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "For\u00eat"}, {"id": "surf", "url": "https://images.pexels.com/photos/1654489/pexels-photo-1654489.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Surf"}, {"id": "desert", "url": "https://images.pexels.com/photos/1001435/pexels-photo-1001435.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "D\u00e9sert"}, {"id": "travel", "url": "https://images.pexels.com/photos/1008155/pexels-photo-1008155.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Voyage"}, {"id": "party", "url": "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "F\u00eate"}, {"id": "food", "url": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Gastro"}, {"id": "stars", "url": "https://images.pexels.com/photos/1252869/pexels-photo-1252869.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "\u00c9toiles"}, {"id": "city", "url": "https://images.pexels.com/photos/466685/pexels-photo-466685.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Ville"}, {"id": "river", "url": "https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Rivi\u00e8re"}, {"id": "jungle", "url": "https://images.pexels.com/photos/975771/pexels-photo-975771.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", "label": "Jungle"}];
+const AVATAR_LABELS = {"fr": ["Rando", "Montagne", "Plage", "Lac", "Kayak", "V\u00e9lo", "Escalade", "Ski", "Camping", "Road trip", "For\u00eat", "Surf", "D\u00e9sert", "Voyage", "F\u00eate", "Gastro", "\u00c9toiles", "Ville", "Rivi\u00e8re", "Jungle"], "en": ["Hiking", "Mountain", "Beach", "Lake", "Kayak", "Cycling", "Climbing", "Skiing", "Camping", "Road trip", "Forest", "Surfing", "Desert", "Travel", "Party", "Gastro", "Stars", "City", "River", "Jungle"], "es": ["Senderismo", "Monta\u00f1a", "Playa", "Lago", "Kayak", "Ciclismo", "Escalada", "Esqu\u00ed", "Camping", "Ruta", "Bosque", "Surf", "Desierto", "Viaje", "Fiesta", "Gastro", "Estrellas", "Ciudad", "R\u00edo", "Jungla"], "de": ["Wandern", "Berg", "Strand", "See", "Kajak", "Radfahren", "Klettern", "Ski", "Camping", "Roadtrip", "Wald", "Surfen", "W\u00fcste", "Reise", "Party", "Gastro", "Sterne", "Stadt", "Fluss", "Dschungel"], "it": ["Escursione", "Montagna", "Spiaggia", "Lago", "Kayak", "Ciclismo", "Arrampicata", "Sci", "Camping", "Road trip", "Foresta", "Surf", "Deserto", "Viaggio", "Festa", "Gastro", "Stelle", "Citt\u00e0", "Fiume", "Giungla"], "pt": ["Caminhada", "Montanha", "Praia", "Lago", "Caiaque", "Ciclismo", "Escalada", "Esqui", "Camping", "Road trip", "Floresta", "Surf", "Deserto", "Viagem", "Festa", "Gastro", "Estrelas", "Cidade", "Rio", "Selva"]};
 
 let _selectedAvatar = null;
 
@@ -5308,7 +5312,7 @@ function openAvatarPicker() {
     const isSel = saved && saved.url === a.url;
     return '<div class="avatar-option ' + (isSel?'selected':'') + '" onclick="selectAvatarPhoto(' + i + ',this)" style="aspect-ratio:1;border-radius:12px;border:3px solid ' + (isSel?'var(--primary)':'transparent') + ';overflow:hidden;cursor:pointer;position:relative">'
       + '<img src="' + a.url + '" alt="' + a.label + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">'
-      + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.65));font-size:9px;color:white;padding:8px 4px 4px;text-align:center;font-family:DM Sans,sans-serif;font-weight:600">' + a.label + '</div>'
+      + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.65));font-size:9px;color:white;padding:8px 4px 4px;text-align:center;font-family:DM Sans,sans-serif;font-weight:600">' + ((AVATAR_LABELS[lang]||AVATAR_LABELS.fr)[i]||a.label) + '</div>'
       + '</div>';
   }).join('');
   // Scroll
@@ -5341,6 +5345,8 @@ function saveAvatar() {
   if (!_selectedAvatar) return;
   localSave('user_avatar', _selectedAvatar);
   updateAvatarDisplay(_selectedAvatar);
+  // Double appel pour s'assurer que tout est bien mis à jour
+  setTimeout(function() { updateAvatarDisplay(_selectedAvatar); }, 100);
   // Supprimer le picker inline
   const inline = document.getElementById('inline-avatar-picker');
   if (inline) inline.remove();
