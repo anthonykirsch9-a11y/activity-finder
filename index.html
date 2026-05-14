@@ -4218,6 +4218,11 @@ function switchAccountTab(tab) {
       const isEmoji = typeof saved === 'string' && saved.length <= 2;
       sd.innerHTML = isEmoji ? url : '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
     }
+    // Traduire les labels
+    const modLbl = document.getElementById('avatar-modifier-lbl');
+    if (modLbl) modLbl.textContent = apt().modify || 'Modifier →';
+    const subLbl = document.getElementById('avatar-setting-sub');
+    if (subLbl) subLbl.textContent = apt().avatarSub || 'Voyage, aventure, exploration';
   }
   _currentAccountTab = tab;
   document.querySelectorAll('.account-tab').forEach(b => b.classList.remove('active'));
