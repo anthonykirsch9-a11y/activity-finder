@@ -1213,7 +1213,7 @@ html { -webkit-text-size-adjust: 100%; }
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="font-size:28px;width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;background:var(--bg)" id="settings-avatar-display">🧭</div>
-          <span style="font-size:13px;color:var(--primary);font-weight:600">Modifier →</span>
+          <span style="font-size:13px;color:var(--primary);font-weight:600" id="avatar-modifier-lbl">Modifier →</span>
         </div>
       </div>
       <div class="setting-row">
@@ -3886,7 +3886,7 @@ const AP_TRANSLATIONS = {
     proFeatures:['✨ Suggestions plus riches et détaillées','♾️ Recherches illimitées','❤️ Favoris & album souvenirs avec photos','⭐ Notes sur chaque activité','🔁 Ne repropose plus les activités déjà faites','🗓 Programme week-end complet basé sur tes favoris','📍 Ajoute tes événements locaux','🚫 Sans publicité'],
     proBtn:'Passer Pro — 2,99 € / mois',
     loginBtn:'Se connecter',
-    signOutBtn:'Déconnexion', changeAvatar:'Changer mon avatar',
+    signOutBtn:'Déconnexion', changeAvatar:'Changer mon avatar', avatarSub:'Voyage, aventure, exploration', modify:'Modifier →',
     deleteBtn:'Supprimer mon compte',
     settingLang:'Langue',
     settingTheme:'Thème',
@@ -3919,7 +3919,7 @@ const AP_TRANSLATIONS = {
     proFeatures:['✨ Richer and more detailed suggestions','♾️ Unlimited searches','❤️ Favorites & photo memory book','⭐ Rate each activity','🔁 Won\'t suggest already done activities','🗓 Full weekend program based on your favorites','📍 Add your local events','🚫 Ad-free'],
     proBtn:'Go Pro — €2.99 / month',
     loginBtn:'Sign in',
-    signOutBtn:'Sign out', changeAvatar:'Change my avatar',
+    signOutBtn:'Sign out', changeAvatar:'Change my avatar', avatarSub:'Travel, adventure, exploration', modify:'Edit →',
     deleteBtn:'Delete my account',
     settingLang:'Language',
     settingTheme:'Theme',
@@ -3952,7 +3952,7 @@ const AP_TRANSLATIONS = {
     proFeatures:['✨ Sugerencias más ricas y detalladas','♾️ Búsquedas ilimitadas','❤️ Favoritos & álbum de recuerdos','⭐ Valora cada actividad','🔁 No repropone actividades ya realizadas','🗓 Programa completo de fin de semana','📍 Añade eventos locales','🚫 Sin publicidad'],
     proBtn:'Pasar a Pro — 2,99 € / mes',
     loginBtn:'Iniciar sesión',
-    signOutBtn:'Cerrar sesión', changeAvatar:'Cambiar mi avatar',
+    signOutBtn:'Cerrar sesión', changeAvatar:'Cambiar mi avatar', avatarSub:'Viaje, aventura, exploración', modify:'Modificar →',
     deleteBtn:'Eliminar mi cuenta',
     settingLang:'Idioma',
     settingTheme:'Tema',
@@ -3985,7 +3985,7 @@ const AP_TRANSLATIONS = {
     proFeatures:['✨ Reichhaltigere Vorschläge','♾️ Unbegrenzte Suchen','❤️ Favoriten & Fotobuch','⭐ Aktivitäten bewerten','🔁 Keine Wiederholung erledigter Aktivitäten','🗓 Komplettes Wochenprogramm','📍 Lokale Events hinzufügen','🚫 Werbefrei'],
     proBtn:'Pro werden — 2,99 € / Monat',
     loginBtn:'Anmelden',
-    signOutBtn:'Abmelden', changeAvatar:'Avatar ändern',
+    signOutBtn:'Abmelden', changeAvatar:'Avatar ändern', avatarSub:'Reise, Abenteuer, Erkundung', modify:'Ändern →',
     deleteBtn:'Konto löschen',
     settingLang:'Sprache',
     settingTheme:'Theme',
@@ -4018,7 +4018,7 @@ const AP_TRANSLATIONS = {
     proFeatures:['✨ Suggerimenti più ricchi e dettagliati','♾️ Ricerche illimitate','❤️ Preferiti & album ricordi','⭐ Valuta ogni attività','🔁 Non ripropone attività già svolte','🗓 Programma weekend completo','📍 Aggiungi eventi locali','🚫 Senza pubblicità'],
     proBtn:'Passa a Pro — 2,99 € / mese',
     loginBtn:'Accedi',
-    signOutBtn:'Disconnetti', changeAvatar:'Cambia avatar',
+    signOutBtn:'Disconnetti', changeAvatar:'Cambia avatar', avatarSub:'Viaggio, avventura, esplorazione', modify:'Modifica →',
     deleteBtn:'Elimina il mio account',
     settingLang:'Lingua',
     settingTheme:'Tema',
@@ -4051,7 +4051,7 @@ const AP_TRANSLATIONS = {
     proFeatures:['✨ Sugestões mais ricas e detalhadas','♾️ Pesquisas ilimitadas','❤️ Favoritos & álbum de memórias','⭐ Avalia cada atividade','🔁 Não repropõe atividades já feitas','🗓 Programa completo de fim de semana','📍 Adiciona eventos locais','🚫 Sem publicidade'],
     proBtn:'Ir para Pro — 2,99 € / mês',
     loginBtn:'Entrar',
-    signOutBtn:'Sair', changeAvatar:'Mudar avatar',
+    signOutBtn:'Sair', changeAvatar:'Mudar avatar', avatarSub:'Viagem, aventura, exploração', modify:'Modificar →',
     deleteBtn:'Eliminar a minha conta',
     settingLang:'Língua',
     settingTheme:'Tema',
@@ -4078,8 +4078,16 @@ function openAccountPanel() {
   const isBetaUser = currentUser?.id === 'beta-user';
 
   // Header
-  document.getElementById('ap-avatar').textContent = isConnected
-    ? (isBetaUser ? '✦' : (currentUser.email||'?')[0].toUpperCase()) : '?';
+  const savedAv = localLoad('user_avatar');
+  const apAvatarEl = document.getElementById('ap-avatar');
+  if (apAvatarEl) {
+    if (savedAv && savedAv.url) {
+      apAvatarEl.innerHTML = '<img src="' + savedAv.url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
+    } else {
+      apAvatarEl.textContent = isConnected
+        ? (isBetaUser ? '✦' : (currentUser.email||'?')[0].toUpperCase()) : '?';
+    }
+  }
   document.getElementById('ap-name').textContent = isConnected
     ? (isBetaUser ? 'Beta' : (currentUser.email||'').split('@')[0]) : 'Weekio';
   document.getElementById('ap-email').textContent = isConnected
