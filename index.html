@@ -5280,44 +5280,37 @@ const AVATAR_PHOTOS = [{"id": "hiker", "url": "https://images.pexels.com/photos/
 let _selectedAvatar = null;
 
 function openAvatarPicker() {
-  // Ouvrir dans le panneau compte — aller sur l'onglet settings et afficher le picker inline
-  switchAccountTab('settings');
   const saved = localLoad('user_avatar');
   _selectedAvatar = saved;
+  // Aller dans Réglages
+  openAccountPanel();
+  switchAccountTab('settings');
+  // Créer/mettre à jour le picker inline dans Settings
+  const pane = document.getElementById('ap-pane-settings');
+  if (!pane) return;
+  let pickerDiv = document.getElementById('inline-avatar-picker');
+  if (!pickerDiv) {
+    pickerDiv = document.createElement('div');
+    pickerDiv.id = 'inline-avatar-picker';
+    pickerDiv.style.cssText = 'margin-top:16px';
+    pane.appendChild(pickerDiv);
+  }
+  const t = apt();
+  pickerDiv.innerHTML = '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">' + (t.avatarTitle||'Choisis ton avatar') + '</div>'
+    + '<label class="avatar-upload-zone" for="avatar-upload-input" style="margin-bottom:12px;display:block"><div style="font-size:24px">📷</div><p>' + (t.avatarUpload||'Utiliser ma propre photo') + '</p></label>'
+    + '<div id="avatar-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px"></div>'
+    + '<button class="avatar-save-btn" onclick="saveAvatar()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),var(--primary-mid));color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:700;cursor:pointer">' + (t.avatarSave||'Valider') + '</button>';
+  // Remplir la grille
   const grid = document.getElementById('avatar-grid');
-  grid.innerHTML = AVATAR_PHOTOS.map(function(a, i) {
+  if (grid) grid.innerHTML = AVATAR_PHOTOS.map(function(a, i) {
     const isSel = saved && saved.url === a.url;
-    return '<div class="avatar-option ' + (isSel ? 'selected' : '') + '" onclick="selectAvatarPhoto(' + i + ',this)">'
-      + '<img src="' + a.url + '" alt="' + a.label + '" loading="lazy">'
-      + '<div class="avatar-option-label">' + a.label + '</div>'
+    return '<div class="avatar-option ' + (isSel?'selected':'') + '" onclick="selectAvatarPhoto(' + i + ',this)" style="aspect-ratio:1;border-radius:12px;border:3px solid ' + (isSel?'var(--primary)':'transparent') + ';overflow:hidden;cursor:pointer;position:relative">'
+      + '<img src="' + a.url + '" alt="' + a.label + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">'
+      + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.65));font-size:9px;color:white;padding:8px 4px 4px;text-align:center;font-family:DM Sans,sans-serif;font-weight:600">' + a.label + '</div>'
       + '</div>';
   }).join('');
-  // Afficher le picker inline dans le pane settings
-  const pane = document.getElementById('ap-pane-settings');
-  if (pane) {
-    // Vérifier si le picker est déjà là
-    if (!document.getElementById('inline-avatar-picker')) {
-      const pickerDiv = document.createElement('div');
-      pickerDiv.id = 'inline-avatar-picker';
-      pickerDiv.style.cssText = 'margin-top:16px';
-      pickerDiv.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">' + (apt().avatarTitle||'Choisis ton avatar') + '</div>'
-        + '<label class="avatar-upload-zone" for="avatar-upload-input" style="margin-bottom:12px"><div style="font-size:24px">📷</div><p>' + (apt().avatarUpload||'Utiliser ma propre photo') + '</p></label>'
-        + '<div class="avatar-grid" id="avatar-grid"></div>'
-        + '<button class="avatar-save-btn" onclick="saveAvatar()">' + (apt().avatarSave||'Valider') + '</button>';
-      pane.appendChild(pickerDiv);
-    }
-    // Re-remplir la grille
-    const g = document.getElementById('avatar-grid');
-    if (g) g.innerHTML = AVATAR_PHOTOS.map(function(a, i) {
-      const isSel = saved && saved.url === a.url;
-      return '<div class="avatar-option ' + (isSel ? 'selected' : '') + '" onclick="selectAvatarPhoto(' + i + ',this)">'
-        + '<img src="' + a.url + '" alt="' + a.label + '" loading="lazy">'
-        + '<div class="avatar-option-label">' + a.label + '</div>'
-        + '</div>';
-    }).join('');
-    // Scroll vers le picker
-    setTimeout(function() { pickerDiv.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
-  }
+  // Scroll
+  setTimeout(function() { pickerDiv.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 200);
 }
 
 function selectAvatarPhoto(idx, el) {
@@ -5346,19 +5339,15 @@ function saveAvatar() {
   if (!_selectedAvatar) return;
   localSave('user_avatar', _selectedAvatar);
   updateAvatarDisplay(_selectedAvatar);
-  // Fermer la modal si ouverte
-  document.getElementById('avatar-picker-overlay').classList.remove('open');
   // Supprimer le picker inline
   const inline = document.getElementById('inline-avatar-picker');
   if (inline) inline.remove();
   // Retourner sur Stats
   switchAccountTab('stats');
-  // Feedback
-  const url = (typeof _selectedAvatar === 'string') ? _selectedAvatar : _selectedAvatar.url;
-  const isEmoji = typeof _selectedAvatar === 'string' && _selectedAvatar.length <= 2;
+  // Toast confirmation
   const toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A3A18;color:white;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
-  toast.textContent = '✓ Avatar mis à jour';
+  toast.textContent = '✓ ' + (apt().avatarSave||'Avatar mis à jour');
   document.body.appendChild(toast);
   setTimeout(function() { toast.remove(); }, 2500);
 }
@@ -5388,9 +5377,7 @@ function updateAvatarDisplay(avatarData) {
 }
 
 // Fermer en cliquant dehors
-document.getElementById('avatar-picker-overlay').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.remove('open');
-});
+// picker inline dans Settings uniquement — pas de modal overlay
 
 // Run gate on load
 window.addEventListener('load', () => {
@@ -5428,20 +5415,7 @@ function checkOnThisDayNotification() {
 <input type="file" accept="image/*" id="the-photo-input" 
   style="position:fixed;top:-200px;left:-200px;opacity:0;pointer-events:none">
 
-<!-- ── AVATAR PICKER MODAL ── -->
+<!-- Input upload avatar -->
 <input type="file" accept="image/*" id="avatar-upload-input" style="display:none" onchange="handleAvatarUpload(this)">
-<div class="avatar-picker-overlay" id="avatar-picker-overlay">
-  <div class="avatar-picker-card">
-    <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
-    <div class="avatar-picker-title" id="avatar-picker-title">Mon avatar</div>
-    <div class="avatar-picker-sub" id="avatar-picker-sub">Ta photo ou choisis une ambiance</div>
-    <label class="avatar-upload-zone" for="avatar-upload-input">
-      <div style="font-size:28px">📷</div>
-      <p id="avatar-upload-label">Utiliser ma propre photo</p>
-    </label>
-    <div class="avatar-grid" id="avatar-grid"></div>
-    <button class="avatar-save-btn" onclick="saveAvatar()" id="avatar-save-btn">Valider</button>
-  </div>
-</div>
 </body>
 </html>
