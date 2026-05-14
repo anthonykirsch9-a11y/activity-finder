@@ -5280,6 +5280,8 @@ const AVATAR_PHOTOS = [{"id": "hiker", "url": "https://images.pexels.com/photos/
 let _selectedAvatar = null;
 
 function openAvatarPicker() {
+  // Ouvrir dans le panneau compte — aller sur l'onglet settings et afficher le picker inline
+  switchAccountTab('settings');
   const saved = localLoad('user_avatar');
   _selectedAvatar = saved;
   const grid = document.getElementById('avatar-grid');
@@ -5290,7 +5292,32 @@ function openAvatarPicker() {
       + '<div class="avatar-option-label">' + a.label + '</div>'
       + '</div>';
   }).join('');
-  document.getElementById('avatar-picker-overlay').classList.add('open');
+  // Afficher le picker inline dans le pane settings
+  const pane = document.getElementById('ap-pane-settings');
+  if (pane) {
+    // Vérifier si le picker est déjà là
+    if (!document.getElementById('inline-avatar-picker')) {
+      const pickerDiv = document.createElement('div');
+      pickerDiv.id = 'inline-avatar-picker';
+      pickerDiv.style.cssText = 'margin-top:16px';
+      pickerDiv.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Choisis ton avatar</div>'
+        + '<label class="avatar-upload-zone" for="avatar-upload-input" style="margin-bottom:12px"><div style="font-size:24px">📷</div><p>Utiliser ma propre photo</p></label>'
+        + '<div class="avatar-grid" id="avatar-grid"></div>'
+        + '<button class="avatar-save-btn" onclick="saveAvatar()">Valider</button>';
+      pane.appendChild(pickerDiv);
+    }
+    // Re-remplir la grille
+    const g = document.getElementById('avatar-grid');
+    if (g) g.innerHTML = AVATAR_PHOTOS.map(function(a, i) {
+      const isSel = saved && saved.url === a.url;
+      return '<div class="avatar-option ' + (isSel ? 'selected' : '') + '" onclick="selectAvatarPhoto(' + i + ',this)">'
+        + '<img src="' + a.url + '" alt="' + a.label + '" loading="lazy">'
+        + '<div class="avatar-option-label">' + a.label + '</div>'
+        + '</div>';
+    }).join('');
+    // Scroll vers le picker
+    setTimeout(function() { pickerDiv.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
+  }
 }
 
 function selectAvatarPhoto(idx, el) {
@@ -5319,13 +5346,28 @@ function saveAvatar() {
   if (!_selectedAvatar) return;
   localSave('user_avatar', _selectedAvatar);
   updateAvatarDisplay(_selectedAvatar);
+  // Fermer la modal si ouverte
   document.getElementById('avatar-picker-overlay').classList.remove('open');
+  // Supprimer le picker inline
+  const inline = document.getElementById('inline-avatar-picker');
+  if (inline) inline.remove();
+  // Retourner sur Stats
+  switchAccountTab('stats');
+  // Feedback
+  const url = (typeof _selectedAvatar === 'string') ? _selectedAvatar : _selectedAvatar.url;
+  const isEmoji = typeof _selectedAvatar === 'string' && _selectedAvatar.length <= 2;
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A3A18;color:white;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+  toast.textContent = '✓ Avatar mis à jour';
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 2500);
 }
 
 function updateAvatarDisplay(avatarData) {
   if (!avatarData) return;
   const url = (typeof avatarData === 'string') ? avatarData : avatarData.url;
   const isEmoji = typeof avatarData === 'string' && avatarData.length <= 2;
+  // Mettre à jour tous les avatars
   ['ap-avatar', 'user-avatar'].forEach(function(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -5337,8 +5379,12 @@ function updateAvatarDisplay(avatarData) {
     }
     if (badge) el.appendChild(badge);
   });
+  // Settings display
   const sd = document.getElementById('settings-avatar-display');
-  if (sd) sd.innerHTML = isEmoji ? url : '<img src="' + url + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">';
+  if (sd) sd.innerHTML = isEmoji ? url : '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  // Stats preview
+  const sp = document.getElementById('stats-avatar-preview');
+  if (sp) sp.innerHTML = isEmoji ? url : '<img src="' + url + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover">';
 }
 
 // Fermer en cliquant dehors
