@@ -70,7 +70,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .theme-btn:hover { background: rgba(255,255,255,0.25); }
 
 /* HERO */
-.hero { background: linear-gradient(160deg, #1A2E18 0%, #2A4228 40%, #3A6A38 80%, #4A8A48 100%); color: #fff; padding: 2.5rem 1.5rem 4rem; text-align: center; position: relative; overflow: hidden; }
+.hero { background: linear-gradient(150deg, #2E4A2C 0%, #4A7248 40%, #7A9E78 75%, #A8C4A6 100%); color: #fff; padding: 2.5rem 1.5rem 4rem; text-align: center; position: relative; overflow: hidden; }
 .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 50% at 50% 120%, rgba(255,255,255,0.12) 0%, transparent 65%); pointer-events: none; }
 .hero-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #fff; background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.35); border-radius: 99px; padding: 6px 18px; margin-bottom: 1.2rem; backdrop-filter: blur(4px); }
 .hero h1 { font-family: 'Fraunces', serif; font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 0.8rem; letter-spacing: -0.02em; }
@@ -84,16 +84,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
 /* FORM */
 .form-wrap { max-width: 680px; margin: 0 auto; padding: 0 1.2rem 3rem; position: relative; z-index: 2; }
-.form-card { background: var(--card); border: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); box-shadow: 0 4px 32px rgba(26,58,24,0.10); overflow: visible; }
+.form-card { background: var(--card); border: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); box-shadow: var(--shadow); overflow: visible; }
 .form-section { padding: 1.4rem 1.6rem; border-bottom: 1px solid var(--border); }
 .form-section:last-child { border-bottom: none; }
 .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
-.section-icon { width: 32px; height: 32px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.section-icon { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 .section-title { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
-.pill { border: 1.5px solid var(--border); border-radius: 12px; padding: 9px 18px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; background: var(--input-bg); color: var(--muted); transition: all 0.15s; outline: none; }
+.pill { border: 1.5px solid var(--border); border-radius: 99px; padding: 7px 16px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; font-weight: 400; cursor: pointer; background: var(--input-bg); color: var(--muted); transition: all 0.15s; outline: none; }
 .pill:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
-.pill.selected { background: #1E2A1A; border-color: #1E2A1A; color: #fff; font-weight: 600; }
+.pill.selected { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
 [data-theme="dark"] .pill.selected { background: var(--primary); border-color: var(--primary); color: #fff; }
 
 /* Ages */
@@ -750,6 +750,92 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 .avatar-option:hover { transform:scale(1.05); border-color:var(--primary); }
 .avatar-option.selected { border-color:var(--primary); box-shadow:0 0 0 3px rgba(92,122,90,0.3); }
 .avatar-option-label { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.65)); font-size:9px; color:white; padding:8px 4px 4px; text-align:center; font-family:'DM Sans',sans-serif; font-weight:600; }
+
+
+/* ══ WEEKIO VISUAL UPGRADE — CSS ONLY ══ */
+
+/* Hero plus sombre et profond */
+.hero {
+  background: linear-gradient(160deg, #1A2E18 0%, #2A4228 45%, #3A6A38 85%, #4A8A48 100%) !important;
+}
+
+/* Section icons — vert clair au lieu de vert plein */
+.section-icon {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+}
+
+/* Pills — plus arrondies, légèrement plus grandes */
+.pill {
+  border-radius: 12px !important;
+  padding: 9px 18px !important;
+  font-weight: 500 !important;
+}
+
+/* Pill sélectionnée — vert très foncé */
+.pill.selected {
+  background: #1E2A1A !important;
+  border-color: #1E2A1A !important;
+}
+
+/* Bouton submit — noir pro avec Fraunces */
+.submit-btn {
+  background: #1E2A1A !important;
+  border-radius: 16px !important;
+  font-family: 'Fraunces', serif !important;
+  font-size: 1.05rem !important;
+  font-weight: 900 !important;
+  font-style: italic !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: 0 4px 20px rgba(30,42,26,0.3) !important;
+}
+.submit-btn:hover {
+  opacity: 0.88 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 28px rgba(30,42,26,0.4) !important;
+}
+
+/* Form card — ombre plus douce */
+.form-card {
+  box-shadow: 0 4px 32px rgba(26,58,24,0.10) !important;
+}
+
+/* Tabs actif — plus net */
+.view-tab.active {
+  color: #1E2A1A !important;
+  border-color: #1E2A1A !important;
+  font-weight: 700 !important;
+}
+
+/* Section title — un peu plus fin */
+.section-title {
+  letter-spacing: 0.07em !important;
+}
+
+/* Cards résultats — photo plus grande, ombre plus prononcée */
+.result-card {
+  border-radius: 20px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(26,58,24,0.10) !important;
+  overflow: hidden !important;
+}
+.result-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 16px 48px rgba(26,58,24,0.14) !important;
+}
+.card-photo {
+  height: 220px !important;
+}
+
+/* Budget slider — couleur verte */
+input[type=range]::-webkit-slider-thumb {
+  background: #1E2A1A !important;
+  box-shadow: 0 2px 8px rgba(30,42,26,0.4) !important;
+}
+
+/* Scrollbar — discrète */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
 </style>
 </head>
