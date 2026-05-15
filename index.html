@@ -70,7 +70,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .theme-btn:hover { background: rgba(255,255,255,0.25); }
 
 /* HERO */
-.hero { background: linear-gradient(160deg, #1A2E18 0%, #2E4A2C 40%, #3A6A38 75%, #4A8A48 100%); color: #fff; padding: 2.5rem 1.5rem 4rem; text-align: center; position: relative; overflow: hidden; }
+.hero { background: linear-gradient(160deg, #1A2E18 0%, #2A4228 40%, #3A6A38 80%, #4A8A48 100%); color: #fff; padding: 2.5rem 1.5rem 4rem; text-align: center; position: relative; overflow: hidden; }
 .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 50% at 50% 120%, rgba(255,255,255,0.12) 0%, transparent 65%); pointer-events: none; }
 .hero-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #fff; background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.35); border-radius: 99px; padding: 6px 18px; margin-bottom: 1.2rem; backdrop-filter: blur(4px); }
 .hero h1 { font-family: 'Fraunces', serif; font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 0.8rem; letter-spacing: -0.02em; }
@@ -80,57 +80,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 /* VIEW TABS */
 .view-tabs { max-width: 680px; margin: -1.5rem auto 0; padding: 0 1.2rem; position: relative; z-index: 10; display: flex; gap: 6px; }
 .view-tab { flex: 1; padding: 10px 8px; border-radius: 10px 10px 0 0; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--card); color: var(--muted); transition: all 0.15s; }
-.view-tab.active { color: var(--dark); border-color: var(--dark); font-weight: 700; background: var(--card); }
+.view-tab.active { color: var(--primary); border-color: var(--primary); font-weight: 600; }
 
 /* FORM */
 .form-wrap { max-width: 680px; margin: 0 auto; padding: 0 1.2rem 3rem; position: relative; z-index: 2; }
-.form-card { background: transparent; border: none; border-radius: 0; box-shadow: none; overflow: visible; display: flex; flex-direction: column; gap: 10px; }
-.form-section { 
-  padding: 0; border-bottom: none;
-  background: var(--card); border-radius: 18px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 20px rgba(26,58,24,0.05);
-  overflow: hidden;
-}
+.form-card { background: var(--card); border: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); box-shadow: 0 4px 32px rgba(26,58,24,0.10); overflow: visible; }
+.form-section { padding: 1.4rem 1.6rem; border-bottom: 1px solid var(--border); }
 .form-section:last-child { border-bottom: none; }
-.section-head { 
-  display: flex; align-items: center; gap: 10px;
-  padding: 14px 18px 12px; border-bottom: 1px solid var(--border);
-}
-.section-icon { 
-  width: 30px; height: 30px; border-radius: 9px;
-  background: var(--primary-light); color: var(--primary);
-  display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
-}
-.section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
-.form-section-body { padding: 14px 18px 16px; }
-
-/* Pills groupe — grille 2x2 avec emoji */
-.form-section > .pill-group,
-.form-section > .ages-container,
-.form-section > .location-row,
-.form-section > .budget-display,
-.form-section > input[type=range],
-.form-section > .budget-marks,
-.form-section > .budget-per-person,
-.form-section > .toggle-wrap,
-.form-section > .event-type-grid,
-.form-section > .date-quick,
-.form-section > #date-custom-wrap,
-.form-section > button.add-person-btn,
-.form-section > div,
-.form-section > .weather-bar { padding-left: 18px; padding-right: 18px; }
-.form-section > .section-head ~ * { display: block; }
-.form-section > .section-head { margin-bottom: 0; }
-.ages-container, .pill-group, .date-quick { padding-top: 14px; padding-bottom: 16px; }
+.section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+.section-icon { width: 32px; height: 32px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.section-title { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
-.pill { 
-  border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 18px;
-  font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 500;
-  cursor: pointer; background: var(--input-bg); color: var(--muted);
-  transition: all 0.15s; outline: none;
-}
+.pill { border: 1.5px solid var(--border); border-radius: 12px; padding: 9px 18px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; background: var(--input-bg); color: var(--muted); transition: all 0.15s; outline: none; }
 .pill:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
-.pill.selected { background: var(--dark); border-color: var(--dark); color: #fff; font-weight: 600; }
+.pill.selected { background: #1E2A1A; border-color: #1E2A1A; color: #fff; font-weight: 600; }
 [data-theme="dark"] .pill.selected { background: var(--primary); border-color: var(--primary); color: #fff; }
 
 /* Ages */
@@ -897,7 +860,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   <span style="font-size:13px;font-weight:800;letter-spacing:0.1em">WEEKIO</span>
 </div>
   <h1 id="hero-title">On fait quoi<br><em>ce week-end ?</em></h1>
-  <p id="hero-sub">Activités personnalisées par IA — adaptées à ton groupe, ta météo et ton budget.</p>
+  <p id="hero-sub">Découvre les meilleures activités près de chez toi — adaptées à ton groupe, ta météo et ton budget.</p>
 </header>
 
 <div class="view-tabs">
@@ -1079,11 +1042,8 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   <!-- Clé API gérée côté serveur via Supabase -->
   <input type="hidden" id="api-key-input" value="server-managed">
 
-  <div class="submit-section" style="background:transparent;padding:4px 0 0">
-    <button class="submit-btn" id="submit-btn" onclick="runSearch(false)" 
-      style="background:#1E2A1A;border-radius:16px;font-family:'Fraunces',serif;font-size:1.05rem;font-weight:900;font-style:italic;letter-spacing:-0.01em;box-shadow:0 4px 20px rgba(30,42,26,0.3)">
-      <span id="submit-label">Trouver mes activités →</span>
-    </button>
+  <div class="submit-section">
+    <button class="submit-btn" id="submit-btn" onclick="runSearch(false)"><span id="submit-label">Trouver mes activités →</span></button>
   </div>
 
 </div>
