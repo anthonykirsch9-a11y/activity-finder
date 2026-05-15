@@ -283,9 +283,13 @@ input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
 .rc-gmaps:hover { background: var(--primary); color: #fff; }
 @media (min-width: 600px) { .rc-grid { grid-template-columns: repeat(2, 1fr); } }
 
-/* === MOBILE & TOUCH === */
-* { -webkit-tap-highlight-color: transparent; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+* { touch-action: manipulation; }
+/* iOS zoom fix — tout input/select/button doit avoir font-size >= 16px */
+input, select, textarea, button { font-size: 16px !important; touch-action: manipulation; }
+/* Exceptions visuelles — on garde l'apparence mais force 16px pour éviter zoom */
+.pill, .date-quick-btn, .city-option, .lang-opt, .auth-input, .beta-input,
+.location-input, .radius-select, .map-form-input, .age-picker-btn { font-size: 16px !important; }
 @media (max-width: 600px) {
   .hero { padding: 1.8rem 1rem 3.2rem; }
   .hero h1 { font-size: 2rem; }
@@ -2072,31 +2076,57 @@ const mapDd = document.getElementById('map-city-dropdown');
 
 async function fetchCities(q) {
   try {
-    // Nominatim avec Accept-Language → noms dans la bonne langue pour toutes les langues
-    // FR→Séville, ES→Sevilla, DE→Sevilla/Köln, EN→Seville, IT→Siviglia, PT→Sevilha
+    // Photon (komoot) — plus fiable que Nominatim, pas de blocage GitHub Pages
+    const langMap = { fr:'fr', en:'en', es:'es', de:'de', it:'it', pt:'pt' };
+    const l = langMap[lang] || 'fr';
     const r = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`,
-      { headers: { 'Accept-Language': lang, 'User-Agent': 'ActivityFinder/1.0' } }
+      'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + l
     );
-    if (!r.ok) throw new Error('nominatim fail');
+    if (!r.ok) throw new Error('photon fail');
     const data = await r.json();
-    return data.map(item => {
-      const city = item.address?.city || item.address?.town || item.address?.village || item.address?.municipality || item.name;
-      return {
-        display_name: item.display_name,
-        address: {
-          city: city,
-          town: item.address?.town,
-          state: item.address?.state || item.address?.county || '',
-          country: item.address?.country || '',
-          country_code: (item.address?.country_code || '').toUpperCase()
-        },
-        lat: item.lat,
-        lon: item.lon
-      };
-    });
+    return (data.features || [])
+      .filter(f => ['city','town','village','municipality'].includes(f.properties?.type))
+      .map(item => {
+        const p = item.properties || {};
+        const city = p.name || '';
+        return {
+          display_name: [city, p.state, p.country].filter(Boolean).join(', '),
+          address: {
+            city: city,
+            town: p.city || p.town || '',
+            state: p.state || p.county || '',
+            country: p.country || '',
+            country_code: (p.countrycode || '').toUpperCase()
+          },
+          lat: item.geometry && item.geometry.coordinates && item.geometry.coordinates[1],
+          lon: item.geometry && item.geometry.coordinates && item.geometry.coordinates[0]
+        };
+      });
   } catch(e) {
-    return [];
+    try {
+      // Fallback Nominatim
+      const r2 = await fetch(
+        'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) + '&format=json&limit=6&addressdetails=1',
+        { headers: { 'Accept-Language': lang, 'User-Agent': 'Weekio/1.0' } }
+      );
+      if (!r2.ok) return [];
+      const data2 = await r2.json();
+      return data2.map(item => {
+        const city = item.address && (item.address.city || item.address.town || item.address.village) || item.name;
+        return {
+          display_name: item.display_name,
+          address: {
+            city: city,
+            town: (item.address && item.address.town) || '',
+            state: (item.address && (item.address.state || item.address.county)) || '',
+            country: (item.address && item.address.country) || '',
+            country_code: ((item.address && item.address.country_code) || '').toUpperCase()
+          },
+          lat: item.lat,
+          lon: item.lon
+        };
+      });
+    } catch(e2) { return []; }
   }
 }
 
