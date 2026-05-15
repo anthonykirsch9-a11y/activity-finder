@@ -283,13 +283,9 @@ input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
 .rc-gmaps:hover { background: var(--primary); color: #fff; }
 @media (min-width: 600px) { .rc-grid { grid-template-columns: repeat(2, 1fr); } }
 
-html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
-* { touch-action: manipulation; }
-/* iOS zoom fix — tout input/select/button doit avoir font-size >= 16px */
-input, select, textarea, button { font-size: 16px !important; touch-action: manipulation; }
-/* Exceptions visuelles — on garde l'apparence mais force 16px pour éviter zoom */
-.pill, .date-quick-btn, .city-option, .lang-opt, .auth-input, .beta-input,
-.location-input, .radius-select, .map-form-input, .age-picker-btn { font-size: 16px !important; }
+/* === MOBILE & TOUCH === */
+* { -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
 @media (max-width: 600px) {
   .hero { padding: 1.8rem 1rem 3.2rem; }
   .hero h1 { font-size: 2rem; }
