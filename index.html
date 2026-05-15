@@ -3528,12 +3528,15 @@ function renderAuthUI() {
     if (userBadge) userBadge.style.display = 'flex';
     const av = document.getElementById('user-avatar');
     if (av) {
-      // Mettre à jour seulement le noeud texte, pas le badge enfant
-      const initial = currentUser.id === 'beta-user' ? '✦' : (currentUser.email||'?')[0].toUpperCase();
-      av.childNodes.forEach(n => { if(n.nodeType === 3) n.textContent = initial; });
-      if (!av.childNodes.length || !Array.from(av.childNodes).find(n=>n.nodeType===3)) {
-        av.insertBefore(document.createTextNode(initial), av.firstChild);
+      const savedAv = localLoad('user_avatar');
+      const badge = av.querySelector('.user-plan');
+      if (savedAv && savedAv.url) {
+        av.innerHTML = '<img src="' + savedAv.url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
+      } else {
+        const initial = currentUser.id === 'beta-user' ? '✦' : (currentUser.email||'?')[0].toUpperCase();
+        av.innerHTML = initial;
       }
+      if (badge) av.appendChild(badge);
     }
     const planBadge = document.getElementById('user-plan-badge');
     if (planBadge) {
@@ -5358,8 +5361,13 @@ function saveAvatar() {
   if (!_selectedAvatar) return;
   localSave('user_avatar', _selectedAvatar);
   updateAvatarDisplay(_selectedAvatar);
-  // Double appel pour s'assurer que tout est bien mis à jour
-  setTimeout(function() { updateAvatarDisplay(_selectedAvatar); }, 100);
+  // Forcer mise à jour topbar immédiatement
+  const topbarAv = document.getElementById('user-avatar');
+  if (topbarAv && _selectedAvatar && _selectedAvatar.url) {
+    const badge = topbarAv.querySelector('.user-plan');
+    topbarAv.innerHTML = '<img src="' + _selectedAvatar.url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
+    if (badge) topbarAv.appendChild(badge);
+  }
   // Supprimer le picker inline
   const inline = document.getElementById('inline-avatar-picker');
   if (inline) inline.remove();
