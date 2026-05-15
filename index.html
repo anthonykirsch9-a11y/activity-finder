@@ -839,19 +839,24 @@ html { -webkit-text-size-adjust: 100%; }
 
 
 <header class="hero">
-  <div class="hero-badge" style="display:inline-flex;align-items:center;gap:8px">
-  <svg width="18" height="20" viewBox="0 0 120 130">
+  <div class="hero-badge" style="display:inline-flex;align-items:center;gap:10px;padding:8px 20px">
+  <svg width="22" height="24" viewBox="0 0 120 130">
     <defs>
       <linearGradient id="hlg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style="stop-color:#7AC876"/>
-        <stop offset="100%" style="stop-color:#3A7A36"/>
+        <stop offset="0%" style="stop-color:#fff;stop-opacity:.9"/>
+        <stop offset="100%" style="stop-color:#D4F0C8"/>
       </linearGradient>
     </defs>
-    <path d="M60 8 C38 8 18 26 18 50 C18 78 60 118 60 118 C60 118 102 78 102 50 C102 26 82 8 60 8Z" fill="url(#hlg)"/>
-    <circle cx="60" cy="49" r="26" fill="rgba(255,255,255,0.9)"/>
-    <path d="M40 40 L49 62 L60 46 L71 62 L80 40" fill="none" stroke="#1A4A18" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Contour blanc -->
+    <path d="M60 4 C36 4 14 23 14 48 C14 76 60 120 60 120 C60 120 106 76 106 48 C106 23 84 4 60 4Z" fill="rgba(255,255,255,0.3)"/>
+    <!-- Pin -->
+    <path d="M60 10 C38 10 20 27 20 48 C20 74 60 114 60 114 C60 114 100 74 100 48 C100 27 82 10 60 10Z" fill="url(#hlg)"/>
+    <!-- Cercle intérieur -->
+    <circle cx="60" cy="47" r="24" fill="rgba(46,92,42,0.85)"/>
+    <!-- W -->
+    <path d="M42 39 L50 58 L60 44 L70 58 L78 39" fill="none" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
-  Weekio
+  <span style="font-size:13px;font-weight:800;letter-spacing:0.1em">WEEKIO</span>
 </div>
   <h1 id="hero-title">On fait quoi<br><em>ce week-end ?</em></h1>
   <p id="hero-sub">Découvre les meilleures activités près de chez toi — adaptées à ton groupe, ta météo et ton budget.</p>
