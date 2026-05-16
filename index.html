@@ -752,6 +752,122 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 .avatar-option.selected { border-color:var(--primary); box-shadow:0 0 0 3px rgba(92,122,90,0.3); }
 .avatar-option-label { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.65)); font-size:9px; color:white; padding:8px 4px 4px; text-align:center; font-family:'DM Sans',sans-serif; font-weight:600; }
 
+
+/* ══ WEEKIO POLISH — CSS ONLY, no structure changes ══ */
+
+/* Hero plus sombre */
+.hero {
+  background: linear-gradient(160deg, #192B17 0%, #284028 45%, #386436 85%, #488644 100%) !important;
+}
+
+/* Section icon — fond vert clair, icône vert foncé */
+.section-icon {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+}
+
+/* Pills — légèrement plus grandes et arrondies */
+.pill {
+  border-radius: 12px !important;
+  padding: 9px 18px !important;
+  font-weight: 500 !important;
+}
+
+/* Pill selected — vert très foncé pro */
+.pill.selected {
+  background: #1C2B1A !important;
+  border-color: #1C2B1A !important;
+  color: #fff !important;
+}
+
+/* Bouton submit — noir élégant */
+.submit-btn {
+  background: #1C2B1A !important;
+  border-radius: 16px !important;
+  font-family: 'Fraunces', serif !important;
+  font-size: 1.05rem !important;
+  font-weight: 900 !important;
+  font-style: italic !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: 0 4px 20px rgba(28,43,26,0.35) !important;
+}
+.submit-btn:hover {
+  opacity: 0.88 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 28px rgba(28,43,26,0.4) !important;
+}
+
+/* Cards résultats — plus rondes, ombre plus pro */
+.rc-card {
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 30px rgba(26,58,24,0.10) !important;
+}
+.rc-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 16px 48px rgba(26,58,24,0.16) !important;
+  transform: translateY(-4px) !important;
+}
+.rc-photo-wrap {
+  height: 230px !important;
+}
+.rc-photo-overlay {
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.52) 100%) !important;
+}
+.rc-badge-type, .rc-badge-ephem, .rc-badge-night {
+  border-radius: 6px !important;
+}
+.rc-badge-type {
+  background: rgba(0,0,0,0.32) !important;
+  backdrop-filter: blur(8px) !important;
+}
+.rc-body {
+  padding: 18px 18px 20px !important;
+}
+.rc-title {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 8px !important;
+}
+.rc-desc {
+  line-height: 1.7 !important;
+  margin-bottom: 14px !important;
+}
+.rc-infos {
+  border-radius: 12px !important;
+  border: none !important;
+}
+.rc-why {
+  border-left: none !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+}
+.rc-gmaps {
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  padding: 9px 16px !important;
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border: 1.5px solid var(--border) !important;
+}
+.rc-gmaps:hover {
+  background: var(--text) !important;
+  color: var(--card) !important;
+}
+
+/* Tabs actif — plus net */
+.view-tab.active {
+  font-weight: 700 !important;
+}
+
+/* Form card — ombre plus douce */
+.form-card {
+  box-shadow: 0 4px 32px rgba(26,58,24,0.09) !important;
+}
+
+/* Scrollbar discrète */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 </style>
 </head>
 <body>
@@ -895,7 +1011,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 <div class="form-card">
 
   <div class="form-section">
-    <div class="section-head"><div class="section-icon">👥</div><span class="section-title" id="lbl-group">Configuration du groupe</span></div>
+    <div class="section-head"><div class="section-icon">👥</div><span class="section-title" id="lbl-group">Qui vient ?</span></div>
     <div class="pill-group" id="group-type">
       <button class="pill" data-val="seul(e)" id="grp-solo">Seul(e)</button>
       <button class="pill" data-val="en couple" id="grp-couple">En couple</button>
@@ -917,7 +1033,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   </div>
 
   <div class="form-section" id="ages-section">
-    <div class="section-head"><div class="section-icon">🎂</div><span class="section-title" id="lbl-ages">Âges des participants</span></div>
+    <div class="section-head"><div class="section-icon">🎂</div><span class="section-title" id="lbl-ages">Âges</span></div>
     <div class="ages-container" id="ages-list"></div>
     <button class="add-person-btn" onclick="addPerson()" id="btn-add-person">+ Ajouter une personne</button>
   </div>
@@ -948,7 +1064,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   </div>
 
   <div class="form-section">
-    <div class="section-head"><div class="section-icon">📍</div><span class="section-title" id="lbl-location">Localisation</span></div>
+    <div class="section-head"><div class="section-icon">📍</div><span class="section-title" id="lbl-location">Où ?</span></div>
     <div class="location-row">
       <div class="location-wrap">
         <input class="location-input" type="text" id="location" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Tape une ville ou un code postal…"
@@ -1010,7 +1126,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   </div>
 
   <div class="form-section">
-    <div class="section-head"><div class="section-icon">✨</div><span class="section-title" id="lbl-moods">Tes envies (optionnel)</span></div>
+    <div class="section-head"><div class="section-icon">✨</div><span class="section-title" id="lbl-moods">Tes envies</span></div>
     <div class="pill-group" id="moods">
       <button class="pill" data-val="plein air / nature">🌿 <span id="m-nature">Nature</span></button>
       <button class="pill" data-val="culture / musées">🏛 <span id="m-culture">Culture</span></button>
@@ -1024,7 +1140,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   </div>
 
   <div class="form-section">
-    <div class="section-head"><div class="section-icon">🗓</div><span class="section-title" id="lbl-events">Événements &amp; sorties</span></div>
+    <div class="section-head"><div class="section-icon">🗓</div><span class="section-title" id="lbl-events">Sorties &amp; événements</span></div>
     <div class="toggle-wrap" onclick="toggleEphem()">
       <div class="toggle-track" id="ephem-track"><div class="toggle-thumb"></div></div>
       <div><div class="toggle-main" id="ephem-main-lbl">Inclure les événements éphémères</div><div class="toggle-sub" id="ephem-sub-lbl">Brocantes, marchés, fêtes locales, expos temporaires…</div></div>
