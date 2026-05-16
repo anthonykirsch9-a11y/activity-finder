@@ -5091,7 +5091,8 @@ Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}
 }
 
 async function markActivityDone(titleEncoded, activityId) {
-  if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
+  if (userPlan !== 'pro') { openUpgrade(); return; }
+  if (!currentUser) { currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' }; }
   const id = activityId || '';
   const btn = document.querySelector(`[data-done-id="${id}"]`);
 
@@ -5271,25 +5272,28 @@ function initFavorites() {
   favorites = new Set(saved.map(f => f.activity_id));
 }
 
-function toggleFavorite(titleEncoded, activityId) {
+function toggleFavorite(titleEncoded, activityId, btnEl) {
   if (userPlan !== 'pro') { openUpgrade(); return; }
-  // Support appel depuis dataset
+  // Pour les bêta-users, currentUser peut être null — on le recrée
+  if (!currentUser) { currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' }; }
   const id = activityId || '';
-  const btn = document.querySelector(`[data-fav-id="${id}"]`);
+  const btn = btnEl || document.querySelector(`[data-fav-id="${id}"]`);
   if (favorites.has(id)) {
     favorites.delete(id);
-    if (btn) btn.textContent = '🤍';
+    if (btn) { btn.textContent = '🤍'; btn.classList.remove('active'); }
     const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==id);
     localSave('favorites', saved);
   } else {
     favorites.add(id);
-    if (btn) btn.textContent = '❤️';
+    if (btn) { btn.textContent = '❤️'; btn.classList.add('active'); }
     localPush('favorites', { activity_id: id, activity_title: decodeURIComponent(titleEncoded||''), saved_at: new Date().toISOString() });
   }
 }
 
 function openNote(activityTitle, activityId) {
-  if (!currentUser || userPlan !== 'pro') { openUpgrade(); return; }
+  if (userPlan !== 'pro') { openUpgrade(); return; }
+  // Pour les bêta-users, currentUser peut être null au moment du clic — on le recrée
+  if (!currentUser) { currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' }; }
   const decoded = decodeURIComponent(activityTitle);
   noteTarget = { title: decoded, id: activityId };
   // Fix bug titre — utiliser le titre décodé
@@ -5307,6 +5311,7 @@ function setStars(n) {
 }
 async function saveNote() {
   if (!noteTarget) return;
+  if (!currentUser) { currentUser = { email: 'beta@activityfinder.app', id: 'beta-user' }; }
   const text = document.getElementById('note-text').value.trim();
   const noteData = {
     user_id: currentUser.id,
@@ -5589,7 +5594,7 @@ document.addEventListener('click', function(e) {
   const action = btn.dataset.action;
   const encodedTitle = btn.dataset.encodedTitle;
   if (action === 'fav') {
-    toggleFavorite(encodedTitle, btn.dataset.favId);
+    toggleFavorite(encodedTitle, btn.dataset.favId, btn);
   } else if (action === 'note') {
     openNote(encodedTitle, btn.dataset.noteId);
   } else if (action === 'done') {
