@@ -66,11 +66,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 /* TOPBAR */
 .topbar { position: sticky; top: 0; z-index: 200; background: linear-gradient(135deg, #3A5C38 0%, #5C7A5A 55%, #7A9E78 100%); display: flex; align-items: center; justify-content: space-between; padding: 10px 1.4rem; gap: 12px; }
 
-/* PWA iOS fix — empêche le scroll de cacher la topbar */
+/* PWA iOS fix */
 @media (display-mode: standalone) {
-  body { padding-top: env(safe-area-inset-top); }
-  .topbar { top: env(safe-area-inset-top); padding-top: max(10px, env(safe-area-inset-top)); }
-  html, body { height: 100%; overflow-x: hidden; }
+  body { padding-top: env(safe-area-inset-top); background: #3A5C38; }
 }
 .topbar-logo { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 800; color: #fff; letter-spacing: -0.01em; }
 .topbar-controls { display: flex; align-items: center; gap: 10px; }
