@@ -1,7 +1,4 @@
-const CACHE_NAME = 'weekio-v1';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
@@ -5712,8 +5709,7 @@ function installPWA() {
 </script>
 </body>
 </html>
-
-  './manifest.json',{
+{
   "name": "Weekio — Que faire ce week-end ?",
   "short_name": "Weekio",
   "description": "Ton assistant IA pour trouver les meilleures activités du week-end",
@@ -5742,7 +5738,11 @@ function installPWA() {
     }
   ]
 }
-
+const CACHE_NAME = 'weekio-v1';
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './manifest.json',
   'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
 ];
