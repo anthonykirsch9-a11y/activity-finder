@@ -857,12 +857,31 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 .rc-why { border-left: none !important; border-radius: 12px !important; padding: 10px 14px !important; }
 .rc-gmaps {
   border-radius: 10px !important; font-size: 13px !important; padding: 9px 16px !important;
-  background: var(--bg) !important; color: var(--text) !important; border: 1.5px solid var(--border) !important;
+  background: #3A5C38 !important; color: white !important; border: none !important;
 }
-.rc-gmaps:hover { background: var(--text) !important; color: var(--card) !important; }
+.rc-gmaps:hover { background: #2E4A2C !important; color: white !important; }
 
 /* Tabs */
 .view-tab.active { font-weight: 700 !important; }
+
+.rc-pro-action-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; flex-shrink: 0;
+  transition: all 0.15s;
+}
+.rc-pro-action-btn:hover { background: var(--primary-light); border-color: var(--primary); }
+.rc-pro-action-btn.active { background: #FEF0F0; border-color: #E88; }
+.rc-pro-action-btn.done { background: #EBF2EA; border-color: var(--primary); }
+.rc-pro-lock {
+  position: absolute; bottom: -3px; right: -3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #C4714A; color: white;
+  font-size: 7px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
 
 /* Scrollbar discrète */
 ::-webkit-scrollbar { width: 4px; }
@@ -1500,7 +1519,7 @@ const LANGS = {
     heroTitle: 'On fait quoi<br><em>ce week-end ?</em>',
     heroSub: 'Découvre les meilleures activités près de chez toi — adaptées à ton groupe, ta météo et ton budget.',
     tabForm:'Recherche', tabMap:'Explorer',
-    lblGroup:'Qui vient ?', lblAges:'Âges',
+    lblGroup:'Qui ?', lblAges:'Âges',
     lblBudget:'Budget global du week-end', lblLocation:'Où ?',
     lblMoods:'Tes envies (optionnel)', lblEvents:'Sorties & événements',
     grpSolo:'Seul(e)', grpCouple:'En couple', grpFriends:'Entre amis', grpFamily:'En famille',
@@ -1552,7 +1571,7 @@ const LANGS = {
     heroTitle: 'What are we doing<br><em>this weekend?</em>',
     heroSub: 'Enter your criteria and discover activities perfectly suited to your group, location and budget.',
     tabForm:'Search', tabMap:'Explore',
-    lblGroup:'Who\'s coming ?', lblAges:'Ages',
+    lblGroup:'Who ?', lblAges:'Ages',
     lblBudget:'Weekend budget', lblLocation:'Where ?',
     lblMoods:'Your interests (optional)', lblEvents:'Events & nights out',
     grpSolo:'Solo', grpCouple:'Couple', grpFriends:'Friends', grpFamily:'Family',
@@ -1604,7 +1623,7 @@ const LANGS = {
     heroTitle:'¿Qué hacemos<br><em>este fin de semana?</em>',
     heroSub:'Introduce tus criterios y descubre actividades perfectamente adaptadas a tu grupo, ubicación y presupuesto.',
     tabForm:'Búsqueda',tabMap:'Explorar',
-    lblGroup:'¿Quién viene ?',lblAges:'Edades',
+    lblGroup:'¿Quién ?',lblAges:'Edades',
     lblBudget:'Presupuesto del fin de semana',lblLocation:'¿Dónde ?',
     lblMoods:'Tus preferencias (opcional)',lblEvents:'Salidas & eventos',
     grpSolo:'Solo/a',grpCouple:'En pareja',grpFriends:'Con amigos',grpFamily:'En familia',
@@ -1656,7 +1675,7 @@ const LANGS = {
     heroTitle:'Was machen wir<br><em>dieses Wochenende?</em>',
     heroSub:'Gib deine Kriterien ein und entdecke Aktivitäten für deine Gruppe, deinen Standort und dein Budget.',
     tabForm:'Suche',tabMap:'Erkunden',
-    lblGroup:'Wer kommt ?',lblAges:'Alter',
+    lblGroup:'Wer ?',lblAges:'Alter',
     lblBudget:'Wochenendbudget',lblLocation:'Wo ?',
     lblMoods:'Deine Vorlieben (optional)',lblEvents:'Events & Abende',
     grpSolo:'Allein',grpCouple:'Als Paar',grpFriends:'Mit Freunden',grpFamily:'Mit Familie',
@@ -1708,7 +1727,7 @@ const LANGS = {
     heroTitle:'Cosa facciamo<br><em>questo weekend?</em>',
     heroSub:'Inserisci i tuoi criteri e scopri attività perfette per il tuo gruppo, posizione e budget.',
     tabForm:'Ricerca',tabMap:'Esplora',
-    lblGroup:'Chi viene ?',lblAges:'Età',
+    lblGroup:'Chi ?',lblAges:'Età',
     lblBudget:'Budget del weekend',lblLocation:'Dove ?',
     lblMoods:'I tuoi interessi (opzionale)',lblEvents:'Uscite & eventi',
     grpSolo:'Solo/a',grpCouple:'In coppia',grpFriends:'Con amici',grpFamily:'In famiglia',
@@ -1760,7 +1779,7 @@ const LANGS = {
     heroTitle:'O que fazemos<br><em>neste fim de semana?</em>',
     heroSub:'Introduz os teus critérios e descobre atividades perfeitas para o teu grupo, localização e orçamento.',
     tabForm:'Pesquisa',tabMap:'Explorar',
-    lblGroup:'Quem vem ?',lblAges:'Idades',
+    lblGroup:'Quem ?',lblAges:'Idades',
     lblBudget:'Orçamento do fim de semana',lblLocation:'Onde ?',
     lblMoods:'Os teus interesses (opcional)',lblEvents:'Saídas & eventos',
     grpSolo:'Sozinho/a',grpCouple:'A dois',grpFriends:'Com amigos',grpFamily:'Em família',
@@ -3499,73 +3518,79 @@ function renderResults(activities, location, radius, budget, group, ages) {
     // Ne pas afficher ouvert/fermé — trompeur car dépend de l'heure actuelle pas du weekend demandé
     const openBadge = '';
 
+    const favId = (a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    const isFav = favorites.has(favId);
+    const isDone = alreadyDoneIds.has(favId);
+
     return `<div class="rc-card" style="animation-delay:${idx*0.08}s">
+      <!-- Photo immersive -->
       <div class="rc-photo-wrap">
         <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" loading="lazy" data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}" data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}"
           onerror="this.style.display='none';this.parentElement.classList.add('rc-photo-fallback')">
         <div class="rc-photo-overlay"></div>
+        <!-- Badge type haut gauche -->
         <div class="rc-photo-top">
           <span class="rc-badge-type">${translateType(a.type)}</span>
           ${a.ephemere?`<span class="rc-badge-ephem">🗓 ${a.frequence||'Éphémère'}</span>`:''}
           ${a.nocturne?`<span class="rc-badge-night">🌙 Nocturne</span>`:''}
         </div>
+        <!-- Distance + budget bas de photo -->
         <div class="rc-photo-bottom">
-          <span class="rc-dist-pill">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="6" cy="8.5" r="1.2"/><path d="M6 1a3.5 3.5 0 0 1 3.5 3.5C9.5 7 6 11 6 11S2.5 7 2.5 4.5A3.5 3.5 0 0 1 6 1z"/></svg>
-            ${a.distance}
-          </span>
+          <span class="rc-dist-pill">📍 ${a.distance}</span>
           <span class="rc-budget-pill ${bCls}">${bLbl}</span>
         </div>
       </div>
 
       <div class="rc-body">
-        <div class="rc-title">${a.titre}${openBadge}</div>
+        <div class="rc-title">${a.titre}</div>
+
+        <!-- Chips durée + coût -->
+        <div class="rc-row-chips">
+          <span class="rc-chip">⏱ ${a.duree}</span>
+          <span class="rc-chip">💰 ${a.cout_estime}</span>
+          ${isDone ? '<span class="rc-chip" style="background:#EBF2EA;color:#3A5C38">✓ Déjà faite</span>' : ''}
+        </div>
+
         <div class="rc-desc">${a.description}</div>
 
-        <div class="rc-row-chips">
-          <span class="rc-chip"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="5"/><path d="M6 3v3l2 1.5"/></svg>${a.duree}</span>
-          <span class="rc-chip"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1.5" y="3.5" width="9" height="7" rx="1"/><path d="M4 1v2M8 1v2M1.5 7h9"/></svg>${a.cout_estime}</span>
-        </div>
+        ${a.pourquoi_adapte?`<div class="rc-why">✦ ${a.pourquoi_adapte}</div>`:''}
 
         ${infos?`<ul class="rc-infos">${infos}</ul>`:''}
 
-        ${a.pourquoi_adapte?`<div class="rc-why">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#C8A96E" stroke-width="1.8"><path d="M6 1l1.4 2.9 3.1.4-2.2 2.2.5 3.1L6 8l-2.8 1.6.5-3.1L1.5 4.3l3.1-.4z"/></svg>
-          ${a.pourquoi_adapte}
-        </div>`:''}
-
-        ${userPlan === 'pro' ? `
-        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-          <button class="activity-done-btn ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? 'done' : ''}"
-            data-done-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
-            data-encoded-title="${encodeURIComponent(a.titre||'')}"
-            onclick="markActivityDone(this.dataset.encodedTitle, this.dataset.doneId)">
-            ${alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? (apt().alreadyDone||'✓ Fait') : (apt().markDone||'✓ Déjà fait')}
-          </button>
-          <button class="activity-done-btn" style="background:none;border-color:var(--secondary)"
-            data-fav-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
-            data-encoded-title="${encodeURIComponent(a.titre||'')}"
-            onclick="toggleFavorite(this.dataset.encodedTitle, this.dataset.favId)"
-            title="Favoris">
-            ${favorites.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '❤️' : '🤍'}
-          </button>
-          <button class="rc-note-btn"
-            data-note-id="${(a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()}"
-            data-encoded-title="${encodeURIComponent(a.titre||'')}"
-            onclick="openNote(this.dataset.encodedTitle, this.dataset.noteId)">⭐ Noter</button>
-        </div>` : ''}
-        ${currentUser && userPlan === 'pro' && alreadyDoneIds.has((a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase()) ? '<div class="rc-already-done">✓ Déjà faite — non reproposée pendant 1 an</div>' : ''}
-
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-          <a class="rc-gmaps" href="${gmaps}" target="_blank" rel="noopener">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="8.5" r="1.2"/><path d="M6 1a3.5 3.5 0 0 1 3.5 3.5C9.5 7 6 11 6 11S2.5 7 2.5 4.5A3.5 3.5 0 0 1 6 1z"/></svg>
-            ${t.seeOnGMaps||'Voir sur Google Maps'}
+        <!-- Footer actions -->
+        <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+          <a class="rc-gmaps" href="${gmaps}" target="_blank" rel="noopener" style="flex:1">
+            🗺 ${t.seeOnGMaps||'Google Maps'}
           </a>
-          ${websiteUrl ? `<a class="rc-gmaps" href="${websiteUrl}" target="_blank" rel="noopener" style="background:var(--primary);color:#fff;border-color:var(--primary);">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="5"/><path d="M6 1v10M1 6h10M2 3.5C3.5 5 4.5 6 6 6s2.5-1 4-2.5M2 8.5C3.5 7 4.5 6 6 6s2.5 1 4 2.5"/></svg>
-            ${t.seeOfficialSite||'Site officiel'}
+          ${websiteUrl ? `<a class="rc-gmaps" href="${websiteUrl}" target="_blank" rel="noopener" style="background:var(--primary-light);color:var(--primary);border-color:var(--primary)">
+            🌐 ${t.seeOfficialSite||'Site'}
           </a>` : ''}
+          <!-- Favoris et note — Pro uniquement -->
+          ${userPlan === 'pro' ? `
+          <button class="rc-pro-action-btn ${isFav?'active':''}"
+            data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
+            onclick="toggleFavorite(this.dataset.encodedTitle, this.dataset.favId)"
+            title="Favoris">${isFav?'❤️':'🤍'}</button>
+          <button class="rc-pro-action-btn"
+            data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
+            onclick="openNote(this.dataset.encodedTitle, this.dataset.noteId)"
+            title="Noter">⭐</button>
+          <button class="rc-pro-action-btn ${isDone?'done':''}"
+            data-done-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
+            onclick="markActivityDone(this.dataset.encodedTitle, this.dataset.doneId)"
+            title="Déjà fait">${isDone?'✓':'☑'}</button>
+          ` : `
+          <div style="position:relative;display:inline-block">
+            <div class="rc-pro-action-btn" style="opacity:.5;cursor:default">❤️</div>
+            <div class="rc-pro-lock">✦</div>
+          </div>
+          <div style="position:relative;display:inline-block">
+            <div class="rc-pro-action-btn" style="opacity:.5;cursor:default">⭐</div>
+            <div class="rc-pro-lock">✦</div>
+          </div>
+          `}
         </div>
+        ${currentUser && userPlan === 'pro' && isDone ? '<div class="rc-already-done">✓ Déjà faite — non reproposée pendant 1 an</div>' : ''}
       </div>
     </div>`;
   }).join('');
