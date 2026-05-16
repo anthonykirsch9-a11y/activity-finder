@@ -3568,16 +3568,13 @@ function renderResults(activities, location, radius, budget, group, ages) {
           <!-- Favoris et note — Pro uniquement -->
           ${userPlan === 'pro' ? `
           <button class="rc-pro-action-btn ${isFav?'active':''}"
-            data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
-            onclick="toggleFavorite(this.dataset.encodedTitle, this.dataset.favId)"
+            data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
             title="Favoris">${isFav?'❤️':'🤍'}</button>
           <button class="rc-pro-action-btn"
-            data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
-            onclick="openNote(this.dataset.encodedTitle, this.dataset.noteId)"
+            data-action="note" data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
             title="Noter">⭐</button>
           <button class="rc-pro-action-btn ${isDone?'done':''}"
-            data-done-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
-            onclick="markActivityDone(this.dataset.encodedTitle, this.dataset.doneId)"
+            data-action="done" data-done-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
             title="Déjà fait">${isDone?'✓':'☑'}</button>
           ` : `
           <div style="position:relative;display:inline-block">
@@ -5584,6 +5581,21 @@ function updateAvatarDisplay(avatarData) {
 
 // Fermer en cliquant dehors
 // picker inline dans Settings uniquement — pas de modal overlay
+
+// Event delegation pour les boutons Pro des cartes
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const action = btn.dataset.action;
+  const encodedTitle = btn.dataset.encodedTitle;
+  if (action === 'fav') {
+    toggleFavorite(encodedTitle, btn.dataset.favId);
+  } else if (action === 'note') {
+    openNote(encodedTitle, btn.dataset.noteId);
+  } else if (action === 'done') {
+    markActivityDone(encodedTitle, btn.dataset.doneId);
+  }
+});
 
 // Run gate on load
 window.addEventListener('load', () => {
