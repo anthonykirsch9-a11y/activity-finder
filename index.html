@@ -5434,12 +5434,11 @@ function initBetaGate() {
     alreadyDoneIds = new Set(savedNotes.filter(n=>n.done).map(n=>n.activity_id));
     renderAuthUI();
     updateLimitBanner();
-    // Avatar APRÈS renderAuthUI
     const savedAv = localLoad('user_avatar');
     if (savedAv) setTimeout(function() { updateAvatarDisplay(savedAv); }, 250);
-  } else {
-    document.getElementById('beta-screen').classList.add('show');
   }
+  // Plus de blocage — tout le monde accède à l'app, le code bêta débloque seulement le Pro
+  // document.getElementById('beta-screen').classList.add('show'); ← supprimé
 }
 
 // ── Test Google Places directement (debug) ──
