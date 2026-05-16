@@ -753,7 +753,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 .avatar-option-label { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.65)); font-size:9px; color:white; padding:8px 4px 4px; text-align:center; font-family:'DM Sans',sans-serif; font-weight:600; }
 
 
-/* ══ WEEKIO POLISH — CSS ONLY, no structure changes ══ */
+/* ══ WEEKIO POLISH v2 ══ */
 
 /* Hero plus sombre */
 .hero {
@@ -766,38 +766,75 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   color: var(--primary) !important;
 }
 
-/* Pills — légèrement plus grandes et arrondies */
+/* Pills groupe — même vert foncé que le hero */
 .pill {
   border-radius: 12px !important;
   padding: 9px 18px !important;
   font-weight: 500 !important;
 }
-
-/* Pill selected — vert très foncé pro */
 .pill.selected {
-  background: #1C2B1A !important;
-  border-color: #1C2B1A !important;
+  background: #192B17 !important;
+  border-color: #192B17 !important;
   color: #fff !important;
 }
 
-/* Bouton submit — noir élégant */
+/* Occasions spéciales — même couleur */
+.event-type-btn.selected, .event-type-btn.sel {
+  background: #192B17 !important;
+  border-color: #192B17 !important;
+  color: #fff !important;
+}
+
+/* Date pills — même couleur */
+.date-quick-btn.selected, .date-quick-btn.active, .date-quick-btn.sel {
+  background: #192B17 !important;
+  border-color: #192B17 !important;
+  color: #fff !important;
+}
+
+/* Humeurs/envies — même couleur */
+.mood-btn.selected, .mood-btn.sel {
+  background: #192B17 !important;
+  border-color: #192B17 !important;
+  color: #fff !important;
+}
+
+/* Toggles actifs — même vert foncé */
+.toggle-track.on-warm { background: #192B17 !important; }
+.toggle-track.on-night { background: #192B17 !important; }
+
+/* Bouton flexible date */
+.date-quick-btn.flex-active {
+  background: #192B17 !important;
+  border-color: #192B17 !important;
+  color: #fff !important;
+}
+
+/* Bouton submit — même vert foncé */
 .submit-btn {
-  background: #1C2B1A !important;
+  background: #192B17 !important;
   border-radius: 16px !important;
   font-family: 'Fraunces', serif !important;
   font-size: 1.05rem !important;
   font-weight: 900 !important;
   font-style: italic !important;
   letter-spacing: -0.01em !important;
-  box-shadow: 0 4px 20px rgba(28,43,26,0.35) !important;
+  box-shadow: 0 4px 20px rgba(25,43,23,0.35) !important;
 }
 .submit-btn:hover {
   opacity: 0.88 !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 28px rgba(28,43,26,0.4) !important;
 }
 
-/* Cards résultats — plus rondes, ombre plus pro */
+/* Mode nuit — moins foncé, plus doux */
+[data-theme="dark"] {
+  --bg: #1E2820 !important;
+  --bg2: #252E27 !important;
+  --card: #2A342C !important;
+  --border: #3A4A3C !important;
+}
+
+/* Cards résultats */
 .rc-card {
   border-radius: 20px !important;
   border: none !important;
@@ -807,62 +844,25 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 16px 48px rgba(26,58,24,0.16) !important;
   transform: translateY(-4px) !important;
 }
-.rc-photo-wrap {
-  height: 230px !important;
-}
+.rc-photo-wrap { height: 230px !important; }
 .rc-photo-overlay {
   background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.52) 100%) !important;
 }
-.rc-badge-type, .rc-badge-ephem, .rc-badge-night {
-  border-radius: 6px !important;
-}
-.rc-badge-type {
-  background: rgba(0,0,0,0.32) !important;
-  backdrop-filter: blur(8px) !important;
-}
-.rc-body {
-  padding: 18px 18px 20px !important;
-}
-.rc-title {
-  font-size: 1.25rem !important;
-  font-weight: 800 !important;
-  margin-bottom: 8px !important;
-}
-.rc-desc {
-  line-height: 1.7 !important;
-  margin-bottom: 14px !important;
-}
-.rc-infos {
-  border-radius: 12px !important;
-  border: none !important;
-}
-.rc-why {
-  border-left: none !important;
-  border-radius: 12px !important;
-  padding: 10px 14px !important;
-}
+.rc-badge-type, .rc-badge-ephem, .rc-badge-night { border-radius: 6px !important; }
+.rc-badge-type { background: rgba(0,0,0,0.32) !important; backdrop-filter: blur(8px) !important; }
+.rc-body { padding: 18px 18px 20px !important; }
+.rc-title { font-size: 1.25rem !important; font-weight: 800 !important; margin-bottom: 8px !important; }
+.rc-desc { line-height: 1.7 !important; margin-bottom: 14px !important; }
+.rc-infos { border-radius: 12px !important; border: none !important; }
+.rc-why { border-left: none !important; border-radius: 12px !important; padding: 10px 14px !important; }
 .rc-gmaps {
-  border-radius: 10px !important;
-  font-size: 13px !important;
-  padding: 9px 16px !important;
-  background: var(--bg) !important;
-  color: var(--text) !important;
-  border: 1.5px solid var(--border) !important;
+  border-radius: 10px !important; font-size: 13px !important; padding: 9px 16px !important;
+  background: var(--bg) !important; color: var(--text) !important; border: 1.5px solid var(--border) !important;
 }
-.rc-gmaps:hover {
-  background: var(--text) !important;
-  color: var(--card) !important;
-}
+.rc-gmaps:hover { background: var(--text) !important; color: var(--card) !important; }
 
-/* Tabs actif — plus net */
-.view-tab.active {
-  font-weight: 700 !important;
-}
-
-/* Form card — ombre plus douce */
-.form-card {
-  box-shadow: 0 4px 32px rgba(26,58,24,0.09) !important;
-}
+/* Tabs */
+.view-tab.active { font-weight: 700 !important; }
 
 /* Scrollbar discrète */
 ::-webkit-scrollbar { width: 4px; }
