@@ -1030,7 +1030,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 <div class="form-card">
 
   <div class="form-section">
-    <div class="section-head"><div class="section-icon">👥</div><span class="section-title" id="lbl-group">Qui vient ?</span></div>
+    <div class="section-head"><div class="section-icon">👥</div><span class="section-title" id="lbl-group">Qui ?</span></div>
     <div class="pill-group" id="group-type">
       <button class="pill" data-val="seul(e)" id="grp-solo">Seul(e)</button>
       <button class="pill" data-val="en couple" id="grp-couple">En couple</button>
@@ -5600,6 +5600,8 @@ document.addEventListener('click', function(e) {
 // Run gate on load
 window.addEventListener('load', () => {
   initBetaGate();
+  // Forcer setLang au chargement pour que tous les labels soient corrects
+  setTimeout(function() { setLang(lang); }, 50);
   setTimeout(checkOnThisDayNotification, 2000);
   setTimeout(showRecentCities, 600);
 });
