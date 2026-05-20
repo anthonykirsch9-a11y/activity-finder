@@ -3511,35 +3511,36 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     <div class="rc-grid" id="rc-grid-progressive"></div>
     <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
 
-  // Afficher les cartes une par une — délai via requestAnimationFrame pour garantir le rendu
-  const grid = document.getElementById('rc-grid-progressive');
-  const CARD_DELAY = 500; // 500ms entre chaque carte
-  activities.forEach((a, idx) => {
-    setTimeout(() => {
-      const g = document.getElementById('rc-grid-progressive');
-      if (!g) return;
-      const cardHtml = buildActivityCard(a, idx, location);
-      const div = document.createElement('div');
-      div.innerHTML = cardHtml.trim();
-      const card = div.firstElementChild;
-      if (card) {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-        g.appendChild(card);
-        // Forcer le reflow puis animer
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-          });
-        });
-      }
-    }, 100 + idx * CARD_DELAY);
-  });
-
-  // Charger les photos après la première carte visible
-  setTimeout(() => loadPhotosForResults(activities), 100 + activities.length * CARD_DELAY + 300);
+  // Affichage progressif : une carte à la fois, délai 600ms
+  // On passe par une fonction récursive pour garantir le rendu séquentiel sur iOS
+  function _appendNextCard(idx) {
+    if (idx >= activities.length) {
+      // Toutes les cartes affichées → charger les photos
+      setTimeout(() => loadPhotosForResults(activities), 200);
+      return;
+    }
+    const g = document.getElementById('rc-grid-progressive');
+    if (!g) return;
+    const cardHtml = buildActivityCard(activities[idx], idx, location);
+    const div = document.createElement('div');
+    div.innerHTML = cardHtml.trim();
+    const card = div.firstElementChild;
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(16px)';
+      g.appendChild(card);
+      // Double RAF pour forcer le navigateur à peindre avant l'animation
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        card.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }));
+    }
+    // Prochaine carte après 550ms
+    setTimeout(() => _appendNextCard(idx + 1), 550);
+  }
+  // Démarrer après un court délai pour que le DOM soit stable
+  setTimeout(() => _appendNextCard(0), 80);
 }
 
 // Extrait la construction d'une carte individuelle (refactor de renderResults)
@@ -4905,7 +4906,10 @@ async function renderAccountStats() {
   const t = apt();
   const isPro = userPlan === 'pro';
 
-  if (!isPro) { renderAccountProfile(); return; }
+  // isPro basé sur userPlan (set par initBetaGate ou Supabase)
+  // Re-lire userPlan au moment du render pour être sûr
+  const _currentPlan = userPlan;
+  if (_currentPlan !== 'pro') { renderAccountProfile(); return; }
 
   const notes = (_sb && currentUser?.id !== 'beta-user')
     ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true)).data || [])
@@ -5878,9 +5882,8 @@ function initBetaGate() {
     // Avatar APRÈS renderAuthUI
     const savedAv = localLoad('user_avatar');
     if (savedAv) setTimeout(function() { updateAvatarDisplay(savedAv); }, 250);
-  } else {
-    document.getElementById('beta-screen').classList.add('show');
   }
+  // App accessible à tous sans code (beta-screen désactivé)
 }
 
 // ── Test Google Places directement (debug) ──
