@@ -3378,7 +3378,7 @@ Réponds UNIQUEMENT avec la description, sans guillemets ni ponctuation finale.`
       rating: placeRating,
       ratingCount: topPlace.userRatingCount || 0,
       type: placeType,
-      description: description || `Un lieu incontournable près de chez vous, plébiscité par la communauté avec ${placeRating}/5.`,
+      description: description || ({fr:`Un lieu incontournable près de chez vous, plébiscité par la communauté avec ${placeRating}/5.`,en:`A must-visit place near you, highly rated by the community with ${placeRating}/5.`,es:`Un lugar imprescindible cerca de ti, muy valorado por la comunidad con ${placeRating}/5.`,de:`Ein Muss in Ihrer Nähe, von der Community mit ${placeRating}/5 bewertet.`,it:`Un luogo imperdibile vicino a te, molto apprezzato dalla comunità con ${placeRating}/5.`,pt:`Um lugar imperdível perto de ti, muito apreciado pela comunidade com ${placeRating}/5.`}[lang] || `Un lieu incontournable près de chez vous avec ${placeRating}/5.`),
       placeId: topPlace.id || null,
       photo: null,
       lat: topPlace.location?.latitude || null,
@@ -3409,21 +3409,60 @@ function _getCdcWeekLabel() {
   const d = new Date();
   const mon = new Date(d);
   mon.setDate(d.getDate() - (d.getDay() || 7) + 1);
-  const months = ['jan','fév','mars','avr','mai','juin','juil','août','sep','oct','nov','déc'];
-  return 'Semaine du ' + mon.getDate() + ' ' + months[mon.getMonth()];
+  const day = mon.getDate();
+  const m = mon.getMonth();
+  const monthsFr = ['jan','fév','mars','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+  const monthsEn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthsEs = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const monthsDe = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const monthsIt = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  const monthsPt = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const labels = {
+    fr: 'Semaine du ' + day + ' ' + monthsFr[m],
+    en: 'Week of ' + monthsEn[m] + ' ' + day,
+    es: 'Semana del ' + day + ' ' + monthsEs[m],
+    de: 'Woche vom ' + day + '. ' + monthsDe[m],
+    it: 'Settimana del ' + day + ' ' + monthsIt[m],
+    pt: 'Semana de ' + day + ' ' + monthsPt[m],
+  };
+  return labels[lang] || labels.fr;
 }
+function _getCdcTitle() {
+  const titles = {
+    fr: 'Coup de cœur Weekio',
+    en: 'Weekio Pick',
+    es: 'Favorito Weekio',
+    de: 'Weekio Tipp',
+    it: 'Consiglio Weekio',
+    pt: 'Escolha Weekio',
+  };
+  return titles[lang] || titles.fr;
+}
+
+function _getCdcLoadingText() {
+  const texts = {
+    fr: 'Recherche du lieu incontournable près de chez vous…',
+    en: 'Finding the must-see place near you…',
+    es: 'Buscando el lugar imprescindible cerca de ti…',
+    de: 'Suche nach dem Top-Ort in deiner Nähe…',
+    it: 'Ricerca del luogo imperdibile vicino a te…',
+    pt: 'A encontrar o lugar imperdível perto de ti…',
+  };
+  return texts[lang] || texts.fr;
+}
+
 function renderCoupDeCoeurLoading() {
   const rs = document.getElementById('results-section');
   const loadingHtml = `
     <div class="cdc-card" id="cdc-card">
       <div class="cdc-banner">
         <span style="font-size:16px">💛</span>
-        <span class="cdc-banner-txt">Coup de cœur Weekio</span>
+        <span class="cdc-banner-txt">${_getCdcTitle()}</span>
         <span class="cdc-badge-week">${_getCdcWeekLabel()}</span>
       </div>
       <div class="cdc-loading" id="cdc-loading">
         <div class="cdc-loading-spinner"></div>
-        <span class="cdc-loading-txt">Recherche du lieu incontournable près de chez vous…</span>
+        <span class="cdc-loading-txt">${_getCdcLoadingText()}</span>
       </div>
     </div>`;
   // Insérer avant le spinner principal
@@ -3445,7 +3484,7 @@ function renderCoupDeCoeurResult(cdc) {
   card.innerHTML = `
     <div class="cdc-banner">
       <span style="font-size:16px">💛</span>
-      <span class="cdc-banner-txt">Coup de cœur Weekio</span>
+      <span class="cdc-banner-txt">${_getCdcTitle()}</span>
       <span class="cdc-badge-week">${_getCdcWeekLabel()}</span>
     </div>
     <div style="position:relative;overflow:hidden">
@@ -3606,7 +3645,8 @@ async function requestNotifPermission() {
 function showNotifToast() {
   const toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#3A5C38;color:white;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.3);white-space:nowrap';
-  toast.textContent = '🔔 Notifications activées ! On te prévient vendredi à 17h.';
+  const toastTexts = {fr:'🔔 Notifications activées ! On te prévient vendredi à 17h.',en:'🔔 Notifications enabled! We'll remind you every Friday at 5pm.',es:'🔔 ¡Notificaciones activadas! Te avisamos cada viernes a las 17h.',de:'🔔 Benachrichtigungen aktiviert! Wir erinnern dich jeden Freitag um 17 Uhr.',it:'🔔 Notifiche attivate! Ti avvisiamo ogni venerdì alle 17.',pt:'🔔 Notificações ativadas! Avisamos toda sexta às 17h.'};
+  toast.textContent = toastTexts[lang] || toastTexts.fr;
   document.body.appendChild(toast);
   setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 3000);
 }
@@ -5033,8 +5073,8 @@ async function renderAccountStats() {
   const notifBlock = ('Notification' in window && Notification.permission === 'default')
     ? `<div style="background:var(--primary-light);border:1.5px solid var(--primary);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <span style="font-size:18px">🔔</span>
-        <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">Idées week-end chaque vendredi à 17h</div>
-        <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">Activer</button>
+        <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">${{fr:'Idées week-end chaque vendredi à 17h',en:'Weekend ideas every Friday at 5pm',es:'Ideas de fin de semana cada viernes a las 17h',de:'Wochenend-Ideen jeden Freitag um 17 Uhr',it:'Idee weekend ogni venerdì alle 17',pt:'Ideias de fim de semana toda sexta às 17h'}[lang]||'Idées week-end chaque vendredi à 17h'}</div>
+        <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">${{fr:'Activer',en:'Enable',es:'Activar',de:'Aktivieren',it:'Attiva',pt:'Ativar'}[lang]||'Activer'}</button>
       </div>`
     : (('Notification' in window && Notification.permission === 'granted')
       ? `<div style="font-size:12px;color:var(--primary);text-align:center;padding:4px 0;margin-bottom:10px">🔔 Notifications activées — vendredi 17h ✓</div>`
