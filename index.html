@@ -3465,13 +3465,15 @@ function renderCoupDeCoeurLoading() {
         <span class="cdc-loading-txt">${_getCdcLoadingText()}</span>
       </div>
     </div>`;
-  // Insérer avant le spinner principal
-  rs.innerHTML = loadingHtml + rs.innerHTML;
+  // Insérer au DÉBUT de results-section, avant le spinner
+  const existingContent = rs.innerHTML;
+  rs.innerHTML = loadingHtml + existingContent;
 }
 
 function renderCoupDeCoeurResult(cdc) {
   const card = document.getElementById('cdc-card');
-  if (!card || !cdc) { if (card) card.remove(); return; }
+  if (!cdc) { if (card) card.remove(); return; }
+  if (!card) return; // CDC pas encore dans le DOM, skip
 
   const photoHtml = cdc.photo
     ? `<img class="rc-photo" src="${cdc.photo}" alt="${cdc.name}"
@@ -3530,18 +3532,13 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
       <div style="color:var(--muted);font-size:12px">${msg}</div></div></div>`;
   })() : '';
 
-  const cdcCard = document.getElementById('cdc-card');
-  const cdcHtml = cdcCard ? cdcCard.outerHTML : '';
-
   // Construire toutes les cartes avec animation-delay CSS
   const cardsHtml = activities.map((a, idx) => {
     const card = buildActivityCard(a, idx, location);
-    // Injecter le style d'animation directement dans la carte
     return card.replace('class="rc-card"', `class="rc-card" style="animation:slideIn 0.4s ease both;animation-delay:${idx * 0.5}s;opacity:0;animation-fill-mode:both"`);
   }).join('');
 
   rs.innerHTML = `
-    ${cdcHtml}
     <div class="rc-summary" style="flex-wrap:wrap;gap:8px">
       <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="var(--primary)" stroke-width="1.8"><circle cx="9" cy="11" r="2"/><path d="M9 1a6 6 0 0 1 6 6c0 4-6 10-6 10S3 11 3 7a6 6 0 0 1 6-6z"/></svg>
       <strong>${location}</strong>&ensp;${radLabel}&ensp;·&ensp;${group}${agesNote}&ensp;·&ensp;${budgetRecap}
