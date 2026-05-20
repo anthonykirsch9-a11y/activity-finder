@@ -1073,15 +1073,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
     <button class="upgrade-btn" onclick="openUpgrade()">Passer Pro ✦</button>
   </div>
 </div>
-<!-- ── NOTIF PERMISSION BAR ── -->
-<div class="notif-permission-bar" id="notif-permission-bar">
-  <div class="notif-inner">
-    <span style="font-size:20px">🔔</span>
-    <div class="notif-text">Active les notifications pour recevoir tes idées week-end chaque vendredi à 17h !</div>
-    <button class="notif-btn" onclick="requestNotifPermission()">Activer</button>
-    <button class="notif-close" onclick="hideNotifBar()">✕</button>
-  </div>
-</div>
+<!-- Notif bar déplacée dans le panneau Pro -->
 <!-- Ad banner (free users only) -->
 <div class="ad-banner" id="ad-banner">
   <div class="ad-inner">
@@ -1544,6 +1536,8 @@ const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 const STRIPE_PUB_KEY   = 'COLLE_TON_STRIPE_PUBLISHABLE_KEY_ICI';
 const STRIPE_PRICE_ID  = 'COLLE_TON_STRIPE_PRICE_ID_ICI';
 const FREE_LIMIT       = 3;
+const PEXELS_KEY       = 'OjOWZuQpato1V2fXEnpR4jIWnH4qsUmgxMImacQcY4vj0ZJNAAnPsolg';
+const _pexelsCache     = {};
 
 // ══════════════════════════════════════════════════════════════
 // CACHE RÉSULTATS CLAUDE — localStorage 2h, évite appels répétés
@@ -3517,24 +3511,35 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     <div class="rc-grid" id="rc-grid-progressive"></div>
     <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
 
-  // Afficher les cartes une par une avec délai
+  // Afficher les cartes une par une — délai via requestAnimationFrame pour garantir le rendu
   const grid = document.getElementById('rc-grid-progressive');
+  const CARD_DELAY = 500; // 500ms entre chaque carte
   activities.forEach((a, idx) => {
     setTimeout(() => {
-      if (!grid) return;
+      const g = document.getElementById('rc-grid-progressive');
+      if (!g) return;
       const cardHtml = buildActivityCard(a, idx, location);
       const div = document.createElement('div');
-      div.innerHTML = cardHtml;
+      div.innerHTML = cardHtml.trim();
       const card = div.firstElementChild;
       if (card) {
-        card.style.animation = 'slideIn 0.4s ease both';
-        grid.appendChild(card);
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        g.appendChild(card);
+        // Forcer le reflow puis animer
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          });
+        });
       }
-    }, idx * 320); // 320ms entre chaque carte = ressenti fluide
+    }, 100 + idx * CARD_DELAY);
   });
 
-  // Charger les photos après que toutes les cartes soient affichées
-  setTimeout(() => loadPhotosForResults(activities), activities.length * 320 + 200);
+  // Charger les photos après la première carte visible
+  setTimeout(() => loadPhotosForResults(activities), 100 + activities.length * CARD_DELAY + 300);
 }
 
 // Extrait la construction d'une carte individuelle (refactor de renderResults)
@@ -3682,12 +3687,8 @@ async function scheduleWeekendNotif() {
 
 // Afficher la barre notif après les premières recherches Pro
 function checkNotifBar() {
-  if (userPlan !== 'pro') return;
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'granted') return;
-  try { if (localStorage.getItem('af_notif_dismissed') === '1') return; } catch(e) {}
-  // Afficher après 2s pour ne pas être agressif
-  setTimeout(showNotifBar, 2000);
+  // Notif désormais proposée uniquement dans le panneau Pro (onglet Stats)
+  // Rien à faire ici
 }
 
 
@@ -4943,6 +4944,12 @@ async function renderAccountStats() {
     </div>
     ${searches.length ? '' : ''}
 
+    ${ ('Notification' in window && Notification.permission !== 'granted') ? `
+    <div style="background:var(--primary-light);border:1.5px solid var(--primary);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:20px">🔔</span>
+      <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">Reçois tes idées week-end chaque vendredi à 17h</div>
+      <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Activer 🔔</button>
+    </div>` : (Notification.permission === 'granted' ? '<div style=\"font-size:12px;color:var(--primary);text-align:center;padding:6px 0;margin-bottom:8px\">🔔 Notifications activées — vendredi 17h ✓</div>' : '') }
     <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:8px">
       🚪 ${t2.signOutBtn||'Déconnexion'}
     </button>`;
