@@ -3473,7 +3473,6 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
   const t = tx();
   const rs = document.getElementById('results-section');
 
-  // Header récap
   const radLabel = radius==='0' ? (t.radCity||'Ville uniquement') : (t.radiusLabel ? t.radiusLabel(radius) : `rayon ${radius} km`);
   const agesNote = ages.length ? ` · ${ages.join(', ')} ${t.agesUnit||'ans'}` : '';
   const budgetPerP = parseInt(budget);
@@ -3485,19 +3484,22 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     const isBad = badCodes.includes(weatherData.code);
     const bg = isBad ? '#FDECEA' : '#EBF2EA';
     const border = isBad ? '#F5C6C3' : '#C8DECA';
-    const msg = isBad ? `⚠️ Météo défavorable — activités adaptées` : `Activités adaptées à la météo`;
+    const msg = isBad ? '⚠️ Météo défavorable — activités adaptées' : 'Activités adaptées à la météo';
     return `<div style="display:flex;align-items:center;gap:10px;background:${bg};border:1px solid ${border};border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px">
       <span style="font-size:22px">${weatherData.icon}</span>
-      <div>
-        <div style="font-weight:700;color:var(--text)">${weatherData.temp}°C · ${weatherData.label}</div>
-        <div style="color:var(--muted);font-size:12px">${msg}</div>
-      </div>
-    </div>`;
+      <div><div style="font-weight:700;color:var(--text)">${weatherData.temp}°C · ${weatherData.label}</div>
+      <div style="color:var(--muted);font-size:12px">${msg}</div></div></div>`;
   })() : '';
 
-  // Conserver le coup de cœur s'il est là
   const cdcCard = document.getElementById('cdc-card');
   const cdcHtml = cdcCard ? cdcCard.outerHTML : '';
+
+  // Construire toutes les cartes avec animation-delay CSS
+  const cardsHtml = activities.map((a, idx) => {
+    const card = buildActivityCard(a, idx, location);
+    // Injecter le style d'animation directement dans la carte
+    return card.replace('class="rc-card"', `class="rc-card" style="animation:slideIn 0.4s ease both;animation-delay:${idx * 0.5}s;opacity:0;animation-fill-mode:both"`);
+  }).join('');
 
   rs.innerHTML = `
     ${cdcHtml}
@@ -3508,40 +3510,13 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     </div>
     ${weatherBanner}
     <div class="results-header">${t.resultsTitle(activities.length)}</div>
-    <div class="rc-grid" id="rc-grid-progressive"></div>
+    <div class="rc-grid" id="rc-grid-progressive">${cardsHtml}</div>
     <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
 
-  // Affichage progressif : une carte à la fois, délai 600ms
-  // On passe par une fonction récursive pour garantir le rendu séquentiel sur iOS
-  function _appendNextCard(idx) {
-    if (idx >= activities.length) {
-      // Toutes les cartes affichées → charger les photos
-      setTimeout(() => loadPhotosForResults(activities), 200);
-      return;
-    }
-    const g = document.getElementById('rc-grid-progressive');
-    if (!g) return;
-    const cardHtml = buildActivityCard(activities[idx], idx, location);
-    const div = document.createElement('div');
-    div.innerHTML = cardHtml.trim();
-    const card = div.firstElementChild;
-    if (card) {
-      card.style.opacity = '0';
-      card.style.transform = 'translateY(16px)';
-      g.appendChild(card);
-      // Double RAF pour forcer le navigateur à peindre avant l'animation
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        card.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
-        card.style.opacity = '1';
-        card.style.transform = 'translateY(0)';
-      }));
-    }
-    // Prochaine carte après 550ms
-    setTimeout(() => _appendNextCard(idx + 1), 550);
-  }
-  // Démarrer après un court délai pour que le DOM soit stable
-  setTimeout(() => _appendNextCard(0), 80);
+  // Photos après rendu
+  setTimeout(() => loadPhotosForResults(activities), 200);
 }
+
 
 // Extrait la construction d'une carte individuelle (refactor de renderResults)
 function buildActivityCard(a, idx, location) {
@@ -3692,6 +3667,87 @@ function checkNotifBar() {
   // Rien à faire ici
 }
 
+
+
+// ══════════════════════════════════════════════════════════════
+// STREAMING HELPERS
+// ══════════════════════════════════════════════════════════════
+
+// Parser les activités complètes depuis un JSON partiel
+function _tryParseActivities(text) {
+  try {
+    // Chercher un tableau JSON complet ou partiel
+    const startIdx = text.indexOf('[');
+    if (startIdx === -1) return null;
+    const chunk = text.slice(startIdx);
+    // Compter les objets complets (séparés par },{)
+    const complete = [];
+    let depth = 0, inStr = false, escape = false, objStart = -1;
+    for (let i = 0; i < chunk.length; i++) {
+      const c = chunk[i];
+      if (escape) { escape = false; continue; }
+      if (c === '\\' && inStr) { escape = true; continue; }
+      if (c === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (c === '{') { if (depth === 0) objStart = i; depth++; }
+      else if (c === '}') {
+        depth--;
+        if (depth === 0 && objStart >= 0) {
+          try {
+            const obj = JSON.parse(chunk.slice(objStart, i + 1));
+            if (obj.titre) complete.push(obj);
+          } catch(_) {}
+          objStart = -1;
+        }
+      }
+    }
+    return complete.length > 0 ? complete : null;
+  } catch(_) { return null; }
+}
+
+// Rendre les nouvelles cartes streamées
+function _renderStreamCards(activities, fromIdx, location) {
+  // S'assurer que la grille existe
+  let grid = document.getElementById('rc-grid-progressive');
+  if (!grid) {
+    // Créer la structure minimale si elle n'existe pas encore
+    const rs = document.getElementById('results-section');
+    const t = tx();
+    const cdcCard = document.getElementById('cdc-card');
+    const cdcHtml = cdcCard ? cdcCard.outerHTML : '';
+    rs.innerHTML = cdcHtml + `
+      <div class="rc-summary" style="flex-wrap:wrap;gap:8px">
+        <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="var(--primary)" stroke-width="1.8"><circle cx="9" cy="11" r="2"/><path d="M9 1a6 6 0 0 1 6 6c0 4-6 10-6 10S3 11 3 7a6 6 0 0 1 6-6z"/></svg>
+        <strong>${location}</strong>
+      </div>
+      <div class="results-header">${t.resultsTitle ? t.resultsTitle(6) : '6 activités <em>pour toi</em>'}</div>
+      <div class="rc-grid" id="rc-grid-progressive"></div>
+      <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote||''}</div>`;
+    grid = document.getElementById('rc-grid-progressive');
+  }
+  if (!grid) return;
+
+  // Ajouter uniquement les nouvelles cartes
+  for (let i = fromIdx; i < activities.length; i++) {
+    const a = activities[i];
+    const cardHtml = buildActivityCard(a, i, location);
+    const div = document.createElement('div');
+    div.innerHTML = cardHtml.trim();
+    const card = div.firstElementChild;
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(16px)';
+      grid.appendChild(card);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        card.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }));
+    }
+  }
+  // Charger les photos des nouvelles cartes
+  setTimeout(() => loadPhotosForResults(activities.slice(fromIdx)), 200);
+}
 
 // ══════════════════════════════════════════════════════════════
 // RUNSEARCH — Fonction principale de recherche
@@ -3868,25 +3924,70 @@ async function runSearch(fromMap) {
           return;
         }
 
-        // Appel Claude via Supabase Edge Function
+        // Appel Claude via Supabase Edge Function — mode streaming
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
-        const res = await fetch(EDGE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-          body: JSON.stringify({ prompt, model: selectedModel, webSearch: needsWebSearch })
-        });
+        const useStream = !needsWebSearch; // streaming seulement sans web search
+        var _claudeData = null;
 
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error('API error ' + res.status + ': ' + errText);
+        if (useStream) {
+          // ── STREAMING : afficher les activités au fur et à mesure ──
+          const res = await fetch(EDGE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
+            body: JSON.stringify({ prompt, model: selectedModel, webSearch: false, stream: true })
+          });
+          if (!res.ok) { const e = await res.text(); throw new Error('API error ' + res.status + ': ' + e); }
+
+          let fullText = '';
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+          let _renderedCount = 0;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, { stream: true });
+            const lines = buf.split('
+');
+            buf = lines.pop() || '';
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const raw = line.slice(6).trim();
+              if (raw === '[DONE]') continue;
+              try {
+                const evt = JSON.parse(raw);
+                if (evt.type === 'chunk') {
+                  fullText += evt.text;
+                  // Tenter de parser les activités complètes au fur et à mesure
+                  const parsed = _tryParseActivities(fullText);
+                  if (parsed && parsed.length > _renderedCount) {
+                    _renderStreamCards(parsed, _renderedCount, location);
+                    _renderedCount = parsed.length;
+                  }
+                } else if (evt.type === 'text') {
+                  // Cache hit — tout d'un coup
+                  fullText = evt.text;
+                }
+              } catch(_) {}
+            }
+          }
+
+          _claudeData = { content: [{ type: 'text', text: fullText }] };
+
+        } else {
+          // ── MODE NORMAL (web search) ──
+          const res = await fetch(EDGE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
+            body: JSON.stringify({ prompt, model: selectedModel, webSearch: needsWebSearch })
+          });
+          if (!res.ok) { const e = await res.text(); throw new Error('API error ' + res.status + ': ' + e); }
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+          if (!data.content) throw new Error('Reponse inattendue: ' + JSON.stringify(data));
+          _claudeData = data;
         }
-
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        if (!data.content) throw new Error('Reponse inattendue: ' + JSON.stringify(data));
-
-        // Suite du traitement dans le bloc ci-dessous
-        var _claudeData = data;
       } else {
         throw new Error('Impossible de géolocaliser "' + location + '"');
       }
@@ -4885,14 +4986,17 @@ function switchAccountTab(tab) {
   const paneEl = document.getElementById('ap-pane-' + tab);
   if (tabEl) tabEl.classList.add('active');
   if (paneEl) paneEl.classList.add('active');
-  if (tab === 'stats') renderAccountStats();
+  if (tab === 'stats') {
+    // Re-vérifier le plan beta avant de render
+    try { if (localStorage.getItem('af_beta_ok') === '1') userPlan = 'pro'; } catch(e) {}
+    renderAccountStats();
+  }
   if (tab === 'activities') renderAccountActivities();
   if (tab === 'memories') renderMemoriesPane();
   if (tab === 'add') renderAddEventForm();
 }
 
 async function renderAccountStats() {
-  // Mettre à jour preview avatar
   const saved = localLoad('user_avatar');
   if (saved) {
     const preview = document.getElementById('stats-avatar-preview');
@@ -4904,12 +5008,10 @@ async function renderAccountStats() {
   }
   const el = document.getElementById('ap-stats-content');
   const t = apt();
+  // Re-vérifier le plan depuis localStorage (beta users)
+  try { if (localStorage.getItem('af_beta_ok') === '1') userPlan = 'pro'; } catch(e) {}
   const isPro = userPlan === 'pro';
-
-  // isPro basé sur userPlan (set par initBetaGate ou Supabase)
-  // Re-lire userPlan au moment du render pour être sûr
-  const _currentPlan = userPlan;
-  if (_currentPlan !== 'pro') { renderAccountProfile(); return; }
+  if (!isPro) { renderAccountProfile(); return; }
 
   const notes = (_sb && currentUser?.id !== 'beta-user')
     ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true)).data || [])
@@ -4925,8 +5027,19 @@ async function renderAccountStats() {
     : '—';
   const totalSearches = searches.length;
   const totalFavs = favs.length;
-
   const t2 = apt();
+
+  // Bloc notif (seulement si API dispo et pas encore accordé)
+  const notifBlock = ('Notification' in window && Notification.permission === 'default')
+    ? `<div style="background:var(--primary-light);border:1.5px solid var(--primary);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:18px">🔔</span>
+        <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">Idées week-end chaque vendredi à 17h</div>
+        <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">Activer</button>
+      </div>`
+    : (('Notification' in window && Notification.permission === 'granted')
+      ? `<div style="font-size:12px;color:var(--primary);text-align:center;padding:4px 0;margin-bottom:10px">🔔 Notifications activées — vendredi 17h ✓</div>`
+      : '');
+
   el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
       <div style="background:var(--primary-light);border-radius:12px;padding:14px;text-align:center">
@@ -4946,18 +5059,12 @@ async function renderAccountStats() {
         <div style="font-size:12px;color:var(--muted);margin-top:2px">${t2.statsFavs||'Favoris'}</div>
       </div>
     </div>
-    ${searches.length ? '' : ''}
-
-    ${ ('Notification' in window && Notification.permission !== 'granted') ? `
-    <div style="background:var(--primary-light);border:1.5px solid var(--primary);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <span style="font-size:20px">🔔</span>
-      <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">Reçois tes idées week-end chaque vendredi à 17h</div>
-      <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Activer 🔔</button>
-    </div>` : (Notification.permission === 'granted' ? '<div style=\"font-size:12px;color:var(--primary);text-align:center;padding:6px 0;margin-bottom:8px\">🔔 Notifications activées — vendredi 17h ✓</div>' : '') }
-    <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:8px">
+    ${notifBlock}
+    <button onclick="signOut()" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);margin-top:4px">
       🚪 ${t2.signOutBtn||'Déconnexion'}
     </button>`;
 }
+
 
 // ══════════════════════════════════════════════════════════════
 // PROGRAMME — sélecteur date simple (jj/mm)
