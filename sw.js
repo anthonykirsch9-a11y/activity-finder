@@ -1,77 +1,98 @@
-const CACHE_NAME = 'weekio-v1';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-];
+// Weekio Service Worker — v2.1 (notifications vendredi)
+const CACHE_NAME = 'weekio-v4';
+const ASSETS = ['/', '/index.html', '/manifest.json'];
 
-// Installation — mise en cache des ressources essentielles
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
-      console.log('✅ Weekio : mise en cache des ressources');
-      return cache.addAll(ASSETS_TO_CACHE).catch(function(err) {
-        console.log('Cache partiel (normal pour les fonts externes):', err);
-      });
-    })
+// Install
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// Activation — suppression des anciens caches
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.filter(function(name) {
-          return name !== CACHE_NAME;
-        }).map(function(name) {
-          return caches.delete(name);
-        })
-      );
-    })
+// Activate
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch — stratégie Network First avec fallback cache
-self.addEventListener('fetch', function(event) {
-  // Ne pas intercepter les requêtes API (Supabase, OpenMeteo, Places)
-  const url = event.request.url;
-  if (
-    url.includes('supabase.co') ||
-    url.includes('open-meteo.com') ||
-    url.includes('googleapis.com/maps') ||
-    url.includes('api.anthropic.com') ||
-    url.includes('pexels.com') ||
-    url.includes('wa.me')
-  ) {
-    return; // Laisser passer sans interception
+// Fetch — réseau en priorité, cache en fallback
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  if (!e.request.url.startsWith('http')) return;
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
+  );
+});
+
+// ── NOTIFICATIONS PUSH ──
+let _notifTimer = null;
+
+self.addEventListener('message', e => {
+  if (!e.data) return;
+
+  if (e.data.type === 'SCHEDULE_WEEKEND_NOTIF') {
+    const { delayMs, city, timestamp } = e.data;
+    console.log('[SW] Notification planifiée dans', Math.round(delayMs / 3600000), 'h pour', city);
+
+    // Annuler le précédent timer si existant
+    if (_notifTimer) clearTimeout(_notifTimer);
+
+    // Planifier la notification
+    _notifTimer = setTimeout(() => {
+      sendWeekendNotif(city);
+    }, Math.min(delayMs, 2147483647)); // max ~24 jours (limite JS)
+
+    // Confirmer à la page
+    e.source?.postMessage({ type: 'NOTIF_SCHEDULED', timestamp });
   }
 
-  event.respondWith(
-    fetch(event.request)
-      .then(function(response) {
-        // Mettre en cache les réponses réussies
-        if (response && response.status === 200 && response.type === 'basic') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return response;
-      })
-      .catch(function() {
-        // Réseau indisponible → servir depuis le cache
-        return caches.match(event.request).then(function(cached) {
-          if (cached) return cached;
-          // Fallback ultime : page principale
-          if (event.request.destination === 'document') {
-            return caches.match('./index.html');
-          }
-        });
-      })
+  if (e.data.type === 'SEND_TEST_NOTIF') {
+    sendWeekendNotif(e.data.city || 'votre ville', true);
+  }
+});
+
+async function sendWeekendNotif(city, isTest = false) {
+  const title = isTest ? '🔔 Test Weekio' : '🌿 C\'est bientôt le week-end !';
+  const body = `Voici 3 idées d'activités près de ${city} pour ce week-end. Ouvre Weekio pour découvrir !`;
+
+  try {
+    await self.registration.showNotification(title, {
+      body,
+      icon: '/favicon.ico',
+      badge: '/favicon.ico',
+      tag: 'weekio-weekend',
+      renotify: true,
+      data: { url: '/', city },
+      actions: [
+        { action: 'open', title: '🔍 Chercher des idées' },
+        { action: 'dismiss', title: 'Plus tard' }
+      ]
+    });
+    console.log('[SW] Notification envoyée pour', city);
+  } catch(e) {
+    console.error('[SW] Erreur notification:', e);
+  }
+}
+
+// Clic sur notification → ouvrir l'app
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  if (e.action === 'dismiss') return;
+
+  const city = e.notification.data?.city || '';
+  const url = city ? `/?notif_city=${encodeURIComponent(city)}` : '/';
+
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      if (clientList.length > 0) {
+        clientList[0].focus();
+        clientList[0].postMessage({ type: 'NOTIF_CLICK', city });
+        return;
+      }
+      return clients.openWindow(url);
+    })
   );
 });
