@@ -3772,11 +3772,11 @@ async function runSearch(fromMap) {
 
     // ── PARALLÉLISATION : Géocodage + Google Places simultanés ──
     let realPlacesContext = '';
-    let _ck = ''; // clé cache — déclarée ici pour être accessible après le try
+    let _ck = '';
+    let searchLat = (fromMap && mapSearchCoords) ? mapSearchCoords.lat : (_selectedCityCoords ? _selectedCityCoords.lat : null);
+    let searchLng = (fromMap && mapSearchCoords) ? mapSearchCoords.lng : (_selectedCityCoords ? _selectedCityCoords.lng : null);
     console.log('🚀 runSearch started, location:', location);
     try {
-      let searchLat = (fromMap && mapSearchCoords) ? mapSearchCoords.lat : (_selectedCityCoords ? _selectedCityCoords.lat : null);
-      let searchLng = (fromMap && mapSearchCoords) ? mapSearchCoords.lng : (_selectedCityCoords ? _selectedCityCoords.lng : null);
 
       // Géocoder si nécessaire
       if (!searchLat && location) {
@@ -3791,6 +3791,14 @@ async function runSearch(fromMap) {
             console.log('✅ Geocoded:', searchLat, searchLng);
           }
         } catch(e) { console.error('❌ Geocoding error:', e.message); }
+      }
+
+      // 🚀 Lancer le CDC dès que les coords sont connues — sans attendre Claude
+      if (searchLat && searchLng) {
+        fetchCoupDeCoeur(searchLat, searchLng, []).then(cdc => {
+          if (cdc) renderCoupDeCoeurResult(cdc);
+          else { const el = document.getElementById('cdc-card'); if(el) el.remove(); }
+        });
       }
 
       if (searchLat && searchLng) {
@@ -3853,8 +3861,7 @@ async function runSearch(fromMap) {
           renderResultsProgressive(_cached, location, radius, budget, group, ages);
           window._lastActivities = _cached;
           setTimeout(() => { if (map) placeActivityMarkers(_cached); else window._pendingMarkers = _cached; }, 500);
-          // CDC depuis cache aussi
-          fetchCoupDeCoeur(searchLat, searchLng, _cached.map(a=>a.titre||'')).then(cdc => renderCoupDeCoeurResult(cdc));
+          // CDC déjà lancé en parallèle
           if (sb) { sb.disabled = false; document.getElementById('submit-label').textContent = t.submitLabel||'Trouver mes activités →'; }
           return;
         }
@@ -3931,15 +3938,7 @@ async function runSearch(fromMap) {
       else window._pendingMarkers = activities;
     }, 500);
 
-    // Coup de cœur en arrière-plan
-    if (searchLat && searchLng) {
-      const excludeTitles = activities.map(a => a.titre || '');
-      fetchCoupDeCoeur(searchLat, searchLng, excludeTitles).then(cdc => renderCoupDeCoeurResult(cdc));
-    } else {
-      const cdcEl = document.getElementById('cdc-card');
-      if (cdcEl) cdcEl.remove();
-    }
-
+    // CDC déjà lancé en parallèle dès le géocodage
     checkNotifBar();
 
   } catch(e) {
