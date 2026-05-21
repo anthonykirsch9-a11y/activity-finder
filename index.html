@@ -2932,8 +2932,38 @@ async function fetchPexelsPhoto(theme) {
 
 async function loadPexelsPhoto(imgEl, type, titre) {
   const theme = getPhotoTheme(type, titre);
-  const url = await fetchPexelsPhoto(theme);
-  if (url) imgEl.src = url;
+
+  // Thèmes de fallback selon le type d'activité
+  const _fallbacks = {
+    'nature':     ['nature','park','garden','outdoor'],
+    'randonnee':  ['hiking','nature','forest','trail'],
+    'velo':       ['cycling','bicycle','outdoor','nature'],
+    'culture':    ['museum','culture','art','historic'],
+    'museum':     ['museum','art','culture','gallery'],
+    'monument':   ['monument','historic','architecture','city'],
+    'restaurant': ['restaurant','food','dining','gastronomy'],
+    'spa':        ['spa','wellness','relax','massage'],
+    'sport':      ['sport','activity','outdoor','adventure'],
+    'plage':      ['beach','sea','ocean','coast'],
+    'brocante':   ['market','antique','outdoor','street'],
+    'fete':       ['festival','celebration','crowd','event'],
+    'concert':    ['concert','music','show','stage'],
+    'cinema':     ['cinema','movie','film','entertainment'],
+    'escape':     ['escape room','game','indoor','fun'],
+    'karting':    ['karting','racing','sport','speed'],
+    'parc':       ['park','garden','nature','outdoor'],
+    'default':    ['city','travel','outdoor','weekend']
+  };
+  const fallbackList = _fallbacks[theme] || _fallbacks['default'];
+
+  // Essayer le thème principal d'abord, puis les fallbacks
+  const themesToTry = [theme, ...fallbackList.filter(t => t !== theme)];
+  for (const t of themesToTry) {
+    const url = await fetchPexelsPhoto(t);
+    if (url) { imgEl.src = url; return; }
+  }
+  // Dernier recours : SVG coloré
+  imgEl.src = makePhotoSvg(theme);
 }
 
 function makePhotoSvg(theme) {
@@ -3557,10 +3587,11 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
           card.style.opacity = '1';
           card.style.transform = 'translateY(0)';
         }));
-        setTimeout(() => loadPhotosForResults([a]), 200);
       }
     }, idx * 600);
   });
+  // Charger TOUTES les photos une seule fois après la dernière carte
+  setTimeout(() => loadPhotosForResults(activities), activities.length * 600 + 400);
 }
 
 
@@ -4112,6 +4143,9 @@ async function runSearch(fromMap) {
 
 function loadPhotosForResults(activities) {
   document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
+    // Ne pas recharger si déjà une vraie photo (pas placeholder SVG)
+    if (img.src && img.src.includes('places.googleapis.com')) return;
+    if (img.src && img.src.includes('pexels.com')) return;
     const placeId = img.dataset.placeid;
     const isEphemere = img.dataset.ephemere === '1';
 
