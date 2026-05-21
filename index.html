@@ -3332,7 +3332,7 @@ function _cdcCacheKey(lat, lng) {
   // Numéro de semaine ISO
   const jan4 = new Date(now.getFullYear(), 0, 4);
   const week = Math.ceil(((now - jan4) / 86400000 + jan4.getDay() + 1) / 7);
-  return 'cdc_' + latR + '_' + lngR + '_w' + week;
+  return 'cdc_' + latR + '_' + lngR + '_w' + week + '_' + lang;
 }
 
 async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
@@ -4157,20 +4157,8 @@ function loadPhotosForResults(activities) {
 
     // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
     const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
-    if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
-      const photoName = gPlace.photos[0].name;
-      if (photoName) {
-        const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
-        const testImg = new Image();
-        testImg.onload = () => { img.src = photoUrlG; };
-        testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
-        testImg.src = photoUrlG;
-      } else {
-        loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
-      }
-    } else {
-      loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
-    }
+    // Toujours passer par l'Edge Function pour les photos Google (évite CORS)
+    loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
   });
 }
 
