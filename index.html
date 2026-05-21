@@ -4155,10 +4155,16 @@ function loadPhotosForResults(activities) {
       return;
     }
 
-    // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
+    // Activité fixe avec placeId : utiliser gPlace.photo (URL construite par l'Edge Function)
     const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
-    // Toujours passer par l'Edge Function pour les photos Google (évite CORS)
-    loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
+    if (gPlace && gPlace.photo) {
+      const testImg = new Image();
+      testImg.onload = () => { img.src = gPlace.photo; };
+      testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
+      testImg.src = gPlace.photo;
+    } else {
+      loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
+    }
   });
 }
 
