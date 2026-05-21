@@ -3986,13 +3986,13 @@ async function runSearch(fromMap) {
           const decoder = new TextDecoder();
           let buf = '';
           let _renderedCount = 0;
+          const NL = String.fromCharCode(10);
 
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
             buf += decoder.decode(value, { stream: true });
-            const lines = buf.split('
-');
+            const lines = buf.split(NL);
             buf = lines.pop() || '';
             for (const line of lines) {
               if (!line.startsWith('data: ')) continue;
@@ -4002,14 +4002,12 @@ async function runSearch(fromMap) {
                 const evt = JSON.parse(raw);
                 if (evt.type === 'chunk') {
                   fullText += evt.text;
-                  // Tenter de parser les activités complètes au fur et à mesure
                   const parsed = _tryParseActivities(fullText);
                   if (parsed && parsed.length > _renderedCount) {
                     _renderStreamCards(parsed, _renderedCount, location);
                     _renderedCount = parsed.length;
                   }
                 } else if (evt.type === 'text') {
-                  // Cache hit — tout d'un coup
                   fullText = evt.text;
                 }
               } catch(_) {}
