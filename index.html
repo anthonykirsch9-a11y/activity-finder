@@ -2158,21 +2158,28 @@ function renderAges() {
   // 18 en premier → visible en haut, puis 19-100, puis 1-17 pour enfants
   // Générer toutes les options 1-100
   const allAges = Array.from({length:100}, (_,i) => i+1);
-  const ageOptionsHtml = allAges.map(n =>
-    `<div class="age-picker-option${n===18?' selected':''}" data-val="${n}" onclick="selectAge(this)">${n}</div>`
+  const ageOptionsHtml = (savedAgeVal) => allAges.map(n =>
+    `<div class="age-picker-option${n===parseInt(savedAgeVal||18)?' selected':''}" data-val="${n}" onclick="selectAge(this)">${n}</div>`
   ).join('');
+
+  // Sauvegarder les âges actuels avant de recréer
+  const _savedAges = {};
+  persons.forEach(p => {
+    const el = document.getElementById('age-' + p.id);
+    if (el && el.value) _savedAges[p.id] = el.value;
+  });
 
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
       <span class="age-label">${p.label}</span>
       <div class="age-picker-wrap" id="wrap-${p.id}">
         <div class="age-picker-btn" id="age-btn-${p.id}" onclick="toggleAgePicker('${p.id}')">
-          <span id="age-val-${p.id}">18</span>
+          <span id="age-val-${p.id}">${_savedAges[p.id]||18}</span>
           <span class="age-arrow">▾</span>
         </div>
-        <input type="hidden" class="age-input" id="age-${p.id}" value="18">
+        <input type="hidden" class="age-input" id="age-${p.id}" value="${_savedAges[p.id]||18}">
         <div class="age-picker-dropdown" id="age-drop-${p.id}">
-          ${ageOptionsHtml}
+          ${ageOptionsHtml(_savedAges[p.id]||18)}
         </div>
       </div>
       ${persons.length > 1 ? `<button class="remove-btn" onclick="removePerson('${p.id}')">×</button>` : ''}
@@ -3930,7 +3937,10 @@ async function runSearch(fromMap) {
           console.log('🌍 Geocoding city:', location);
           // Photon: es/pt non supportés → retenter sans lang si 400
           const _photonLang = {fr:'&lang=fr',en:'&lang=en',de:'&lang=de',it:'&lang=it'}[lang] || '';
-          const geoRes = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(location) + '&limit=1' + _photonLang);
+          // Si c'est un code postal (5 chiffres), ajouter osm_tag=place pour meilleur résultat
+          const _isPostal = /^\d{4,6}$/.test(location.trim());
+          const _postalParam = _isPostal ? '&osm_tag=place:city,place:town,place:village' : '';
+          const geoRes = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(location) + '&limit=1' + _photonLang + _postalParam);
           const geoData = await geoRes.json();
           if (geoData.features && geoData.features.length > 0) {
             searchLng = geoData.features[0].geometry.coordinates[0];
@@ -5198,7 +5208,11 @@ function setWpDateShortcut(mode) {
     fromEl.value = fmt(tom); toEl.value = '';
   } else if (mode === 'weekend') {
     const day = today.getDay();
-    const sat = new Date(today); sat.setDate(today.getDate() + ((6 - day + 7) % 7 || 7));
+    // Si on est samedi ou dimanche, aller au PROCHAIN weekend (pas celui en cours)
+    let daysToSat = (6 - day + 7) % 7;
+    if (daysToSat === 0) daysToSat = 7; // samedi → prochain samedi
+    if (day === 0) daysToSat = 6; // dimanche → samedi prochain
+    const sat = new Date(today); sat.setDate(today.getDate() + daysToSat);
     const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
     fromEl.value = fmt(sat); toEl.value = fmt(sun);
   }
