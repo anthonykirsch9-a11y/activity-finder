@@ -3527,12 +3527,7 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
       <div style="color:var(--muted);font-size:12px">${msg}</div></div></div>`;
   })() : '';
 
-  // Construire toutes les cartes avec animation-delay CSS
-  const cardsHtml = activities.map((a, idx) => {
-    const card = buildActivityCard(a, idx, location);
-    return card.replace('class="rc-card"', `class="rc-card" style="animation:slideIn 0.4s ease both;animation-delay:${idx * 0.5}s;opacity:0;animation-fill-mode:both"`);
-  }).join('');
-
+  // Injecter structure vide puis cartes une par une (marche aussi avec web search)
   rs.innerHTML = `
     <div class="rc-summary" style="flex-wrap:wrap;gap:8px">
       <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="var(--primary)" stroke-width="1.8"><circle cx="9" cy="11" r="2"/><path d="M9 1a6 6 0 0 1 6 6c0 4-6 10-6 10S3 11 3 7a6 6 0 0 1 6-6z"/></svg>
@@ -3541,11 +3536,31 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     </div>
     ${weatherBanner}
     <div class="results-header">${t.resultsTitle(activities.length)}</div>
-    <div class="rc-grid" id="rc-grid-progressive">${cardsHtml}</div>
+    <div class="rc-grid" id="rc-grid-progressive"></div>
     <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
 
-  // Photos après rendu
-  setTimeout(() => loadPhotosForResults(activities), 200);
+  // Ajouter cartes une par une avec délai 600ms
+  const _progGrid = document.getElementById('rc-grid-progressive');
+  activities.forEach((a, idx) => {
+    setTimeout(() => {
+      if (!_progGrid) return;
+      const cardHtml = buildActivityCard(a, idx, location);
+      const div = document.createElement('div');
+      div.innerHTML = cardHtml.trim();
+      const card = div.firstElementChild;
+      if (card) {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(16px)';
+        _progGrid.appendChild(card);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }));
+        setTimeout(() => loadPhotosForResults([a]), 200);
+      }
+    }, idx * 600);
+  });
 }
 
 
@@ -3561,7 +3576,9 @@ function buildActivityCard(a, idx, location) {
     it:{low:'💰 Economico',mid:'💳 Moderato',high:'💎 Premium'},
     pt:{low:'💰 Económico',mid:'💳 Moderado',high:'💎 Premium'},
   };
-  const bLbl = (_budgetLabels[lang]||_budgetLabels.fr)[a.budget_niveau]||a.budget_niveau;
+  // Normaliser budget_niveau (Claude ES peut retourner bajo/medio/alto)
+  const _bNorm = {'bajo':'low','medio':'mid','alto':'high','low':'low','mid':'mid','high':'high','budget':'low','moderate':'mid','premium':'high','economico':'low','moderado':'mid','günstig':'low','moderat':'mid','economique':'low','modere':'mid'}[String(a.budget_niveau||'').toLowerCase()] || 'mid';
+  const bLbl = (_budgetLabels[lang]||_budgetLabels.fr)[_bNorm] || '💳 Modéré';
   const gmaps = `https://www.google.com/maps/search/${encodeURIComponent((a.titre||'')+' '+(location||''))}`;
   const infos = (a.infos_pratiques||[]).map(i=>`<li class="rc-info-item">${i}</li>`).join('');
   const gPlace = _lastGooglePlaces.find(p => p.id === a.placeId);
@@ -3880,7 +3897,9 @@ async function runSearch(fromMap) {
       if (!searchLat && location) {
         try {
           console.log('🌍 Geocoding city:', location);
-          const geoRes = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(location) + '&limit=1');
+          // Photon: es/pt non supportés → retenter sans lang si 400
+          const _photonLang = {fr:'&lang=fr',en:'&lang=en',de:'&lang=de',it:'&lang=it'}[lang] || '';
+          const geoRes = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(location) + '&limit=1' + _photonLang);
           const geoData = await geoRes.json();
           if (geoData.features && geoData.features.length > 0) {
             searchLng = geoData.features[0].geometry.coordinates[0];
@@ -4136,7 +4155,9 @@ function renderResults(activities, location, radius, budget, group, ages) {
     it:{low:'💰 Economico',mid:'💳 Moderato',high:'💎 Premium'},
     pt:{low:'💰 Económico',mid:'💳 Moderado',high:'💎 Premium'},
   };
-  const bLbl = (_budgetLabels[lang]||_budgetLabels.fr)[a.budget_niveau]||a.budget_niveau;
+  // Normaliser budget_niveau (Claude ES peut retourner bajo/medio/alto)
+  const _bNorm = {'bajo':'low','medio':'mid','alto':'high','low':'low','mid':'mid','high':'high','budget':'low','moderate':'mid','premium':'high','economico':'low','moderado':'mid','günstig':'low','moderat':'mid','economique':'low','modere':'mid'}[String(a.budget_niveau||'').toLowerCase()] || 'mid';
+  const bLbl = (_budgetLabels[lang]||_budgetLabels.fr)[_bNorm] || '💳 Modéré';
     const gmaps = `https://www.google.com/maps/search/${encodeURIComponent((a.titre||'')+' '+(location||''))}`;
     const infos = (a.infos_pratiques||[]).map(i=>`<li class="rc-info-item">${i}</li>`).join('');
 
