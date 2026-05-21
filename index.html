@@ -4155,9 +4155,20 @@ function loadPhotosForResults(activities) {
       return;
     }
 
-    // Activité fixe avec placeId : utiliser gPlace.photo (URL construite par l'Edge Function)
+    // Activité fixe avec placeId : chercher dans _lastGooglePlaces
     const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
-    if (gPlace && gPlace.photo) {
+    if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
+      const photoName = gPlace.photos[0].name;
+      if (photoName) {
+        const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+        const testImg = new Image();
+        testImg.onload = () => { img.src = photoUrlG; };
+        testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
+        testImg.src = photoUrlG;
+      } else {
+        loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      }
+    } else if (gPlace && gPlace.photo) {
       const testImg = new Image();
       testImg.onload = () => { img.src = gPlace.photo; };
       testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
