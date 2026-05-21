@@ -3652,7 +3652,7 @@ async function requestNotifPermission() {
 function showNotifToast() {
   const toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#3A5C38;color:white;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.3);white-space:nowrap';
-  const toastTexts = {fr:'🔔 Notifications activées ! On te prévient vendredi à 17h.',en:'🔔 Notifications enabled! We'll remind you every Friday at 5pm.',es:'🔔 ¡Notificaciones activadas! Te avisamos cada viernes a las 17h.',de:'🔔 Benachrichtigungen aktiviert! Wir erinnern dich jeden Freitag um 17 Uhr.',it:'🔔 Notifiche attivate! Ti avvisiamo ogni venerdì alle 17.',pt:'🔔 Notificações ativadas! Avisamos toda sexta às 17h.'};
+  const toastTexts = {fr:'🔔 Notifications activées ! On te prévient vendredi à 17h.',en:'🔔 Notifications enabled! We will remind you every Friday at 5pm.',es:'🔔 ¡Notificaciones activadas! Te avisamos cada viernes a las 17h.',de:'🔔 Benachrichtigungen aktiviert! Wir erinnern dich jeden Freitag um 17 Uhr.',it:'🔔 Notifiche attivate! Ti avvisiamo ogni venerdì alle 17.',pt:'🔔 Notificações ativadas! Avisamos toda sexta às 17h.'};
   toast.textContent = toastTexts[lang] || toastTexts.fr;
   document.body.appendChild(toast);
   setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 3000);
