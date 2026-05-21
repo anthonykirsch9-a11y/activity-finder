@@ -3295,10 +3295,10 @@ function placeActivityMarkers(activities) {
 
 // Cache hebdo coup de cœur : clé = ville arrondie à ~10km + semaine ISO
 function _cdcCacheKey(lat, lng) {
-  // Arrondir à 0.5 degré (~50km) pour que Metz et Thionville aient des clés différentes
   const latR = Math.round(lat * 2) / 2;
   const lngR = Math.round(lng * 2) / 2;
   const now = new Date();
+  // Numéro de semaine ISO
   const jan4 = new Date(now.getFullYear(), 0, 4);
   const week = Math.ceil(((now - jan4) / 86400000 + jan4.getDay() + 1) / 7);
   return 'cdc_' + latR + '_' + lngR + '_w' + week;
@@ -3306,19 +3306,10 @@ function _cdcCacheKey(lat, lng) {
 
 async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
   const cacheKey = _cdcCacheKey(lat, lng);
-  // Nettoyer les anciens caches CDC d'autres villes (garder seulement la ville actuelle)
-  try {
-    const keysToDelete = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && k.startsWith('cdc_') && k !== cacheKey) keysToDelete.push(k);
-    }
-    keysToDelete.forEach(k => localStorage.removeItem(k));
-  } catch(e) {}
   try {
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
-      console.log('💛 CDC cache hit pour', cacheKey);
+      console.log('💛 CDC cache hit');
       return JSON.parse(cached);
     }
   } catch(e) {}
@@ -3360,16 +3351,9 @@ async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
     const placeRating = topPlace.rating || 4.5;
     const placeType = topPlace.primaryType || 'attraction';
 
-    const langNames = {fr:'français',en:'English',es:'español',de:'Deutsch',it:'italiano',pt:'português'};
-    const prompt = `You are the Weekio assistant. Write a SHORT poetic and enthusiastic description (max 2 sentences, max 60 words) for this week's featured place. Write in ${langNames[lang]||'français'}.
-Place: ${placeName}
-Address: ${placeAddr}
-Type: ${placeType}
-Rating: ${placeRating}/5
-
-Style: warm, authentic, makes you want to visit this weekend. No exaggerated superlatives. Mention something concrete and specific.
-Reply ONLY with the description, no quotes, no trailing punctuation.`;
-
+    const langNames = {fr:'francais',en:'English',es:'espanol',de:'Deutsch',it:'italiano',pt:'portugues'};
+    const langInstruction = 'Write in ' + (langNames[lang] || 'francais') + '.';
+    const prompt = 'Weekio assistant. Write a SHORT poetic description (max 2 sentences, 60 words) for this featured place. ' + langInstruction + ' Place: ' + placeName + '. Address: ' + placeAddr + '. Type: ' + placeType + '. Rating: ' + placeRating + '/5. Style: warm, authentic. Reply ONLY with the description.';
     const aiRes = await fetch(SUPABASE_URL + '/functions/v1/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
@@ -3878,7 +3862,6 @@ async function runSearch(fromMap) {
     // ── PARALLÉLISATION : Géocodage + Google Places simultanés ──
     let realPlacesContext = '';
     let _ck = '';
-    // Toujours partir de null pour forcer le géocodage de la ville actuelle
     let searchLat = (fromMap && mapSearchCoords) ? mapSearchCoords.lat : null;
     let searchLng = (fromMap && mapSearchCoords) ? mapSearchCoords.lng : null;
     console.log('🚀 runSearch started, location:', location);
@@ -3996,8 +3979,7 @@ async function runSearch(fromMap) {
             const { done, value } = await reader.read();
             if (done) break;
             buf += decoder.decode(value, { stream: true });
-            const lines = buf.split('
-');
+            const lines = buf.split(String.fromCharCode(10));
             buf = lines.pop() || '';
             for (const line of lines) {
               if (!line.startsWith('data: ')) continue;
