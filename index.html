@@ -2041,13 +2041,17 @@ function setLang(l) {
 // ---- VIEW SWITCH ----
 function switchView(v) {
   currentView = v;
-  // form-view visible si form OU results
-  document.getElementById('form-view').style.display = (v === 'form' || v === 'results') ? '' : 'none';
+  // form-view visible SEULEMENT si 'form' (pas results)
+  document.getElementById('form-view').style.display = v === 'form' ? '' : 'none';
   // results-section visible si results
   const rs = document.getElementById('results-section');
-  if (rs) rs.style.display = v === 'results' ? '' : (v === 'form' ? 'none' : '');
+  if (rs) rs.style.display = v === 'results' ? '' : 'none';
   document.getElementById('map-view').classList.toggle('active', v === 'map');
   document.getElementById('tab-form').classList.toggle('active', v === 'form' || v === 'results');
+  // Le clic sur l'onglet Recherche depuis résultats doit revenir au formulaire
+  document.getElementById('tab-form').onclick = v === 'results'
+    ? () => switchView('form')
+    : () => switchView('form');
   document.getElementById('tab-map').classList.toggle('active', v === 'map');
   if (v === 'map') {
     initMap();
@@ -3547,7 +3551,9 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     ${weatherBanner}
     <div class="results-header">${t.resultsTitle(activities.length)}</div>
     <div class="rc-grid" id="rc-grid-progressive">${cardsHtml}</div>
-    <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
+    <div style="text-align:center;padding:.2rem 0 1.5rem">
+      <button onclick="switchView('form')" style="background:none;border:1.5px solid var(--border);border-radius:99px;padding:8px 20px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer">← ${t.submitRefine||'Modifier ma recherche'}</button>
+    </div>`;
 
   // Photos après rendu
   setTimeout(() => loadPhotosForResults(activities), 200);
