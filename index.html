@@ -2158,28 +2158,21 @@ function renderAges() {
   // 18 en premier → visible en haut, puis 19-100, puis 1-17 pour enfants
   // Générer toutes les options 1-100
   const allAges = Array.from({length:100}, (_,i) => i+1);
-  const ageOptionsHtml = (savedAgeVal) => allAges.map(n =>
-    `<div class="age-picker-option${n===parseInt(savedAgeVal||18)?' selected':''}" data-val="${n}" onclick="selectAge(this)">${n}</div>`
+  const ageOptionsHtml = allAges.map(n =>
+    `<div class="age-picker-option${n===18?' selected':''}" data-val="${n}" onclick="selectAge(this)">${n}</div>`
   ).join('');
-
-  // Sauvegarder les âges actuels avant de recréer
-  const _savedAges = {};
-  persons.forEach(p => {
-    const el = document.getElementById('age-' + p.id);
-    if (el && el.value) _savedAges[p.id] = el.value;
-  });
 
   document.getElementById('ages-list').innerHTML = persons.map(p => `
     <div class="age-row">
       <span class="age-label">${p.label}</span>
       <div class="age-picker-wrap" id="wrap-${p.id}">
         <div class="age-picker-btn" id="age-btn-${p.id}" onclick="toggleAgePicker('${p.id}')">
-          <span id="age-val-${p.id}">${_savedAges[p.id]||18}</span>
+          <span id="age-val-${p.id}">18</span>
           <span class="age-arrow">▾</span>
         </div>
-        <input type="hidden" class="age-input" id="age-${p.id}" value="${_savedAges[p.id]||18}">
+        <input type="hidden" class="age-input" id="age-${p.id}" value="18">
         <div class="age-picker-dropdown" id="age-drop-${p.id}">
-          ${ageOptionsHtml(_savedAges[p.id]||18)}
+          ${ageOptionsHtml}
         </div>
       </div>
       ${persons.length > 1 ? `<button class="remove-btn" onclick="removePerson('${p.id}')">×</button>` : ''}
@@ -2939,38 +2932,8 @@ async function fetchPexelsPhoto(theme) {
 
 async function loadPexelsPhoto(imgEl, type, titre) {
   const theme = getPhotoTheme(type, titre);
-
-  // Thèmes de fallback selon le type d'activité
-  const _fallbacks = {
-    'nature':     ['nature','park','garden','outdoor'],
-    'randonnee':  ['hiking','nature','forest','trail'],
-    'velo':       ['cycling','bicycle','outdoor','nature'],
-    'culture':    ['museum','culture','art','historic'],
-    'museum':     ['museum','art','culture','gallery'],
-    'monument':   ['monument','historic','architecture','city'],
-    'restaurant': ['restaurant','food','dining','gastronomy'],
-    'spa':        ['spa','wellness','relax','massage'],
-    'sport':      ['sport','activity','outdoor','adventure'],
-    'plage':      ['beach','sea','ocean','coast'],
-    'brocante':   ['market','antique','outdoor','street'],
-    'fete':       ['festival','celebration','crowd','event'],
-    'concert':    ['concert','music','show','stage'],
-    'cinema':     ['cinema','movie','film','entertainment'],
-    'escape':     ['escape room','game','indoor','fun'],
-    'karting':    ['karting','racing','sport','speed'],
-    'parc':       ['park','garden','nature','outdoor'],
-    'default':    ['city','travel','outdoor','weekend']
-  };
-  const fallbackList = _fallbacks[theme] || _fallbacks['default'];
-
-  // Essayer le thème principal d'abord, puis les fallbacks
-  const themesToTry = [theme, ...fallbackList.filter(t => t !== theme)];
-  for (const t of themesToTry) {
-    const url = await fetchPexelsPhoto(t);
-    if (url) { imgEl.src = url; return; }
-  }
-  // Dernier recours : SVG coloré
-  imgEl.src = makePhotoSvg(theme);
+  const url = await fetchPexelsPhoto(theme);
+  if (url) imgEl.src = url;
 }
 
 function makePhotoSvg(theme) {
@@ -3339,7 +3302,7 @@ function _cdcCacheKey(lat, lng) {
   // Numéro de semaine ISO
   const jan4 = new Date(now.getFullYear(), 0, 4);
   const week = Math.ceil(((now - jan4) / 86400000 + jan4.getDay() + 1) / 7);
-  return 'cdc_' + latR + '_' + lngR + '_w' + week + '_' + lang;
+  return 'cdc_' + latR + '_' + lngR + '_w' + week;
 }
 
 async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
@@ -3594,11 +3557,10 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
           card.style.opacity = '1';
           card.style.transform = 'translateY(0)';
         }));
+        setTimeout(() => loadPhotosForResults([a]), 200);
       }
     }, idx * 600);
   });
-  // Charger TOUTES les photos une seule fois après la dernière carte
-  setTimeout(() => loadPhotosForResults(activities), activities.length * 600 + 400);
 }
 
 
@@ -3937,10 +3899,7 @@ async function runSearch(fromMap) {
           console.log('🌍 Geocoding city:', location);
           // Photon: es/pt non supportés → retenter sans lang si 400
           const _photonLang = {fr:'&lang=fr',en:'&lang=en',de:'&lang=de',it:'&lang=it'}[lang] || '';
-          // Si c'est un code postal (5 chiffres), ajouter osm_tag=place pour meilleur résultat
-          const _isPostal = /^\d{4,6}$/.test(location.trim());
-          const _postalParam = _isPostal ? '&osm_tag=place:city,place:town,place:village' : '';
-          const geoRes = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(location) + '&limit=1' + _photonLang + _postalParam);
+          const geoRes = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(location) + '&limit=1' + _photonLang);
           const geoData = await geoRes.json();
           if (geoData.features && geoData.features.length > 0) {
             searchLng = geoData.features[0].geometry.coordinates[0];
@@ -4153,9 +4112,6 @@ async function runSearch(fromMap) {
 
 function loadPhotosForResults(activities) {
   document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
-    // Ne pas recharger si déjà une vraie photo (pas placeholder SVG)
-    if (img.src && img.src.includes('places.googleapis.com')) return;
-    if (img.src && img.src.includes('pexels.com')) return;
     const placeId = img.dataset.placeid;
     const isEphemere = img.dataset.ephemere === '1';
 
@@ -4165,7 +4121,7 @@ function loadPhotosForResults(activities) {
       return;
     }
 
-    // Activité fixe avec placeId : chercher dans _lastGooglePlaces
+    // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
     const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
     if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
       const photoName = gPlace.photos[0].name;
@@ -4178,11 +4134,6 @@ function loadPhotosForResults(activities) {
       } else {
         loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       }
-    } else if (gPlace && gPlace.photo) {
-      const testImg = new Image();
-      testImg.onload = () => { img.src = gPlace.photo; };
-      testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
-      testImg.src = gPlace.photo;
     } else {
       loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
     }
@@ -5208,11 +5159,7 @@ function setWpDateShortcut(mode) {
     fromEl.value = fmt(tom); toEl.value = '';
   } else if (mode === 'weekend') {
     const day = today.getDay();
-    // Si on est samedi ou dimanche, aller au PROCHAIN weekend (pas celui en cours)
-    let daysToSat = (6 - day + 7) % 7;
-    if (daysToSat === 0) daysToSat = 7; // samedi → prochain samedi
-    if (day === 0) daysToSat = 6; // dimanche → samedi prochain
-    const sat = new Date(today); sat.setDate(today.getDate() + daysToSat);
+    const sat = new Date(today); sat.setDate(today.getDate() + ((6 - day + 7) % 7 || 7));
     const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
     fromEl.value = fmt(sat); toEl.value = fmt(sun);
   }
