@@ -3844,7 +3844,14 @@ async function runSearch(fromMap) {
   renderCoupDeCoeurLoading();
   // Si recherche depuis la carte → rester sur la vue carte
   // Si recherche depuis le formulaire → basculer vers résultats
-  if (!fromMap) switchView('results');
+  if (!fromMap) {
+    switchView('results');
+    // Scroll vers les résultats après un court délai
+    setTimeout(() => {
+      const rs = document.getElementById('results-section');
+      if (rs) rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  }
   else {
     // Afficher la section résultats sous la carte
     const rs = document.getElementById('results-section');
@@ -4103,6 +4110,18 @@ async function runSearch(fromMap) {
 
     // Affichage progressif
     renderResultsProgressive(activities, location, radius, budget, group, ages);
+
+    // Sauvegarder le profil pour pré-remplir la prochaine fois
+    if (userPlan === 'pro') {
+      localSave('user_profile', {
+        location,
+        group,
+        budget,
+        moods: [...document.querySelectorAll('#moods .pill.selected')].map(p => p.dataset.val),
+        radius: document.getElementById('radius-select')?.value || '25',
+        ages: [...document.querySelectorAll('.age-input')].map(i => i.value)
+      });
+    }
 
     setTimeout(() => {
       if (map) placeActivityMarkers(activities);
@@ -6273,6 +6292,60 @@ document.addEventListener('click', function(e) {
 // Run gate on load
 window.addEventListener('load', () => {
   initBetaGate();
+
+  // Charger le profil sauvegardé (Pro)
+  setTimeout(() => {
+    if (userPlan !== 'pro') return;
+    const profile = localLoad('user_profile');
+    if (!profile) return;
+
+    // Ville
+    if (profile.location) {
+      const locEl = document.getElementById('location');
+      if (locEl) locEl.value = profile.location;
+    }
+
+    // Groupe
+    if (profile.group) {
+      document.querySelectorAll('#group-type .pill').forEach(p => {
+        p.classList.toggle('selected', p.dataset.val === profile.group);
+      });
+      // Mettre à jour persons
+      persons = [];
+      personCounter = 0;
+      setGroupPersons(profile.group);
+    }
+
+    // Budget
+    if (profile.budget) {
+      const slider = document.getElementById('budget-slider');
+      if (slider) { slider.value = profile.budget; updateBudget(); }
+    }
+
+    // Rayon
+    if (profile.radius) {
+      const sel = document.getElementById('radius-select');
+      if (sel) sel.value = profile.radius;
+    }
+
+    // Envies
+    if (profile.moods && profile.moods.length) {
+      document.querySelectorAll('#moods .pill').forEach(p => {
+        p.classList.toggle('selected', profile.moods.includes(p.dataset.val));
+      });
+    }
+
+    // Petit message discret
+    const locEl = document.getElementById('location');
+    if (locEl && profile.location) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-size:11px;color:var(--primary);margin-top:4px;opacity:0.8';
+      const t = tx();
+      hint.textContent = '✓ ' + ({fr:'Profil chargé — modifie si besoin',en:'Profile loaded — change if needed',es:'Perfil cargado — cambia si quieres',de:'Profil geladen — ändern möglich',it:'Profilo caricato — modifica se vuoi',pt:'Perfil carregado — muda se precisares'}[lang]||'Profil chargé');
+      locEl.parentNode.insertBefore(hint, locEl.nextSibling);
+      setTimeout(() => hint.remove(), 4000);
+    }
+  }, 500);
   setTimeout(function() { setLang(lang); }, 50);
   setTimeout(checkOnThisDayNotification, 2000);
   setTimeout(showRecentCities, 600);
