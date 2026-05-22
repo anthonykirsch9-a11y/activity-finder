@@ -1146,7 +1146,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
     <div class="section-head"><div class="section-icon">📍</div><span class="section-title" id="lbl-location">Où ?</span></div>
     <div class="location-row">
       <div class="location-wrap">
-        <input class="location-input" type="text" id="location" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Tape une ville ou un code postal…"
+        <input class="location-input" type="text" id="location" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Renseigne ta ville…"
           onfocus="showRecentCities()" onblur="setTimeout(()=>hideRecentCities(),200)">
         <div class="city-dropdown" id="city-dropdown"></div>
         <div id="recent-cities-wrap" style="display:none;margin-top:6px;flex-wrap:wrap;gap:6px"></div>
@@ -1250,7 +1250,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
   <div class="form-wrap" style="padding-bottom:0">
     <div class="map-form">
       <div class="map-form-wrap">
-        <input class="map-form-input" type="text" id="map-location" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Ville ou code postal…">
+        <input class="map-form-input" type="text" id="map-location" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Recherche une ville…">
         <div class="city-dropdown" id="map-city-dropdown"></div>
       </div>
       <select class="radius-select" id="map-radius" onchange="onMapRadiusChange()">
@@ -1593,11 +1593,11 @@ const LANGS = {
     radOptions:['Ville uniquement','Rayon 10 km','Rayon 25 km','Rayon 50 km','Rayon 100 km','Rayon 200 km'],
     agePlaceholder:'—',
     lblSpecialEvent:'🎊 Occasion particulière (optionnel)',
-    evNone:'Aucun', evBirthday:'Anniversaire', evEvjf:'EVJF', evEvj:'EVJ', evTeam:'Team Building', evFamily:'Fête famille',
+    evNone:'Aucun', evBirthday:'Anniversaire', evEvjf:'Enterrement de vie de jeune fille', evEvj:'Enterrement de vie de garçon', evTeam:'Sortie entreprise', evFamily:'Fête famille',
     lblParticipants:'Nombre de participants', lblParticipantsUnit:'personnes',
     lblDate:'Quand ?', dqFlexible:'✨ Flexible', dqToday:"Aujourd'hui", dqTomorrow:'Demain', dqWeekend:'Ce week-end', dqCustom:'📅 Date précise',
     lblDateFrom:'Du', lblDateTo:'Au (optionnel)', lblBudgetNew:'Budget par personne',
-    locPlaceholder:'Tape une ville ou un code postal…',
+    locPlaceholder:'Renseigne ta ville…',
     mapHint:'Cherche une ville ou clique sur la carte pour placer le point de recherche.',
     mapBtn:'Rechercher ici', alertCity:"Merci d'entrer une localisation !",
     mapImportLabel:'Importer ma recherche',
@@ -1649,7 +1649,7 @@ const LANGS = {
     lblParticipants:'Number of participants', lblParticipantsUnit:'people',
     lblDate:'When?', dqFlexible:'✨ Flexible', dqToday:'Today', dqTomorrow:'Tomorrow', dqWeekend:'This weekend', dqCustom:'📅 Custom date',
     lblDateFrom:'From', lblDateTo:'To (optional)', lblBudgetNew:'Budget per person',
-    locPlaceholder:'Enter a city or postal code…',
+    locPlaceholder:'Enter your city…',
     mapHint:'Search a city or click the map to set the search point.',
     mapBtn:'Search here', alertCity:'Please enter a location!',
     mapImportLabel:'Import my search',
@@ -1697,11 +1697,11 @@ const LANGS = {
     radOptions:['Solo ciudad','Radio 10 km','Radio 25 km','Radio 50 km','Radio 100 km','Radio 200 km'],
     agePlaceholder:'—',
     lblSpecialEvent:'🎊 Ocasión especial (opcional)',
-    evNone:'Ninguno', evBirthday:'Cumpleaños', evEvjf:'Despedida soltera', evEvj:'Despedida soltero', evTeam:'Team Building', evFamily:'Fiesta familiar',
+    evNone:'Ninguno', evBirthday:'Cumpleaños', evEvjf:'Despedida soltera', evEvj:'Despedida soltero', evTeam:'Actividad de empresa', evFamily:'Fiesta familiar',
     lblParticipants:'Número de participantes', lblParticipantsUnit:'personas',
     lblDate:'¿Cuándo?', dqFlexible:'✨ Flexible', dqToday:'Hoy', dqTomorrow:'Mañana', dqWeekend:'Este fin de semana', dqCustom:'📅 Fecha exacta',
     lblDateFrom:'Desde', lblDateTo:'Hasta (opcional)', lblBudgetNew:'Presupuesto por persona',
-    locPlaceholder:'Escribe una ciudad o código postal…',
+    locPlaceholder:'Introduce tu ciudad…',
     mapHint:'Busca una ciudad o haz clic en el mapa para definir el punto de búsqueda.',
     mapBtn:'Buscar aquí',alertCity:'¡Por favor introduce una ubicación!',
     mapImportLabel:'Importar mi búsqueda',
@@ -1749,11 +1749,11 @@ const LANGS = {
     radOptions:['Nur Stadt','10 km Radius','25 km Radius','50 km Radius','100 km Radius','200 km Radius'],
     agePlaceholder:'—',
     lblSpecialEvent:'🎊 Besonderer Anlass (optional)',
-    evNone:'Keines', evBirthday:'Geburtstag', evEvjf:'Junggesellinnen', evEvj:'Junggesellen', evTeam:'Team Building', evFamily:'Familienfeier',
+    evNone:'Keines', evBirthday:'Geburtstag', evEvjf:'Junggesellinnen', evEvj:'Junggesellen', evTeam:'Firmenausflug', evFamily:'Familienfeier',
     lblParticipants:'Anzahl Teilnehmer', lblParticipantsUnit:'Personen',
     lblDate:'Wann?', dqFlexible:'✨ Flexibel', dqToday:'Heute', dqTomorrow:'Morgen', dqWeekend:'Dieses Wochenende', dqCustom:'📅 Genaues Datum',
     lblDateFrom:'Von', lblDateTo:'Bis (optional)', lblBudgetNew:'Budget pro Person',
-    locPlaceholder:'Stadt oder Postleitzahl…',
+    locPlaceholder:'Gib deine Stadt ein…',
     mapHint:'Suche eine Stadt oder klicke auf die Karte.',
     mapBtn:'Hier suchen',alertCity:'Bitte gib einen Standort ein!',
     mapImportLabel:'Suche importieren',
@@ -1801,11 +1801,11 @@ const LANGS = {
     radOptions:['Solo città','Raggio 10 km','Raggio 25 km','Raggio 50 km','Raggio 100 km','Raggio 200 km'],
     agePlaceholder:'—',
     lblSpecialEvent:'🎊 Occasione speciale (opzionale)',
-    evNone:'Nessuno', evBirthday:'Compleanno', evEvjf:'Addio nubilato', evEvj:'Addio celibato', evTeam:'Team Building', evFamily:'Festa famiglia',
+    evNone:'Nessuno', evBirthday:'Compleanno', evEvjf:'Addio nubilato', evEvj:'Addio celibato', evTeam:'Uscita aziendale', evFamily:'Festa famiglia',
     lblParticipants:'Numero partecipanti', lblParticipantsUnit:'persone',
     lblDate:'Quando?', dqFlexible:'✨ Flessibile', dqToday:'Oggi', dqTomorrow:'Domani', dqWeekend:'Questo weekend', dqCustom:'📅 Data precisa',
     lblDateFrom:'Dal', lblDateTo:'Al (opzionale)', lblBudgetNew:'Budget a persona',
-    locPlaceholder:'Inserisci una città o CAP…',
+    locPlaceholder:'Inserisci la tua città…',
     mapHint:'Cerca una città o clicca sulla mappa.',
     mapBtn:'Cerca qui',alertCity:'Inserisci una posizione!',
     mapImportLabel:'Importa ricerca',
@@ -1853,11 +1853,11 @@ const LANGS = {
     radOptions:['Apenas cidade','Raio 10 km','Raio 25 km','Raio 50 km','Raio 100 km','Raio 200 km'],
     agePlaceholder:'—',
     lblSpecialEvent:'🎊 Ocasión especial (opcional)',
-    evNone:'Nenhum', evBirthday:'Aniversário', evEvjf:'Despedida solteira', evEvj:'Despedida solteiro', evTeam:'Team Building', evFamily:'Festa família',
+    evNone:'Nenhum', evBirthday:'Aniversário', evEvjf:'Despedida solteira', evEvj:'Despedida solteiro', evTeam:'Atividade de empresa', evFamily:'Festa família',
     lblParticipants:'Número de participantes', lblParticipantsUnit:'pessoas',
     lblDate:'Quando?', dqFlexible:'✨ Flexível', dqToday:'Hoje', dqTomorrow:'Amanhã', dqWeekend:'Este fim de semana', dqCustom:'📅 Data precisa',
     lblDateFrom:'De', lblDateTo:'Até (opcional)', lblBudgetNew:'Orçamento por pessoa',
-    locPlaceholder:'Escreve uma cidade ou código postal…',
+    locPlaceholder:'Introduz a tua cidade…',
     mapHint:'Pesquisa uma cidade ou clica no mapa para definir o ponto de pesquisa.',
     mapBtn:'Pesquisar aqui',alertCity:'Por favor introduz uma localização!',
     mapImportLabel:'Importar pesquisa',
@@ -2127,7 +2127,7 @@ function syncAgesUI() {
   const g = groupLabel(); persons = []; personCounter = 0;
   if (['seul(e)','Solo','Allein','Solo/a','Sozinho/a'].some(x => g.includes(x.toLowerCase()) || g.toLowerCase().includes(x.toLowerCase()))) addPerson('Moi');
   else if (['couple','Paar','coppia','dois'].some(x => g.toLowerCase().includes(x.toLowerCase()))) { addPerson('P1'); addPerson('P2'); }
-  else if (['famille','familia','Familie','famiglia','família'].some(x => g.toLowerCase().includes(x.toLowerCase()))) { addPerson('P1'); addPerson('P2'); addPerson('Enfant'); }
+  else if (['famille','familia','Familie','famiglia','família'].some(x => g.toLowerCase().includes(x.toLowerCase()))) { addPerson('P1'); addPerson('P2'); }
   else { addPerson('P1'); addPerson('P2'); }
 }
 
@@ -3909,9 +3909,7 @@ async function runSearch(fromMap) {
           console.log('🌍 Geocoding city:', location);
           // Photon: es/pt non supportés → retenter sans lang si 400
           const _photonLang = {fr:'&lang=fr',en:'&lang=en',de:'&lang=de',it:'&lang=it'}[lang] || '';
-          const _isPostal = /^\d{4,6}$/.test(location.trim());
-          const _postalParam = _isPostal ? '&osm_tag=place:city,place:town,place:village' : '';
-          const geoRes = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(location) + '&limit=1' + _photonLang + _postalParam);
+          const geoRes = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(location) + '&limit=1' + _photonLang);
           const geoData = await geoRes.json();
           if (geoData.features && geoData.features.length > 0) {
             searchLng = geoData.features[0].geometry.coordinates[0];
