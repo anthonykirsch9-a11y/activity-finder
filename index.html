@@ -3968,9 +3968,9 @@ async function runSearch(fromMap) {
         const locForRules = fromMap && mapSearchCoords ? (mapSearchName||location) : location;
         const doneContext = getAlreadyDoneContext();
     // Historique 24h — ne plus revoir les mêmes activités (tous utilisateurs)
-    const seenTitles = getSeenTitles24h();
+    const seenTitles = getSeenTitles24h(location);
     const seenContext = seenTitles.length > 0
-      ? '\n- Activités DÉJÀ PROPOSÉES dans les dernières 24h (proposer des alternatives différentes) : ' + seenTitles.slice(0, 15).join(', ')
+      ? '\n\nIMPORTANT — EXCLUSION ABSOLUE: Ces activités ont DÉJÀ été proposées à cet utilisateur dans les dernières 24h. Ne JAMAIS les reproposer ni proposer de variantes proches. Propose des activités COMPLÈTEMENT DIFFÉRENTES : ' + seenTitles.slice(0, 20).join(' / ')
       : '';
         const dateHeader = dateStr ? '🗓 DATE DEMANDEE: ' + dateStr + '\n' : '';
         const weatherContext = getWeatherContext();
@@ -3994,17 +3994,8 @@ async function runSearch(fromMap) {
         const needsWebSearch = ephemOn || onlyMode === 'ephem';
         const selectedModel = 'claude-sonnet-4-6';
 
-        // ── Cache 2h ──
+        // ── Pas de cache — chaque recherche doit être unique pour ce navigateur ──
         _ck = _mkCacheKey(location, group, budget, moodsForSearch, radius, onlyMode);
-        const _cached = _getCache(_ck);
-        if (_cached) {
-          renderResultsProgressive(_cached, location, radius, budget, group, ages);
-          window._lastActivities = _cached;
-          setTimeout(() => { if (map) placeActivityMarkers(_cached); else window._pendingMarkers = _cached; }, 500);
-          // CDC déjà lancé en parallèle
-          if (sb) { sb.disabled = false; document.getElementById('submit-label').textContent = t.submitLabel||'Trouver mes activités →'; }
-          return;
-        }
 
         // Appel Claude via Supabase Edge Function — mode streaming
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
@@ -5935,13 +5926,30 @@ function canSearch() {
 
 // ── History ──
 async function saveSearch(location, group, budget, activities) {
-  if (userPlan !== 'pro' && !currentUser) return; // sauvegarder aussi pour les beta
-  // Extraire les titres pour la variété future
+  // Extraire les titres proposés
   const titles = Array.isArray(activities) ? activities.map(a => a.titre).filter(Boolean) : [];
+
+  // ── Historique local CE navigateur (24h) — toutes villes ──
+  const cutoff24 = Date.now() - 24 * 60 * 60 * 1000;
+  const seenData = localLoad('seen_activities') || { entries: [] };
+  // Purger les > 24h
+  seenData.entries = (seenData.entries || []).filter(e => e.ts > cutoff24);
+  // Ajouter les nouveaux titres avec timestamp
+  const now = Date.now();
+  titles.forEach(t => {
+    if (!seenData.entries.find(e => e.title === t)) {
+      seenData.entries.push({ title: t, ts: now });
+    }
+  });
+  // Garder max 100 titres
+  seenData.entries = seenData.entries.slice(-100);
+  localSave('seen_activities', seenData);
+
+  // ── Sauvegarder aussi dans l'historique global (pour panneau compte) ──
   const searchData = {
-    user_id: currentUser?.id||'beta',
+    user_id: currentUser?.id||'anon',
     location, group, budget,
-    titles, // pour forcer la variété aux prochaines recherches
+    titles,
     created_at: new Date().toISOString()
   };
   if (_sb && currentUser && currentUser.id !== 'beta-user') {
@@ -5949,7 +5957,7 @@ async function saveSearch(location, group, budget, activities) {
   } else {
     const searches = localLoad('searches') || [];
     searches.unshift(searchData);
-    localSave('searches', searches.slice(0,20));
+    localSave('searches', searches.slice(0, 20));
   }
 }
 
@@ -6070,18 +6078,17 @@ async function saveNote() {
 }
 
 // ── Build already-done context for AI prompt ──
-function getSeenTitles24h() {
-  // Récupérer tous les titres proposés dans les dernières 24h (tous utilisateurs)
+function getSeenTitles24h(location) {
+  // Récupérer TOUS les titres déjà vus sur CE navigateur dans les 24h
+  // Peu importe la ville ou les critères — jamais revoir la même activité
   try {
-    const searches = localLoad('searches') || [];
+    const seenData = localLoad('seen_activities');
+    if (!seenData) return [];
+    // Purger les entrées > 24h
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    const titles = new Set();
-    searches.forEach(s => {
-      if (new Date(s.created_at).getTime() > cutoff && Array.isArray(s.titles)) {
-        s.titles.forEach(t => titles.add(t));
-      }
-    });
-    return [...titles];
+    const fresh = (seenData.entries || []).filter(e => e.ts > cutoff);
+    const titles = fresh.map(e => e.title);
+    return titles;
   } catch(e) { return []; }
 }
 
