@@ -1552,7 +1552,7 @@ function _getCache(key) {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     const entry = JSON.parse(raw);
-    if (Date.now() - entry.ts > 2 * 60 * 60 * 1000) { localStorage.removeItem(key); return null; }
+    if (Date.now() - entry.ts > 6 * 60 * 60 * 1000) { localStorage.removeItem(key); return null; }
     console.log('⚡ Cache hit!');
     return entry.data;
   } catch(e) { return null; }
@@ -3967,6 +3967,11 @@ async function runSearch(fromMap) {
 
         const locForRules = fromMap && mapSearchCoords ? (mapSearchName||location) : location;
         const doneContext = getAlreadyDoneContext();
+    // Historique 24h — ne plus revoir les mêmes activités (tous utilisateurs)
+    const seenTitles = getSeenTitles24h();
+    const seenContext = seenTitles.length > 0
+      ? '\n- Activités DÉJÀ PROPOSÉES dans les dernières 24h (proposer des alternatives différentes) : ' + seenTitles.slice(0, 15).join(', ')
+      : '';
         const dateHeader = dateStr ? '🗓 DATE DEMANDEE: ' + dateStr + '\n' : '';
         const weatherContext = getWeatherContext();
         const weatherHeader = weatherContext ? '🌤 METEO: ' + weatherContext.replace('\n- Météo: ','') + '\n' : '';
@@ -3983,7 +3988,7 @@ async function runSearch(fromMap) {
         const placesHeader = realPlacesContext
           ? 'LIEUX CERTIFIÉS:\n' + realPlacesContext + '\n\n'
           : '';
-        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + '\n\n' + rawPrompt;
+        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + seenContext + '\n\n' + rawPrompt;
 
         // ── Modèle adaptatif ──
         const needsWebSearch = ephemOn || onlyMode === 'ephem';
@@ -4134,7 +4139,47 @@ async function runSearch(fromMap) {
 
   } catch(e) {
     const errMsg = typeof e === 'string' ? e : (e.message || JSON.stringify(e));
-    rs.innerHTML = '<div class="error-box"><strong>Oups !</strong> ' + errMsg + '<br><small>Vérifie ta connexion et réessaie.</small></div>';
+    const is429 = errMsg.includes('429') || errMsg.includes('rate_limit') || errMsg.includes('rate limit');
+    if (is429) {
+      // Message propre + retry automatique dans 30s
+      let countdown = 30;
+      const retryMsg = {
+        fr: 'Trop de demandes en ce moment, on réessaie dans',
+        en: 'Too many requests right now, retrying in',
+        es: 'Demasiadas solicitudes, reintentando en',
+        de: 'Zu viele Anfragen gerade, neuer Versuch in',
+        it: 'Troppe richieste, nuovo tentativo in',
+        pt: 'Muitas solicitações, tentando novamente em'
+      };
+      const retryBtn = {
+        fr: 'Réessayer maintenant',
+        en: 'Retry now',
+        es: 'Reintentar ahora',
+        de: 'Jetzt nochmal',
+        it: 'Riprova ora',
+        pt: 'Tentar agora'
+      };
+      const msg = retryMsg[lang] || retryMsg.fr;
+      const btnTxt = retryBtn[lang] || retryBtn.fr;
+      rs.innerHTML = '<div class="error-box" id="rate-limit-box" style="background:#FEF3E2;border:1px solid #FFD199;border-radius:12px;padding:1.2rem;text-align:center">' +
+        '<div style="font-size:32px;margin-bottom:8px">⏳</div>' +
+        '<div style="font-size:15px;font-weight:700;color:#7A4A0A;margin-bottom:6px">' + msg + ' <span id="retry-countdown">' + countdown + '</span>s…</div>' +
+        '<div style="font-size:12px;color:#9A6A2A;margin-bottom:12px">Weekio est très sollicité en ce moment 🙏</div>' +
+        '<button onclick="runSearch(false)" style="background:#C4714A;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer">' + btnTxt + '</button>' +
+        '</div>';
+      // Décompte visuel
+      const timer = setInterval(() => {
+        countdown--;
+        const el = document.getElementById('retry-countdown');
+        if (el) el.textContent = countdown;
+        if (countdown <= 0) {
+          clearInterval(timer);
+          if (document.getElementById('rate-limit-box')) runSearch(fromMap);
+        }
+      }, 1000);
+    } else {
+      rs.innerHTML = '<div class="error-box"><strong>Oups !</strong> ' + errMsg + '<br><small>Vérifie ta connexion et réessaie.</small></div>';
+    }
   } finally {
     if (sb) { sb.disabled = false; document.getElementById('submit-label').textContent = t.submitLabel || 'Trouver mes activités →'; }
   }
@@ -6025,6 +6070,21 @@ async function saveNote() {
 }
 
 // ── Build already-done context for AI prompt ──
+function getSeenTitles24h() {
+  // Récupérer tous les titres proposés dans les dernières 24h (tous utilisateurs)
+  try {
+    const searches = localLoad('searches') || [];
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const titles = new Set();
+    searches.forEach(s => {
+      if (new Date(s.created_at).getTime() > cutoff && Array.isArray(s.titles)) {
+        s.titles.forEach(t => titles.add(t));
+      }
+    });
+    return [...titles];
+  } catch(e) { return []; }
+}
+
 function getAlreadyDoneContext() {
   if (!currentUser || userPlan !== 'pro' || !alreadyDoneIds.size) return '';
   return '\n- Activités déjà faites dans les 12 derniers mois (NE PAS reproposer) : ' +
