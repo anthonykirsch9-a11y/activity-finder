@@ -4055,7 +4055,11 @@ async function runSearch(fromMap) {
         const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + seenContext + '\n\n' + rawPrompt;
 
         // ── Modèle adaptatif ──
-        const needsWebSearch = ephemOn || nightOn || onlyMode === 'ephem' || onlyMode === 'night';
+        // Déterminer le mode de recherche
+        const isOnlySpecial = onlyMode === 'ephem' || onlyMode === 'night'; // CAS 3
+        const isMix = (ephemOn || nightOn) && !isOnlySpecial; // CAS 2
+        const needsWebSearch = isOnlySpecial; // web search uniquement pour CAS 3
+        const useParallel = isMix; // appels parallèles pour CAS 2
         const selectedModel = 'claude-sonnet-4-6';
 
         // ── Pas de cache — chaque recherche doit être unique pour ce navigateur ──
@@ -4063,7 +4067,7 @@ async function runSearch(fromMap) {
 
         // Appel Claude via Supabase Edge Function — mode streaming
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
-        const useStream = !needsWebSearch; // streaming seulement sans web search
+        const useStream = !needsWebSearch && !useParallel; // streaming pour CAS 1 seulement
         var _claudeData = null;
 
         if (useStream) {
@@ -4112,8 +4116,142 @@ async function runSearch(fromMap) {
           _claudeData = { content: [{ type: 'text', text: fullText }] };
           window._lastSearchWasWebSearch = false;
 
+        } else if (useParallel) {
+          // ── CAS 2 : PARALLÈLE — 4 normales en streaming + 2 spéciales en web search ══
+          window._lastSearchWasWebSearch = false;
+
+          // Prompt pour 4 activités normales (sans éphémères/nocturnes)
+          const rawPromptNormal = fromMap && mapSearchCoords
+            ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
+            : t.promptFn(group, agesStr, ageStr, budgetContext, location, radius, moodsStr + doneContext, '', '');
+          const promptNormal4 = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter.replace('6','4') + getSpecialEventContext() + seenContext + '\nGénère exactement 4 activités (pas 6). ' + rawPromptNormal;
+
+          // Prompt pour 2 activités spéciales (éphémères OU nocturnes)
+          const specialType = nightOn ? 'nocturnes' : 'éphémères';
+          const specialExtra = nightOn ? (t.nightExtra||'') : (t.ephemExtra||'');
+          const promptSpecial2 = langInstruction + dateHeader + weatherHeader + '\nGénère exactement 2 activités ' + specialType + ' UNIQUEMENT.' + specialExtra + seenContext + '\nContexte: ' + group + ', ' + agesStr + ', budget ' + budgetContext + ', lieu ' + location + ', rayon ' + radius + 'km. JSON valide:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"...","pourquoi_adapte":"...","infos_pratiques":[],"ephemere":' + (ephemOn&&!nightOn?'true':'false') + ',"nocturne":' + (nightOn?'true':'false') + ',"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]';
+
+          // Lancer les 2 appels EN PARALLÈLE
+          let normalActivities = [];
+          let specialActivities = [];
+          let normalDone = false;
+          let specialDone = false;
+          let _renderedNormal = 0;
+
+          // Fonction pour merger et afficher quand les spéciales arrivent
+          function mergeAndDisplay() {
+            if (!specialDone) return;
+            const all = [...normalActivities, ...specialActivities];
+            // Afficher les spéciales qui ne sont pas encore affichées
+            if (specialActivities.length > 0) {
+              const grid = document.getElementById('rc-grid-progressive');
+              if (grid) {
+                specialActivities.forEach((a, idx) => {
+                  const cardHtml = buildActivityCard(a, normalActivities.length + idx, location);
+                  const div = document.createElement('div');
+                  div.innerHTML = cardHtml.trim();
+                  const card = div.firstElementChild;
+                  if (card) {
+                    card.style.opacity = '0'; card.style.transform = 'translateY(16px)';
+                    grid.appendChild(card);
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                      card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                      card.style.opacity = '1'; card.style.transform = 'translateY(0)';
+                    }));
+                    setTimeout(() => loadPhotosForResults([a]), 200);
+                  }
+                });
+              }
+            }
+            window._lastActivities = all;
+            setTimeout(() => { if (map) placeActivityMarkers(all); else window._pendingMarkers = all; }, 500);
+          }
+
+          // Appel 1 : 4 normales en streaming
+          const resNormal = fetch(EDGE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
+            body: JSON.stringify({ prompt: promptNormal4, model: selectedModel, webSearch: false, stream: true })
+          }).then(async res => {
+            if (!res.ok) return;
+            let fullText = '';
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buf = '';
+            let rendered = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buf += decoder.decode(value, { stream: true });
+              const lines = buf.split(String.fromCharCode(10));
+              buf = lines.pop() || '';
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const raw = line.slice(6).trim();
+                if (raw === '[DONE]') continue;
+                try {
+                  const evt = JSON.parse(raw);
+                  if (evt.type === 'chunk') {
+                    fullText += evt.text;
+                    const parsed = _tryParseActivities(fullText);
+                    if (parsed && parsed.length > rendered) {
+                      _renderStreamCards(parsed, rendered, location);
+                      rendered = parsed.length;
+                    }
+                  }
+                } catch(_) {}
+              }
+            }
+            const parsed = _tryParseActivities(fullText);
+            normalActivities = parsed || [];
+            normalDone = true;
+            mergeAndDisplay();
+          }).catch(() => { normalDone = true; mergeAndDisplay(); });
+
+          // Appel 2 : 2 spéciales en web search (en parallèle)
+          const resSpecial = fetch(EDGE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
+            body: JSON.stringify({ prompt: promptSpecial2, model: selectedModel, webSearch: true })
+          }).then(async res => {
+            if (!res.ok) return;
+            const data = await res.json();
+            const text = (data.content||[]).map(c=>c.text||'').join('');
+            const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+            if (match) specialActivities = JSON.parse(match[0]);
+            specialDone = true;
+            mergeAndDisplay();
+          }).catch(() => { specialDone = true; mergeAndDisplay(); });
+
+          await Promise.all([resNormal, resSpecial]);
+          _claudeData = { content: [{ type: 'text', text: JSON.stringify([...normalActivities, ...specialActivities]) }] };
+          window._lastSearchWasWebSearch = false;
+
         } else {
-          // ── MODE WEB SEARCH (éphémères + nocturnes) ──
+          // ── CAS 3 : WEB SEARCH UNIQUEMENT (que éphémères ou que nocturnes) ══
+          window._lastSearchWasWebSearch = true;
+
+          // Écran d'attente animé
+          const waitMessages = {
+            fr: nightOn||onlyMode==='night'
+              ? ['🌙 Recherche des bars branchés…','🎵 On cherche les concerts du soir…','🍸 Les meilleurs cocktails de la ville…','🎭 Soirées et spectacles en cours…']
+              : ['🗓 Recherche des événements locaux…','🛍 Brocantes et marchés à proximité…','🎪 Fêtes et festivals du week-end…','📍 Événements éphémères vérifiés…'],
+            en: nightOn||onlyMode==='night'
+              ? ['🌙 Finding the best bars…','🎵 Searching for tonight concerts…','🍸 Top cocktail spots in town…','🎭 Live shows and events…']
+              : ['🗓 Searching local events…','🛍 Flea markets and fairs nearby…','🎪 Weekend festivals…','📍 Verified events…'],
+          };
+          const msgs = (waitMessages[lang] || waitMessages.fr);
+          let msgIdx = 0;
+          const spinnerEl = rs.querySelector('.loading-state p');
+          const spinnerStrong = rs.querySelector('.loading-state strong');
+          if (spinnerStrong) spinnerStrong.textContent = msgs[0];
+          const msgTimer = setInterval(() => {
+            msgIdx = (msgIdx + 1) % msgs.length;
+            const el = rs.querySelector('.loading-state strong');
+            if (el) { el.style.opacity='0'; setTimeout(()=>{ el.textContent=msgs[msgIdx]; el.style.opacity='1'; el.style.transition='opacity 0.3s'; },300); }
+          }, 4000);
+
+          // MODE WEB SEARCH (éphémères/nocturnes uniquement) ——
           // Afficher un message d'attente adapté
           const waitMsgs = {
             fr: needsWebSearch && nightOn ? '🌙 Recherche des meilleurs bars et clubs de la soirée…' : '🗓 Recherche des événements en cours près de chez vous…',
@@ -4135,10 +4273,10 @@ async function runSearch(fromMap) {
           });
           if (!res.ok) { const e = await res.text(); throw new Error('API error ' + res.status + ': ' + e); }
           const data = await res.json();
+          clearInterval(msgTimer);
           if (data.error) throw new Error(data.error);
           if (!data.content) throw new Error('Reponse inattendue: ' + JSON.stringify(data));
           _claudeData = data;
-          window._lastSearchWasWebSearch = true;
         }
       } else {
         throw new Error('Impossible de géolocaliser "' + location + '"');
