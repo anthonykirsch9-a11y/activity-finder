@@ -3151,6 +3151,66 @@ async function fetchGooglePlaces(lat, lng, radiusKm, moods) {
 // Cache photos Google
 const _googlePhotoCache = {};
 
+async function searchAndLoadPhoto(imgEl, name, lat, lng) {
+  // Chercher un lieu par nom + coords dans Google Places puis charger sa photo
+  if (!name) return;
+  try {
+    const EDGE_URL = SUPABASE_URL + '/functions/v1/places';
+    const res = await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
+      body: JSON.stringify({ searchByName: true, name, lat, lng })
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const place = data.place;
+    if (!place) return;
+    // Stocker dans _lastGooglePlaces pour le site web aussi
+    if (place.id) {
+      const existing = _lastGooglePlaces.find(p => p.id === place.id);
+      if (!existing) _lastGooglePlaces.push(place);
+      // Mettre à jour le placeId sur l'image
+      imgEl.dataset.placeid = place.id;
+      // Site web — mettre à jour le lien si présent
+      if (place.websiteUri) {
+        const card = imgEl.closest('.rc-card');
+        if (card) {
+          const existingLink = card.querySelector('.rc-website-link');
+          if (!existingLink) {
+            const siteLabel = {fr:'Site officiel',en:'Official website',es:'Sitio oficial',de:'Offizielle Website',it:'Sito ufficiale',pt:'Site oficial'}[lang]||'Site';
+            const gmapsRow = card.querySelector('.rc-gmaps');
+            if (gmapsRow && gmapsRow.parentNode) {
+              const siteLink = document.createElement('a');
+              siteLink.className = 'rc-gmaps rc-website-link';
+              siteLink.href = place.websiteUri;
+              siteLink.target = '_blank';
+              siteLink.rel = 'noopener';
+              siteLink.style.cssText = 'background:var(--primary-light);color:var(--primary);border-color:var(--primary)';
+              siteLink.textContent = '🌐 ' + siteLabel;
+              gmapsRow.parentNode.insertBefore(siteLink, gmapsRow.nextSibling);
+            }
+          }
+        }
+      }
+    }
+    // Photo
+    if (place.photos && place.photos[0]) {
+      const photoName = place.photos[0].name;
+      if (photoName) {
+        const photoUrl = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+        const testImg = new Image();
+        testImg.onload = () => { imgEl.src = photoUrl; };
+        testImg.onerror = () => { loadPexelsPhoto(imgEl, imgEl.dataset.type, imgEl.dataset.titre); };
+        testImg.src = photoUrl;
+        return;
+      }
+    }
+    loadPexelsPhoto(imgEl, imgEl.dataset.type, imgEl.dataset.titre);
+  } catch(e) {
+    loadPexelsPhoto(imgEl, imgEl.dataset.type, imgEl.dataset.titre);
+  }
+}
+
 async function loadGooglePhoto(imgEl, placeId) {
   if (!placeId) return;
   if (_googlePhotoCache[placeId]) {
@@ -3570,8 +3630,10 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
         }));
         setTimeout(() => loadPhotosForResults([a]), 200);
       }
-    }, idx * 600);
+    }, idx * (window._lastSearchWasWebSearch ? 10000 : 600));
   });
+  // Reset flag après utilisation
+  window._lastSearchWasWebSearch = false;
 }
 
 
@@ -3601,8 +3663,10 @@ function buildActivityCard(a, idx, location) {
   return `<div class="rc-card">
     <div class="rc-photo-wrap">
       <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" loading="lazy"
-        data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
+        data-type="${a.type}" data-titre="${encodeURIComponent(a.titre||'')}"
         data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}"
+        data-nocturne="${a.nocturne?'1':''}"
+        data-lat="${a.lat||''}" data-lng="${a.lng||''}"
         onerror="this.style.display='none'">
       <div class="rc-photo-overlay"></div>
       <div class="rc-photo-top">
@@ -4046,6 +4110,7 @@ async function runSearch(fromMap) {
           }
 
           _claudeData = { content: [{ type: 'text', text: fullText }] };
+          window._lastSearchWasWebSearch = false;
 
         } else {
           // ── MODE WEB SEARCH (éphémères + nocturnes) ──
@@ -4073,6 +4138,7 @@ async function runSearch(fromMap) {
           if (data.error) throw new Error(data.error);
           if (!data.content) throw new Error('Reponse inattendue: ' + JSON.stringify(data));
           _claudeData = data;
+          window._lastSearchWasWebSearch = true;
         }
       } else {
         throw new Error('Impossible de géolocaliser "' + location + '"');
@@ -4200,8 +4266,16 @@ function loadPhotosForResults(activities) {
       loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       return;
     }
-    // Éphémères ET nocturnes avec placeId → tenter Google Photos d'abord
-    // Les bars/clubs ont des photos Google de qualité
+    // Nocturnes/éphémères sans placeId → chercher par nom dans Google Places
+    const isNocturne = img.dataset.nocturne === '1';
+    if ((isNocturne) && (!placeId || placeId === 'null' || placeId === '')) {
+      const titre = decodeURIComponent(img.dataset.titre || '');
+      const lat = img.dataset.lat ? parseFloat(img.dataset.lat) : null;
+      const lng = img.dataset.lng ? parseFloat(img.dataset.lng) : null;
+      if (titre) { searchAndLoadPhoto(img, titre, lat, lng); return; }
+      loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      return;
+    }
 
     // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
     const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
