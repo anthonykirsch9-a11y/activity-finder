@@ -3498,9 +3498,21 @@ function renderCoupDeCoeurLoading() {
 }
 
 function renderCoupDeCoeurResult(cdc) {
-  const card = document.getElementById('cdc-card');
-  if (!cdc) { if (card) card.remove(); return; }
-  if (!card) return; // CDC pas encore dans le DOM, skip
+  if (!cdc) { const c = document.getElementById('cdc-card'); if (c) c.remove(); return; }
+  let card = document.getElementById('cdc-card');
+  // Si la carte n'existe pas encore (résultats arrivés avant le CDC)
+  // → créer et insérer au début de results-section
+  if (!card) {
+    const rs = document.getElementById('results-section');
+    if (!rs || rs.style.display === 'none') return;
+    card = document.createElement('div');
+    card.id = 'cdc-card';
+    card.className = 'cdc-card';
+    // Insérer après le rc-summary s'il existe, sinon au début
+    const summary = rs.querySelector('.rc-summary');
+    if (summary) summary.after(card);
+    else rs.prepend(card);
+  }
 
   const photoHtml = cdc.photo
     ? `<img class="rc-photo" src="${cdc.photo}" alt="${cdc.name}"
@@ -3560,6 +3572,9 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
   })() : '';
 
   // Injecter structure vide puis cartes une par une (marche aussi avec web search)
+  // Sauvegarder la carte CDC avant d'écraser results-section
+  const _cdcCardHtml = document.getElementById('cdc-card')?.outerHTML || '';
+
   rs.innerHTML = `
     <div class="rc-summary" style="flex-wrap:wrap;gap:8px">
       <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="var(--primary)" stroke-width="1.8"><circle cx="9" cy="11" r="2"/><path d="M9 1a6 6 0 0 1 6 6c0 4-6 10-6 10S3 11 3 7a6 6 0 0 1 6-6z"/></svg>
@@ -3572,6 +3587,17 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
 
   // Ajouter cartes une par une avec délai 600ms
+  // Réinjecter la carte CDC si elle existait
+  if (_cdcCardHtml) {
+    const _tmpDiv = document.createElement('div');
+    _tmpDiv.innerHTML = _cdcCardHtml;
+    const _cdcNode = _tmpDiv.firstElementChild;
+    if (_cdcNode) {
+      const _summary = rs.querySelector('.rc-summary');
+      if (_summary) _summary.after(_cdcNode);
+    }
+  }
+
   const _progGrid = document.getElementById('rc-grid-progressive');
   activities.forEach((a, idx) => {
     setTimeout(() => {
