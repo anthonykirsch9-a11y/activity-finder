@@ -3352,8 +3352,10 @@ async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
     });
 
     let topPlace = null;
+    if (!res.ok) { console.error('🌟 CDC Google Places error:', res.status); }
     if (res.ok) {
       const data = await res.json();
+      console.log('🌟 CDC Google Places:', data.places?.length || 0, 'lieux pour', lat, lng);
       const allPlaces = (data.places || [])
         .sort((a, b) => (b.rating * Math.log((b.userRatingCount||1) + 1)) - (a.rating * Math.log((a.userRatingCount||1) + 1)));
       // Filtre progressif : d'abord strict, puis assoupli si rien trouvé
@@ -3376,6 +3378,7 @@ async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
       }) || places[0];
     }
 
+    console.log('🌟 CDC topPlace:', topPlace?.displayName?.text || 'null');
     if (!topPlace) return null;
 
     // 2. IA : générer une courte description poétique
