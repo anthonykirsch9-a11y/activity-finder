@@ -3354,9 +3354,13 @@ async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
     let topPlace = null;
     if (res.ok) {
       const data = await res.json();
-      const places = (data.places || [])
-        .filter(p => p.rating >= 4.3 && p.userRatingCount >= 100)
-        .sort((a, b) => (b.rating * Math.log(b.userRatingCount + 1)) - (a.rating * Math.log(a.userRatingCount + 1)));
+      const allPlaces = (data.places || [])
+        .sort((a, b) => (b.rating * Math.log((b.userRatingCount||1) + 1)) - (a.rating * Math.log((a.userRatingCount||1) + 1)));
+      // Filtre progressif : d'abord strict, puis assoupli si rien trouvé
+      let places = allPlaces.filter(p => p.rating >= 4.3 && (p.userRatingCount||0) >= 100);
+      if (!places.length) places = allPlaces.filter(p => p.rating >= 4.0 && (p.userRatingCount||0) >= 50);
+      if (!places.length) places = allPlaces.filter(p => p.rating >= 3.8);
+      if (!places.length) places = allPlaces;
 
       // Exclure les lieux déjà proposés (semaines précédentes + résultats actuels)
       const excludeLower = (excludeTitles || []).map(t => t.toLowerCase());
