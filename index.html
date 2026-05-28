@@ -3327,6 +3327,23 @@ function _cdcCacheKey(lat, lng) {
   return 'cdc_' + latR + '_' + lngR + '_w' + week + '_' + lang;
 }
 
+function _getPreviousCdcNames(lat, lng) {
+  const latR = Math.round(lat * 2) / 2;
+  const lngR = Math.round(lng * 2) / 2;
+  const now = new Date();
+  const jan4 = new Date(now.getFullYear(), 0, 4);
+  const currentWeek = Math.ceil(((now - jan4) / 86400000 + jan4.getDay() + 1) / 7);
+  const names = [];
+  for (let w = currentWeek - 1; w >= currentWeek - 4; w--) {
+    const key = 'cdc_' + latR + '_' + lngR + '_w' + Math.max(1, w) + '_' + lang;
+    try {
+      const cached = localStorage.getItem(key);
+      if (cached) { const d = JSON.parse(cached); if (d.name) names.push(d.name.toLowerCase()); }
+    } catch(e) {}
+  }
+  return names;
+}
+
 async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
   const cacheKey = _cdcCacheKey(lat, lng);
   try {
@@ -6561,7 +6578,7 @@ window.addEventListener('load', () => {
       // Mettre à jour persons
       persons = [];
       personCounter = 0;
-      setGroupPersons(profile.group);
+      syncAgesUI();
     }
 
     // Budget
