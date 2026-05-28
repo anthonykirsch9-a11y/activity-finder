@@ -3990,7 +3990,11 @@ async function runSearch(fromMap) {
     const seenContext = seenTitles.length > 0
       ? '\n\nIMPORTANT — EXCLUSION ABSOLUE: Ces activités ont DÉJÀ été proposées à cet utilisateur dans les dernières 24h. Ne JAMAIS les reproposer ni proposer de variantes proches. Propose des activités COMPLÈTEMENT DIFFÉRENTES : ' + seenTitles.slice(0, 20).join(' / ')
       : '';
-        const dateHeader = dateStr ? '🗓 DATE DEMANDEE: ' + dateStr + '\n' : '';
+        // Date du jour — toujours injectée pour éviter les dates passées
+        const _today = new Date();
+        const _todayStr = _today.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+        const _todayISO = _today.toISOString().split('T')[0];
+        const dateHeader = '📅 AUJOURD\'HUI: ' + _todayStr + ' (' + _todayISO + ')\nNE JAMAIS proposer d\'événements ou dates antérieures à aujourd\'hui.\n' + (dateStr ? '🗓 DATE DEMANDEE: ' + dateStr + '\n' : '');
         const weatherContext = getWeatherContext();
         const weatherHeader = weatherContext ? '🌤 METEO: ' + weatherContext.replace('\n- Météo: ','') + '\n' : '';
         const LANG_NAMES = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
