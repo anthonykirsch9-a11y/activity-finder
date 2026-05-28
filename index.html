@@ -1621,7 +1621,7 @@ const LANGS = {
     resultsTitle:(n)=>`${n} activités <em>pour toi</em>`,
     ephemExtra:`\n- Utilise le web search pour trouver 2-3 ÉVÉNEMENTS ÉPHÉMÈRES RÉELS et ACTUELS (brocante, marché, fête, festival, rassemblement, vide-greniers, expo…) près de la zone demandée cette semaine ou ce week-end. Pour chaque éphémère: mets l'adresse EXACTE ou la commune précise dans "infos_pratiques", et la date précise dans "frequence". "ephemere":true. Si aucun trouvé sur le web, propose un événement typique de saison avec lieu approximatif.`,
     noEphemExtra:'',
-    nightExtra:`\n- Inclure 1 à 2 SORTIES NOCTURNES. RÈGLE STRICTE: UNIQUEMENT bar branché, club/discothèque, concert live, soirée thématique, restaurant ouvert après 22h, rooftop bar, jazz club, karaoké, comedy club. JAMAIS zoo, musée, randonnée, spa, karting ou toute activité de jour.  OBLIGATOIRE: utilise le web search pour trouver le NOM EXACT et ADRESSE PRECISE de vrais etablissements nocturnes dans la ville. Ne propose JAMAIS un lieu generique sans nom precis. "nocturne":true OBLIGATOIRE.`,
+    nightExtra:`\n- Inclure exactement 2 SORTIES NOCTURNES avec ce MIX OBLIGATOIRE: 1 bar branché avec nom exact + 1 lieu de spectacle/concert/restaurant nocturne avec nom exact. JAMAIS zoo, musée, randonnée, spa. OBLIGATOIRE: utilise le web search pour trouver le NOM EXACT, ADRESSE PRECISE et si possible le placeId Google de vrais etablissements nocturnes dans la ville. Ne propose JAMAIS un lieu generique sans nom precis. "nocturne":true OBLIGATOIRE.`,
     noNightExtra:'',
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
@@ -3891,7 +3891,7 @@ async function runSearch(fromMap) {
     if (onlyMode === 'ephem') {
       strictMoodFilter = '\nFILTRE ABSOLU: Propose UNIQUEMENT ET EXCLUSIVEMENT des événements éphémères (marchés, brocantes, fêtes locales, festivals, concerts, foires, événements temporaires avec une date précise). AUCUNE activité fixe (restaurant, musée, bowling...) n\'est acceptée. "ephemere":true pour TOUTES les 6 activités OBLIGATOIREMENT.';
     } else if (onlyMode === 'night') {
-      strictMoodFilter = '\nFILTRE ABSOLU: Propose UNIQUEMENT ET EXCLUSIVEMENT de la VIE NOCTURNE. Les 6 activités doivent être: bars branchés, clubs/discothèques, concerts live, soirées thématiques, restaurants ouverts après 22h, rooftop bars, jazz clubs, karaokés, comedy clubs. AUCUNE activité de jour acceptée (pas de zoo, musée, randonnée, spa, karting). "nocturne":true pour TOUTES les 6 activités OBLIGATOIREMENT.';
+      strictMoodFilter = '\nFILTRE ABSOLU: Propose UNIQUEMENT de la VIE NOCTURNE avec ce MIX sur 6 activités: 3 bars branchés différents + 1 club/discothèque + 2 parmi (concert live, spectacle, restaurant gastronomique ouvert après 22h, rooftop, jazz club, karaoké). OBLIGATOIRE: web search pour NOM EXACT et ADRESSE de chaque établissement. AUCUNE activité de jour. "nocturne":true pour TOUTES les 6 OBLIGATOIREMENT.';
     } else if (moods.length === 1) {
       strictMoodFilter = `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités de type "${moods[0]}". Toutes les 6 activités doivent correspondre à cette catégorie.`;
     } else if (moods.length > 1) {
@@ -4048,7 +4048,21 @@ async function runSearch(fromMap) {
           _claudeData = { content: [{ type: 'text', text: fullText }] };
 
         } else {
-          // ── MODE NORMAL (web search) ──
+          // ── MODE WEB SEARCH (éphémères + nocturnes) ──
+          // Afficher un message d'attente adapté
+          const waitMsgs = {
+            fr: needsWebSearch && nightOn ? '🌙 Recherche des meilleurs bars et clubs de la soirée…' : '🗓 Recherche des événements en cours près de chez vous…',
+            en: needsWebSearch && nightOn ? '🌙 Finding the best bars and clubs for tonight…' : '🗓 Searching for current events near you…',
+            es: needsWebSearch && nightOn ? '🌙 Buscando los mejores bares y clubs…' : '🗓 Buscando eventos actuales cerca de ti…',
+            de: needsWebSearch && nightOn ? '🌙 Beste Bars und Clubs werden gesucht…' : '🗓 Aktuelle Events in deiner Nähe werden gesucht…',
+            it: needsWebSearch && nightOn ? '🌙 Ricerca dei migliori bar e club…' : '🗓 Ricerca eventi in corso vicino a te…',
+            pt: needsWebSearch && nightOn ? '🌙 Encontrando os melhores bares e clubes…' : '🗓 A pesquisar eventos atuais perto de ti…',
+          };
+          const waitMsg = waitMsgs[lang] || waitMsgs.fr;
+          // Mettre à jour le texte du spinner
+          const spinnerP = rs.querySelector('.loading-state p');
+          if (spinnerP) spinnerP.textContent = waitMsg;
+
           const res = await fetch(EDGE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
@@ -4181,11 +4195,13 @@ function loadPhotosForResults(activities) {
     const placeId = img.dataset.placeid;
     const isEphemere = img.dataset.ephemere === '1';
 
-    // Éphémères → toujours Pexels thématique
-    if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
+    // Si pas de placeId → Pexels thématique
+    if (!placeId || placeId === 'null' || placeId === '') {
       loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       return;
     }
+    // Éphémères ET nocturnes avec placeId → tenter Google Photos d'abord
+    // Les bars/clubs ont des photos Google de qualité
 
     // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
     const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
