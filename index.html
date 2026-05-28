@@ -1621,7 +1621,7 @@ const LANGS = {
     resultsTitle:(n)=>`${n} activités <em>pour toi</em>`,
     ephemExtra:`\n- Utilise le web search pour trouver 2-3 ÉVÉNEMENTS ÉPHÉMÈRES RÉELS et ACTUELS (brocante, marché, fête, festival, rassemblement, vide-greniers, expo…) près de la zone demandée cette semaine ou ce week-end. Pour chaque éphémère: mets l'adresse EXACTE ou la commune précise dans "infos_pratiques", et la date précise dans "frequence". "ephemere":true. Si aucun trouvé sur le web, propose un événement typique de saison avec lieu approximatif.`,
     noEphemExtra:'',
-    nightExtra:`\n- Inclure exactement 2 SORTIES NOCTURNES avec ce MIX OBLIGATOIRE: 1 bar branché avec nom exact + 1 lieu de spectacle/concert/restaurant nocturne avec nom exact. JAMAIS zoo, musée, randonnée, spa. OBLIGATOIRE: utilise le web search pour trouver le NOM EXACT, ADRESSE PRECISE et si possible le placeId Google de vrais etablissements nocturnes dans la ville. Ne propose JAMAIS un lieu generique sans nom precis. "nocturne":true OBLIGATOIRE.`,
+    nightExtra:`\n- Inclure 1 à 2 SORTIES NOCTURNES. RÈGLE STRICTE: bar branché avec NOM EXACT, club/discothèque, concert live, soirée, restaurant ouvert après 22h. JAMAIS zoo, musée, spa, karting. Utilise web search pour NOM EXACT et ADRESSE de vrais établissements. "nocturne":true OBLIGATOIRE.`,
     noNightExtra:'',
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
@@ -1673,7 +1673,7 @@ const LANGS = {
     resultsTitle:(n)=>`${n} activities <em>for you</em>`,
     ephemExtra:`\n- Use web search to find 2-3 REAL and CURRENT ephemeral events (markets, fairs, festivals, rallies, car shows, food festivals…) near the requested area this week or weekend. For each ephemeral event: include the EXACT address or precise town in "infos_pratiques", and the real date in "frequence". "ephemere":true. If none found online, suggest a typical seasonal event with approximate location.`,
     noEphemExtra:'',
-    nightExtra:`\n- Include 1-2 NIGHTLIFE options. STRICT RULE: ONLY trendy bar, nightclub, live concert, themed party, late-night restaurant (open after 10pm), rooftop bar, jazz club, karaoke, comedy club. NEVER zoo, museum, hiking, spa, karting or any daytime activity.  MANDATORY: use web search to find the EXACT NAME and ADDRESS of real nightlife venues. NEVER a generic venue without a specific name. "nocturne":true MANDATORY.`,
+    nightExtra:`\n- Include 1-2 NIGHTLIFE options suited to the group. "nocturne":true.`,
     noNightExtra:'',
     onlyEphem:'🗓 Ephemeral only',
     onlyNight:'🌙 Nightlife only',
@@ -1725,7 +1725,7 @@ const LANGS = {
     resultsTitle:(n)=>`${n} actividades <em>para ti</em>`,
     ephemExtra:`\n- Usa la búsqueda web para encontrar 2-3 EVENTOS EFÍMEROS REALES y ACTUALES (mercadillos, ferias, fiestas, rallyes, festivales gastronómicos…) cerca de la zona solicitada esta semana o fin de semana. Para cada efímero: dirección EXACTA o municipio preciso en "infos_pratiques", fecha real en "frequence". "ephemere":true. Si no encuentras nada, propón un evento típico de temporada con ubicación aproximada.`,
     noEphemExtra:'',
-    nightExtra:`\n- Incluir 1-2 opciones de VIDA NOCTURNA. REGLA ESTRICTA: SOLO bar de moda, discoteca/club, concierto en vivo, fiesta temática, restaurante nocturno (abierto después de las 22h), rooftop bar, jazz club, karaoke, comedy club. NUNCA zoo, museo, senderismo, spa o actividad diurna.  OBLIGATORIO: usa busqueda web para NOMBRE EXACTO y DIRECCION de locales nocturnos reales. "nocturne":true OBLIGATORIO.`,
+    nightExtra:`\n- Incluir 1-2 opciones de vida nocturna. "nocturne":true.`,
     noNightExtra:'',
     onlyEphem:'🗓 Solo efímeros',
     onlyNight:'🌙 Solo nocturno',
@@ -1777,7 +1777,7 @@ const LANGS = {
     resultsTitle:(n)=>`${n} Aktivitäten <em>für dich</em>`,
     ephemExtra:`\n- Nutze die Websuche, um 2-3 ECHTE und AKTUELLE kurzfristige Events (Märkte, Messen, Feste, Oldtimertreffen, Foodfestivals…) in der Nähe der gesuchten Region diese Woche oder dieses Wochenende zu finden. Für jedes ephemere Event: GENAUE Adresse oder präziser Ort in "infos_pratiques", echtes Datum in "frequence". "ephemere":true. Falls nichts gefunden, typisches Saisonevent mit ungefährem Ort vorschlagen.`,
     noEphemExtra:'',
-    nightExtra:`\n- 1-2 NACHTLEBEN-Optionen. STRIKTE REGEL: NUR angesagte Bar, Club/Disco, Live-Konzert, Themenparty, Spätrestaurant (nach 22 Uhr geöffnet), Rooftop-Bar, Jazz-Club, Karaoke, Comedy-Club. NIEMALS Zoo, Museum, Wanderung, Spa oder Tagesaktivität.  PFLICHT: Websuche fuer GENAUEN NAMEN und ADRESSE echter Nachtlokale. "nocturne":true PFLICHT.`,
+    nightExtra:`\n- 1-2 Nachtleben-Optionen. "nocturne":true.`,
     noNightExtra:'',
     onlyEphem:'🗓 Nur kurzfristige Events',
     onlyNight:'🌙 Nur Nachtleben',
@@ -1829,7 +1829,7 @@ const LANGS = {
     resultsTitle:(n)=>`${n} attività <em>per te</em>`,
     ephemExtra:`\n- Usa la ricerca web per trovare 2-3 EVENTI EFFIMERI REALI e ATTUALI (mercati, sagre, feste, raduni, festival gastronomici…) vicino alla zona richiesta questa settimana o weekend. Per ogni effimero: indirizzo ESATTO o comune preciso in "infos_pratiques", data reale in "frequence". "ephemere":true. Se non trovi nulla, proponi un evento tipico stagionale con luogo approssimativo.`,
     noEphemExtra:'',
-    nightExtra:`\n- Includi 1-2 opzioni di VITA NOTTURNA. REGOLA STRETTA: SOLO bar alla moda, club/discoteca, concerto dal vivo, serata a tema, ristorante notturno (aperto dopo le 22), rooftop bar, jazz club, karaoke, comedy club. MAI zoo, museo, escursione, spa o attività diurna.  OBBLIGATORIO: usa ricerca web per NOME ESATTO e INDIRIZZO di veri locali notturni. "nocturne":true OBBLIGATORIO.`,
+    nightExtra:`\n- Includi 1-2 opzioni di vita notturna. "nocturne":true.`,
     noNightExtra:'',
     onlyEphem:'🗓 Solo effimeri',
     onlyNight:'🌙 Solo vita notturna',
@@ -1881,7 +1881,7 @@ const LANGS = {
     resultsTitle:(n)=>`${n} atividades <em>para ti</em>`,
     ephemExtra:`\n- Usa a pesquisa web para encontrar 2-3 EVENTOS EFÉMEROS REAIS e ATUAIS (feiras, mercados, festas, concentrações, festivais gastronómicos…) perto da zona solicitada esta semana ou fim de semana. Para cada efémero: endereço EXATO ou localidade precisa em "infos_pratiques", data real em "frequence". "ephemere":true. Se não encontrares nada, propõe um evento típico da estação com localização aproximada.`,
     noEphemExtra:'',
-    nightExtra:`\n- Incluir 1-2 opções de VIDA NOTURNA. REGRA ESTRITA: APENAS bar na moda, clube/discoteca, concerto ao vivo, festa temática, restaurante noturno (aberto após as 22h), rooftop bar, jazz club, karaoke, comedy club. NUNCA zoo, museu, caminhada, spa ou atividade diurna.  OBRIGATORIO: usa pesquisa web para NOME EXATO e ENDERECO de locais noturnos reais. "nocturne":true OBRIGATÓRIO.`,
+    nightExtra:`\n- Incluir 1-2 opções de vida noturna. "nocturne":true.`,
     noNightExtra:'',
     onlyEphem:'🗓 Só efémeros',
     onlyNight:'🌙 Só vida noturna',
@@ -3151,66 +3151,6 @@ async function fetchGooglePlaces(lat, lng, radiusKm, moods) {
 // Cache photos Google
 const _googlePhotoCache = {};
 
-async function searchAndLoadPhoto(imgEl, name, lat, lng) {
-  // Chercher un lieu par nom + coords dans Google Places puis charger sa photo
-  if (!name) return;
-  try {
-    const EDGE_URL = SUPABASE_URL + '/functions/v1/places';
-    const res = await fetch(EDGE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-      body: JSON.stringify({ searchByName: true, name, lat, lng })
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    const place = data.place;
-    if (!place) return;
-    // Stocker dans _lastGooglePlaces pour le site web aussi
-    if (place.id) {
-      const existing = _lastGooglePlaces.find(p => p.id === place.id);
-      if (!existing) _lastGooglePlaces.push(place);
-      // Mettre à jour le placeId sur l'image
-      imgEl.dataset.placeid = place.id;
-      // Site web — mettre à jour le lien si présent
-      if (place.websiteUri) {
-        const card = imgEl.closest('.rc-card');
-        if (card) {
-          const existingLink = card.querySelector('.rc-website-link');
-          if (!existingLink) {
-            const siteLabel = {fr:'Site officiel',en:'Official website',es:'Sitio oficial',de:'Offizielle Website',it:'Sito ufficiale',pt:'Site oficial'}[lang]||'Site';
-            const gmapsRow = card.querySelector('.rc-gmaps');
-            if (gmapsRow && gmapsRow.parentNode) {
-              const siteLink = document.createElement('a');
-              siteLink.className = 'rc-gmaps rc-website-link';
-              siteLink.href = place.websiteUri;
-              siteLink.target = '_blank';
-              siteLink.rel = 'noopener';
-              siteLink.style.cssText = 'background:var(--primary-light);color:var(--primary);border-color:var(--primary)';
-              siteLink.textContent = '🌐 ' + siteLabel;
-              gmapsRow.parentNode.insertBefore(siteLink, gmapsRow.nextSibling);
-            }
-          }
-        }
-      }
-    }
-    // Photo
-    if (place.photos && place.photos[0]) {
-      const photoName = place.photos[0].name;
-      if (photoName) {
-        const photoUrl = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
-        const testImg = new Image();
-        testImg.onload = () => { imgEl.src = photoUrl; };
-        testImg.onerror = () => { loadPexelsPhoto(imgEl, imgEl.dataset.type, imgEl.dataset.titre); };
-        testImg.src = photoUrl;
-        return;
-      }
-    }
-    loadPexelsPhoto(imgEl, imgEl.dataset.type, imgEl.dataset.titre);
-  } catch(e) {
-    loadPexelsPhoto(imgEl, imgEl.dataset.type, imgEl.dataset.titre);
-  }
-}
-
 async function loadGooglePhoto(imgEl, placeId) {
   if (!placeId) return;
   if (_googlePhotoCache[placeId]) {
@@ -3630,10 +3570,8 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
         }));
         setTimeout(() => loadPhotosForResults([a]), 200);
       }
-    }, idx * (window._lastSearchWasWebSearch ? 10000 : 600));
+    }, idx * 600);
   });
-  // Reset flag après utilisation
-  window._lastSearchWasWebSearch = false;
 }
 
 
@@ -3663,10 +3601,8 @@ function buildActivityCard(a, idx, location) {
   return `<div class="rc-card">
     <div class="rc-photo-wrap">
       <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" loading="lazy"
-        data-type="${a.type}" data-titre="${encodeURIComponent(a.titre||'')}"
+        data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
         data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}"
-        data-nocturne="${a.nocturne?'1':''}"
-        data-lat="${a.lat||''}" data-lng="${a.lng||''}"
         onerror="this.style.display='none'">
       <div class="rc-photo-overlay"></div>
       <div class="rc-photo-top">
@@ -3955,7 +3891,7 @@ async function runSearch(fromMap) {
     if (onlyMode === 'ephem') {
       strictMoodFilter = '\nFILTRE ABSOLU: Propose UNIQUEMENT ET EXCLUSIVEMENT des événements éphémères (marchés, brocantes, fêtes locales, festivals, concerts, foires, événements temporaires avec une date précise). AUCUNE activité fixe (restaurant, musée, bowling...) n\'est acceptée. "ephemere":true pour TOUTES les 6 activités OBLIGATOIREMENT.';
     } else if (onlyMode === 'night') {
-      strictMoodFilter = '\nFILTRE ABSOLU: Propose UNIQUEMENT de la VIE NOCTURNE avec ce MIX sur 6 activités: 3 bars branchés différents + 1 club/discothèque + 2 parmi (concert live, spectacle, restaurant gastronomique ouvert après 22h, rooftop, jazz club, karaoké). OBLIGATOIRE: web search pour NOM EXACT et ADRESSE de chaque établissement. AUCUNE activité de jour. "nocturne":true pour TOUTES les 6 OBLIGATOIREMENT.';
+      strictMoodFilter = '\nFILTRE ABSOLU: UNIQUEMENT vie nocturne. MIX: 3 bars branchés + 1 club/discothèque + 2 parmi (concert live, spectacle, restaurant après 22h, jazz club). NOM EXACT et ADRESSE obligatoires via web search. "nocturne":true pour les 6 OBLIGATOIREMENT.';
     } else if (moods.length === 1) {
       strictMoodFilter = `\nFILTRE STRICT: L\'utilisateur veut UNIQUEMENT des activités de type "${moods[0]}". Toutes les 6 activités doivent correspondre à cette catégorie.`;
     } else if (moods.length > 1) {
@@ -4055,11 +3991,7 @@ async function runSearch(fromMap) {
         const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + seenContext + '\n\n' + rawPrompt;
 
         // ── Modèle adaptatif ──
-        // Déterminer le mode de recherche
-        const isOnlySpecial = onlyMode === 'ephem' || onlyMode === 'night'; // CAS 3
-        const isMix = (ephemOn || nightOn) && !isOnlySpecial; // CAS 2
-        const needsWebSearch = isOnlySpecial; // web search uniquement pour CAS 3
-        const useParallel = isMix; // appels parallèles pour CAS 2
+        const needsWebSearch = ephemOn || nightOn || onlyMode === 'ephem' || onlyMode === 'night';
         const selectedModel = 'claude-sonnet-4-6';
 
         // ── Pas de cache — chaque recherche doit être unique pour ce navigateur ──
@@ -4067,7 +3999,7 @@ async function runSearch(fromMap) {
 
         // Appel Claude via Supabase Edge Function — mode streaming
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
-        const useStream = !needsWebSearch && !useParallel; // streaming pour CAS 1 seulement
+        const useStream = !needsWebSearch; // streaming seulement sans web search
         var _claudeData = null;
 
         if (useStream) {
@@ -4114,158 +4046,9 @@ async function runSearch(fromMap) {
           }
 
           _claudeData = { content: [{ type: 'text', text: fullText }] };
-          window._lastSearchWasWebSearch = false;
-
-        } else if (useParallel) {
-          // ── CAS 2 : PARALLÈLE — 4 normales en streaming + 2 spéciales en web search ══
-          window._lastSearchWasWebSearch = false;
-
-          // Prompt pour 4 activités normales (sans éphémères/nocturnes)
-          const rawPromptNormal = fromMap && mapSearchCoords
-            ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
-            : t.promptFn(group, agesStr, ageStr, budgetContext, location, radius, moodsStr + doneContext, '', '');
-          const promptNormal4 = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter.replace('6','4') + getSpecialEventContext() + seenContext + '\nGénère exactement 4 activités (pas 6). ' + rawPromptNormal;
-
-          // Prompt pour 2 activités spéciales (éphémères OU nocturnes)
-          const specialType = nightOn ? 'nocturnes' : 'éphémères';
-          const specialExtra = nightOn ? (t.nightExtra||'') : (t.ephemExtra||'');
-          const promptSpecial2 = langInstruction + dateHeader + weatherHeader + '\nGénère exactement 2 activités ' + specialType + ' UNIQUEMENT.' + specialExtra + seenContext + '\nContexte: ' + group + ', ' + agesStr + ', budget ' + budgetContext + ', lieu ' + location + ', rayon ' + radius + 'km. JSON valide:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"...","pourquoi_adapte":"...","infos_pratiques":[],"ephemere":' + (ephemOn&&!nightOn?'true':'false') + ',"nocturne":' + (nightOn?'true':'false') + ',"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]';
-
-          // Lancer les 2 appels EN PARALLÈLE
-          let normalActivities = [];
-          let specialActivities = [];
-          let normalDone = false;
-          let specialDone = false;
-          let _renderedNormal = 0;
-
-          // Fonction pour merger et afficher quand les spéciales arrivent
-          function mergeAndDisplay() {
-            if (!specialDone) return;
-            const all = [...normalActivities, ...specialActivities];
-            // Afficher les spéciales qui ne sont pas encore affichées
-            if (specialActivities.length > 0) {
-              const grid = document.getElementById('rc-grid-progressive');
-              if (grid) {
-                specialActivities.forEach((a, idx) => {
-                  const cardHtml = buildActivityCard(a, normalActivities.length + idx, location);
-                  const div = document.createElement('div');
-                  div.innerHTML = cardHtml.trim();
-                  const card = div.firstElementChild;
-                  if (card) {
-                    card.style.opacity = '0'; card.style.transform = 'translateY(16px)';
-                    grid.appendChild(card);
-                    requestAnimationFrame(() => requestAnimationFrame(() => {
-                      card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                      card.style.opacity = '1'; card.style.transform = 'translateY(0)';
-                    }));
-                    setTimeout(() => loadPhotosForResults([a]), 200);
-                  }
-                });
-              }
-            }
-            window._lastActivities = all;
-            setTimeout(() => { if (map) placeActivityMarkers(all); else window._pendingMarkers = all; }, 500);
-          }
-
-          // Appel 1 : 4 normales en streaming
-          const resNormal = fetch(EDGE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-            body: JSON.stringify({ prompt: promptNormal4, model: selectedModel, webSearch: false, stream: true })
-          }).then(async res => {
-            if (!res.ok) return;
-            let fullText = '';
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buf = '';
-            let rendered = 0;
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              buf += decoder.decode(value, { stream: true });
-              const lines = buf.split(String.fromCharCode(10));
-              buf = lines.pop() || '';
-              for (const line of lines) {
-                if (!line.startsWith('data: ')) continue;
-                const raw = line.slice(6).trim();
-                if (raw === '[DONE]') continue;
-                try {
-                  const evt = JSON.parse(raw);
-                  if (evt.type === 'chunk') {
-                    fullText += evt.text;
-                    const parsed = _tryParseActivities(fullText);
-                    if (parsed && parsed.length > rendered) {
-                      _renderStreamCards(parsed, rendered, location);
-                      rendered = parsed.length;
-                    }
-                  }
-                } catch(_) {}
-              }
-            }
-            const parsed = _tryParseActivities(fullText);
-            normalActivities = parsed || [];
-            normalDone = true;
-            mergeAndDisplay();
-          }).catch(() => { normalDone = true; mergeAndDisplay(); });
-
-          // Appel 2 : 2 spéciales en web search (en parallèle)
-          const resSpecial = fetch(EDGE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-            body: JSON.stringify({ prompt: promptSpecial2, model: selectedModel, webSearch: true })
-          }).then(async res => {
-            if (!res.ok) return;
-            const data = await res.json();
-            const text = (data.content||[]).map(c=>c.text||'').join('');
-            const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
-            if (match) specialActivities = JSON.parse(match[0]);
-            specialDone = true;
-            mergeAndDisplay();
-          }).catch(() => { specialDone = true; mergeAndDisplay(); });
-
-          await Promise.all([resNormal, resSpecial]);
-          _claudeData = { content: [{ type: 'text', text: JSON.stringify([...normalActivities, ...specialActivities]) }] };
-          window._lastSearchWasWebSearch = false;
 
         } else {
-          // ── CAS 3 : WEB SEARCH UNIQUEMENT (que éphémères ou que nocturnes) ══
-          window._lastSearchWasWebSearch = true;
-
-          // Écran d'attente animé
-          const waitMessages = {
-            fr: nightOn||onlyMode==='night'
-              ? ['🌙 Recherche des bars branchés…','🎵 On cherche les concerts du soir…','🍸 Les meilleurs cocktails de la ville…','🎭 Soirées et spectacles en cours…']
-              : ['🗓 Recherche des événements locaux…','🛍 Brocantes et marchés à proximité…','🎪 Fêtes et festivals du week-end…','📍 Événements éphémères vérifiés…'],
-            en: nightOn||onlyMode==='night'
-              ? ['🌙 Finding the best bars…','🎵 Searching for tonight concerts…','🍸 Top cocktail spots in town…','🎭 Live shows and events…']
-              : ['🗓 Searching local events…','🛍 Flea markets and fairs nearby…','🎪 Weekend festivals…','📍 Verified events…'],
-          };
-          const msgs = (waitMessages[lang] || waitMessages.fr);
-          let msgIdx = 0;
-          const spinnerEl = rs.querySelector('.loading-state p');
-          const spinnerStrong = rs.querySelector('.loading-state strong');
-          if (spinnerStrong) spinnerStrong.textContent = msgs[0];
-          const msgTimer = setInterval(() => {
-            msgIdx = (msgIdx + 1) % msgs.length;
-            const el = rs.querySelector('.loading-state strong');
-            if (el) { el.style.opacity='0'; setTimeout(()=>{ el.textContent=msgs[msgIdx]; el.style.opacity='1'; el.style.transition='opacity 0.3s'; },300); }
-          }, 4000);
-
-          // MODE WEB SEARCH (éphémères/nocturnes uniquement) ——
-          // Afficher un message d'attente adapté
-          const waitMsgs = {
-            fr: needsWebSearch && nightOn ? '🌙 Recherche des meilleurs bars et clubs de la soirée…' : '🗓 Recherche des événements en cours près de chez vous…',
-            en: needsWebSearch && nightOn ? '🌙 Finding the best bars and clubs for tonight…' : '🗓 Searching for current events near you…',
-            es: needsWebSearch && nightOn ? '🌙 Buscando los mejores bares y clubs…' : '🗓 Buscando eventos actuales cerca de ti…',
-            de: needsWebSearch && nightOn ? '🌙 Beste Bars und Clubs werden gesucht…' : '🗓 Aktuelle Events in deiner Nähe werden gesucht…',
-            it: needsWebSearch && nightOn ? '🌙 Ricerca dei migliori bar e club…' : '🗓 Ricerca eventi in corso vicino a te…',
-            pt: needsWebSearch && nightOn ? '🌙 Encontrando os melhores bares e clubes…' : '🗓 A pesquisar eventos atuais perto de ti…',
-          };
-          const waitMsg = waitMsgs[lang] || waitMsgs.fr;
-          // Mettre à jour le texte du spinner
-          const spinnerP = rs.querySelector('.loading-state p');
-          if (spinnerP) spinnerP.textContent = waitMsg;
-
+          // ── MODE NORMAL (web search) ──
           const res = await fetch(EDGE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
@@ -4273,7 +4056,6 @@ async function runSearch(fromMap) {
           });
           if (!res.ok) { const e = await res.text(); throw new Error('API error ' + res.status + ': ' + e); }
           const data = await res.json();
-          clearInterval(msgTimer);
           if (data.error) throw new Error(data.error);
           if (!data.content) throw new Error('Reponse inattendue: ' + JSON.stringify(data));
           _claudeData = data;
@@ -4399,18 +4181,8 @@ function loadPhotosForResults(activities) {
     const placeId = img.dataset.placeid;
     const isEphemere = img.dataset.ephemere === '1';
 
-    // Si pas de placeId → Pexels thématique
-    if (!placeId || placeId === 'null' || placeId === '') {
-      loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
-      return;
-    }
-    // Nocturnes/éphémères sans placeId → chercher par nom dans Google Places
-    const isNocturne = img.dataset.nocturne === '1';
-    if ((isNocturne) && (!placeId || placeId === 'null' || placeId === '')) {
-      const titre = decodeURIComponent(img.dataset.titre || '');
-      const lat = img.dataset.lat ? parseFloat(img.dataset.lat) : null;
-      const lng = img.dataset.lng ? parseFloat(img.dataset.lng) : null;
-      if (titre) { searchAndLoadPhoto(img, titre, lat, lng); return; }
+    // Éphémères → toujours Pexels thématique
+    if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
       loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       return;
     }
@@ -6609,7 +6381,7 @@ window.addEventListener('load', () => {
       // Mettre à jour persons
       persons = [];
       personCounter = 0;
-      syncAgesUI();
+      setGroupPersons(profile.group);
     }
 
     // Budget
