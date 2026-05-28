@@ -3358,11 +3358,17 @@ async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
         .filter(p => p.rating >= 4.3 && p.userRatingCount >= 100)
         .sort((a, b) => (b.rating * Math.log(b.userRatingCount + 1)) - (a.rating * Math.log(a.userRatingCount + 1)));
 
-      // Trouver le meilleur lieu pas déjà dans les résultats principaux
+      // Exclure les lieux déjà proposés (semaines précédentes + résultats actuels)
       const excludeLower = (excludeTitles || []).map(t => t.toLowerCase());
+      const previousCdc = _getPreviousCdcNames(lat, lng);
+      const allExclude = [...excludeLower, ...previousCdc];
       topPlace = places.find(p => {
         const name = (p.displayName?.text || '').toLowerCase();
-        return !excludeLower.some(ex => name.includes(ex.substring(0,8)) || ex.includes(name.substring(0,8)));
+        return !allExclude.some(ex => name.includes(ex.substring(0,10)) || ex.includes(name.substring(0,10)));
+      }) || places.find(p => {
+        // 2ème chance : exclure uniquement les semaines précédentes (pas les résultats actuels)
+        const name = (p.displayName?.text || '').toLowerCase();
+        return !previousCdc.some(ex => name.includes(ex.substring(0,10)));
       }) || places[0];
     }
 
