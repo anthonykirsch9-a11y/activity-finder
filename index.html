@@ -3840,7 +3840,25 @@ async function runSearch(fromMap) {
   // Loading state — Bug 4 fix: utiliser des classes CSS existantes
   if (sb) { sb.disabled = true; document.getElementById('submit-label').textContent = t.submitLoading || 'Recherche en cours…'; }
   rs.style.display = '';
-  rs.innerHTML = '<div class="loading-state"><div class="spinner"></div><strong>' + (t.loadingTitle || 'Recherche en cours…') + '</strong><p>' + (t.loadingText ? t.loadingText(location) : 'Recherche en cours…') + '</p></div>';
+  // Message adapté selon le mode de recherche
+  const _isNightOnly = onlyMode === 'night';
+  const _isEphemOnly = onlyMode === 'ephem';
+  const _nightMsgs = {fr:['🌙 Recherche des meilleurs bars…','🎵 On cherche les concerts du soir…','🍸 Les meilleures adresses de la nuit…','🎭 Soirées et spectacles en cours…'],en:['🌙 Finding the best bars…','🎵 Searching tonight concerts…','🍸 Best nightlife spots…','🎭 Shows and events…'],es:['🌙 Buscando los mejores bares…','🎵 Buscando conciertos…','🍸 Mejores locales nocturnos…','🎭 Espectáculos y eventos…'],de:['🌙 Beste Bars werden gesucht…','🎵 Konzerte werden gesucht…','🍸 Nachtleben-Spots…','🎭 Shows und Events…'],it:['🌙 Ricerca dei migliori bar…','🎵 Concerti della sera…','🍸 Locali notturni…','🎭 Spettacoli ed eventi…'],pt:['🌙 A encontrar os melhores bares…','🎵 Concertos da noite…','🍸 Melhores locais noturnos…','🎭 Espetáculos e eventos…']};
+  const _ephemMsgs = {fr:['🗓 Recherche des événements locaux…','🛍 Brocantes et marchés à proximité…','🎪 Fêtes et festivals du week-end…','📍 Événements éphémères vérifiés…'],en:['🗓 Searching local events…','🛍 Flea markets and fairs nearby…','🎪 Weekend festivals…','📍 Verified ephemeral events…'],es:['🗓 Buscando eventos locales…','🛍 Mercadillos cerca…','🎪 Festivales del fin de semana…','📍 Eventos verificados…'],de:['🗓 Lokale Events werden gesucht…','🛍 Flohmärkte in der Nähe…','🎪 Wochenend-Festivals…','📍 Verifizierte Events…'],it:['🗓 Ricerca eventi locali…','🛍 Mercatini vicino…','🎪 Festival del weekend…','📍 Eventi verificati…'],pt:['🗓 A pesquisar eventos locais…','🛍 Feiras e mercados perto…','🎪 Festivais do fim de semana…','📍 Eventos verificados…']};
+  const _msgs = _isNightOnly ? (_nightMsgs[lang]||_nightMsgs.fr) : _isEphemOnly ? (_ephemMsgs[lang]||_ephemMsgs.fr) : null;
+  const _loadTitle = t.loadingTitle || 'Recherche en cours…';
+  const _loadText = t.loadingText ? t.loadingText(location) : 'Recherche en cours…';
+  rs.innerHTML = '<div class="loading-state"><div class="spinner"></div><strong id="loading-msg">' + (_msgs ? _msgs[0] : _loadTitle) + '</strong><p>' + _loadText + '</p></div>';
+  // Animation des messages pour éphémères/nocturnes uniquement
+  let _msgIdx = 0;
+  let _msgTimer = null;
+  if (_msgs) {
+    _msgTimer = setInterval(() => {
+      _msgIdx = (_msgIdx + 1) % _msgs.length;
+      const el = document.getElementById('loading-msg');
+      if (el) { el.style.opacity='0'; setTimeout(()=>{ el.textContent=_msgs[_msgIdx]; el.style.opacity='1'; el.style.transition='opacity 0.4s'; },300); }
+    }, 3000);
+  }
   // Injecter la carte coup de coeur loading immédiatement
   renderCoupDeCoeurLoading();
   // Si recherche depuis la carte → rester sur la vue carte
@@ -4172,6 +4190,7 @@ async function runSearch(fromMap) {
       rs.innerHTML = '<div class="error-box"><strong>Oups !</strong> ' + errMsg + '<br><small>Vérifie ta connexion et réessaie.</small></div>';
     }
   } finally {
+    if (typeof _msgTimer !== 'undefined' && _msgTimer) clearInterval(_msgTimer);
     if (sb) { sb.disabled = false; document.getElementById('submit-label').textContent = t.submitLabel || 'Trouver mes activités →'; }
   }
 }
