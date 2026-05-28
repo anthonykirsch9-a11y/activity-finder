@@ -3560,7 +3560,7 @@ function renderCoupDeCoeurResult(cdc) {
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px">📍 ${cdc.address}</div>
       <div class="rc-desc" style="margin-bottom:12px;font-style:italic;color:var(--muted)">"${cdc.description}"</div>
       <a class="rc-gmaps" href="${cdc.gmapsUrl}" target="_blank" rel="noopener">
-        🗺 Voir sur Google Maps
+        🗺 ${t.seeOnGMaps||'Voir sur Google Maps'}
       </a>
     </div>`;
 }
@@ -4077,7 +4077,7 @@ async function runSearch(fromMap) {
         const placesHeader = realPlacesContext
           ? 'LIEUX CERTIFIÉS:\n' + realPlacesContext + '\n\n'
           : '';
-        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + seenContext + '\n\n' + rawPrompt;
+        const prompt = langInstruction + '\n' + placesHeader + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + seenContext + '\n\n' + rawPrompt;
 
         // ── Modèle adaptatif ──
         const isOnlyMode = onlyMode === 'ephem' || onlyMode === 'night';
