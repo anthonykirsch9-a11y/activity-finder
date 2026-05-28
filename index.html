@@ -4244,11 +4244,23 @@ async function runSearch(fromMap) {
           _claudeData = { content: [{ type: 'text', text: JSON.stringify([...normalActs, ...specialActs]) }] };
 
         } else {
-          // ── MODE NORMAL (web search) ──
+          // ── CAS 3 : WEB SEARCH uniquement éphémères/nocturnes ──
+          // Prompt simplifié pour garantir un JSON valide
+          const isNightOnly = onlyMode === 'night';
+          const isEphemOnly = onlyMode === 'ephem';
+          const specialExtra2 = isNightOnly ? (t.nightExtra||'') : (t.ephemExtra||'');
+          const onlyPrompt = langInstruction + dateHeader + weatherHeader +
+            '\nTu es un assistant qui génère des activités en JSON.' +
+            specialExtra2 +
+            '\nGroupe: ' + group + ', Ages: ' + agesStr + ', Budget: ' + budgetContext + ', Lieu: ' + location + ', Rayon: ' + radius + 'km.' +
+            seenContext +
+            '\nRéponds UNIQUEMENT avec un tableau JSON valide de 6 objets. Pas de texte avant ou après. Pas d apostrophe dans les valeurs JSON.' +
+            '\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low","duree":"...","distance":"...","description":"...","pourquoi_adapte":"...","infos_pratiques":[],"ephemere":' + (isEphemOnly?'true':'false') + ',"nocturne":' + (isNightOnly?'true':'false') + ',"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]';
+
           const res = await fetch(EDGE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
-            body: JSON.stringify({ prompt, model: selectedModel, webSearch: needsWebSearch })
+            body: JSON.stringify({ prompt: onlyPrompt, model: selectedModel, webSearch: needsWebSearch })
           });
           if (!res.ok) { const e = await res.text(); throw new Error('API error ' + res.status + ': ' + e); }
           const data = await res.json();
