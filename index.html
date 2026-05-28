@@ -2995,7 +2995,15 @@ function getPhotoTheme(type, titre) {
   if (t.includes('zoo') || t.includes('aquarium') || t.includes('animal')) return 'zoo';
   if (t.includes('parc') || t.includes('attraction') || t.includes('amusement')) return 'parc';
   if (t.includes('nature') || t.includes('lac') || t.includes('forêt') || t.includes('balade')) return 'nature';
-  const typeMap = {'Nature':'nature','Culture':'museum','Sport':'randonnee','Gastronomie':'restaurant','Bien-être':'spa','Divertissement':'parc','Nocturne':'bar','Nightlife':'bar','Food':'restaurant','Wellness':'spa','Entertainment':'parc'};
+  // Mots-clés supplémentaires avant le fallback par type
+  if (t.includes('laser') || t.includes('laser game')) return 'escape';
+  if (t.includes('accrobranche') || t.includes('tyrolienne')) return 'escalade';
+  if (t.includes('paintball')) return 'escalade';
+  if (t.includes('aquarium')) return 'zoo';
+  if (t.includes('soirée') || t.includes('nuit')) return 'bar';
+  if (t.includes('club') || t.includes('discothèque')) return 'bar';
+  if (t.includes('rooftop')) return 'bar';
+  const typeMap = {'Nature':'nature','Culture':'museum','Sport':'randonnee','Gastronomie':'restaurant','Bien-être':'spa','Divertissement':'escape','Nocturne':'bar','Nightlife':'bar','Food':'restaurant','Wellness':'spa','Entertainment':'escape'};
   return typeMap[type] || 'default';
 }
 
@@ -3112,6 +3120,9 @@ async function fetchGooglePlaces(lat, lng, radiusKm, moods) {
       const t = PLACE_TYPES_BY_MOOD[mood] || [];
       types = [...types, ...t];
     }
+    // Toujours chercher les activités de divertissement populaires
+    const alwaysTypes = ['bowling_alley','escape_room','go_kart','amusement_center','movie_theater'];
+    types = [...new Set([...types, ...alwaysTypes])];
     if (!types.length) types = ['tourist_attraction','museum','park','restaurant','bar','bowling_alley','escape_room'];
 
     // Dédupliquer et limiter
@@ -3175,7 +3186,7 @@ async function loadGooglePhoto(imgEl, placeId) {
 
 function formatGooglePlacesForPrompt(places) {
   if (!places.length) return '';
-  const list = places.slice(0, 12).map((p, i) =>
+  const list = places.slice(0, 20).map((p, i) =>
     (i+1) + '. ' + (p.displayName?.text || p.name || 'Lieu') +
     ' (' + (p.primaryType || 'lieu') + ')' +
     (p.formattedAddress ? ' | ' + p.formattedAddress : '') +
@@ -3183,7 +3194,7 @@ function formatGooglePlacesForPrompt(places) {
     (p.location ? ' | GPS:' + p.location.latitude.toFixed(4) + ',' + p.location.longitude.toFixed(4) : '') +
     (p.id ? ' | id:' + p.id : '')
   ).join('\n');
-  return list + '\nUtilise ces lieux(lieu_certain:true,placeId exact).';
+  return list + '\nCRUCIAL: Utilise CES lieux réels en priorité absolue (lieu_certain:true, placeId exact). Propose un mix varié — si bowling, karting ou escape game sont dans la liste, en inclure AU MAXIMUM 1 sur les 6 activités.';
 }
 
 // Traduire les types d'activités pour les badges
