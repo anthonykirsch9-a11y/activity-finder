@@ -2780,7 +2780,7 @@ async function fetchRealPlaces(lat, lng, radiusKm, moods, searchText) {
 
 function formatPlacesForPrompt(places) {
   if (!places.length) return '';
-  const list = places.slice(0, 20).map((p, i) =>
+  const list = places.slice(0, 30).map((p, i) =>
     (i+1) + '. ' + p.name + ' (' + p.type + ')' +
     (p.address ? ' -- ' + p.address : '') +
     (p.opening_hours ? ' -- Horaires: ' + p.opening_hours : ' -- Verifier horaires') +
@@ -3071,7 +3071,7 @@ const PLACE_TYPES_BY_MOOD = {
   'Sport':          ['bowling_alley','sports_complex','gym','climbing_wall','go_kart'],
   'Gastronomie':    ['restaurant','fine_dining_restaurant','wine_bar','food_court'],
   'Bien-être':      ['spa','wellness_center','swimming_pool','yoga_studio'],
-  'Divertissement': ['amusement_park','escape_room','bowling_alley','movie_theater','amusement_center'],
+  'Divertissement': ['amusement_park','escape_room','bowling_alley','movie_theater','amusement_center','laser_game_center','adventure_sports_center'],
   'Éphémère':       ['market','flea_market','farmers_market'],
   'Nocturne':       ['bar','night_club','pub','comedy_club','jazz_club'],
   'Shopping':       ['shopping_mall','market','department_store'],
@@ -3123,10 +3123,10 @@ async function fetchGooglePlaces(lat, lng, radiusKm, moods) {
     // Toujours chercher les activités de divertissement populaires
     const alwaysTypes = ['bowling_alley','escape_room','go_kart','amusement_center','movie_theater'];
     types = [...new Set([...types, ...alwaysTypes])];
-    if (!types.length) types = ['tourist_attraction','museum','park','restaurant','bar','bowling_alley','escape_room'];
+    if (!types.length) types = ['tourist_attraction','museum','park','restaurant','bar','bowling_alley','escape_room','laser_game_center','adventure_sports_center','amusement_center'];
 
     // Dédupliquer et limiter
-    types = [...new Set(types)].slice(0, 5);
+    types = [...new Set(types)].slice(0, 8);
 
     // Appel via Supabase Edge Function (la clé Google est côté serveur)
     const EDGE_URL = SUPABASE_URL + '/functions/v1/places';
