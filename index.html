@@ -4385,7 +4385,19 @@ function loadPhotosForResults(activities) {
     }
 
     // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
-    const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
+    let gPlace = _lastGooglePlaces.find(p => p.id === placeId);
+
+    // Fallback par correspondance de nom si placeId introuvable (ex: Claude en ES/PT retourne un placeId incorrect)
+    if (!gPlace && img.dataset.titre) {
+      const words = img.dataset.titre.split(/\s+/).filter(w => w.length > 4);
+      if (words.length > 0) {
+        gPlace = _lastGooglePlaces.find(p => {
+          const name = (p.displayName?.text || p.name || '').toLowerCase();
+          return words.some(w => name.includes(w.toLowerCase()));
+        });
+      }
+    }
+
     if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
       const photoName = gPlace.photos[0].name;
       if (photoName) {
@@ -4396,20 +4408,7 @@ function loadPhotosForResults(activities) {
         loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       }
     } else {
-      // placeId présent mais pas dans _lastGooglePlaces — chercher par nom
-      const titre2 = (img.dataset.titre || '').toLowerCase();
-      const words2 = titre2.split(/\s+/).filter(w => w.length > 4).slice(0, 3);
-      const gByName = words2.length ? _lastGooglePlaces.find(p => {
-        const n = (p.displayName?.text || '').toLowerCase();
-        return words2.some(w => n.includes(w));
-      }) : null;
-      if (gByName && gByName.photos && gByName.photos[0]) {
-        const photoUrlN = 'https://places.googleapis.com/v1/' + gByName.photos[0].name + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
-        img.src = photoUrlN;
-        img.onerror = () => { img.onerror = null; loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
-      } else {
-        loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
-      }
+      loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
     }
   });
 }
