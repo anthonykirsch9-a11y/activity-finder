@@ -3669,7 +3669,7 @@ function buildActivityCard(a, idx, location) {
   return `<div class="rc-card">
     <div class="rc-photo-wrap">
       <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
-        data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}"
+        data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}" data-lat="${a.lat||''}" data-lng="${a.lng||''}"
         onerror="this.style.display='none'">
       <div class="rc-photo-overlay"></div>
       <div class="rc-photo-top">
@@ -4387,14 +4387,27 @@ function loadPhotosForResults(activities) {
     }
 
     // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
-    // Chercher d'abord par placeId exact, sinon par nom approx (pour langues non-FR)
+    // Chercher par placeId exact, puis par GPS (fiable toutes langues), puis par nom
     let gPlace = _lastGooglePlaces.find(p => p.id === placeId);
     if (!gPlace) {
-      const titre = (img.dataset.titre || '').toLowerCase().substring(0, 15);
-      if (titre.length > 5) {
+      // Match par GPS — le plus fiable peu importe la langue
+      const aLat = parseFloat(img.dataset.lat || img.closest('[data-lat]')?.dataset.lat || '0');
+      const aLng = parseFloat(img.dataset.lng || img.closest('[data-lng]')?.dataset.lng || '0');
+      if (aLat && aLng) {
         gPlace = _lastGooglePlaces.find(p => {
-          const pName = (p.displayName?.text || p.name || '').toLowerCase();
-          return pName.includes(titre) || titre.includes(pName.substring(0, 10));
+          const pLat = p.location?.latitude || 0;
+          const pLng = p.location?.longitude || 0;
+          return Math.abs(pLat - aLat) < 0.005 && Math.abs(pLng - aLng) < 0.005;
+        });
+      }
+    }
+    if (!gPlace) {
+      // Match par nom en dernier recours
+      const titre = (img.dataset.titre || '').toLowerCase().substring(0, 12);
+      if (titre.length > 4) {
+        gPlace = _lastGooglePlaces.find(p => {
+          const pName = (p.displayName?.text || '').toLowerCase();
+          return pName.includes(titre) || titre.includes(pName.substring(0, 8));
         });
       }
     }
