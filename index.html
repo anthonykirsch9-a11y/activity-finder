@@ -4270,7 +4270,7 @@ async function runSearch(fromMap) {
                   card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
                   card.style.opacity = '1'; card.style.transform = 'translateY(0)';
                 }));
-                setTimeout(() => loadPhotosForResults([a]), 200);
+                setTimeout(() => loadPhotosForResults([a]), 400);
               }
             });
             const all = [...normalActs, ...specialActs];
@@ -4288,7 +4288,7 @@ async function runSearch(fromMap) {
             const d = await r.json();
             const txt = (d.content||[]).map(c=>c.text||'').join('');
             const m = txt.match(/\[\s*\{[\s\S]*\}\s*\]/);
-            if (m) { try { specialActs = JSON.parse(m[0]); } catch(_) {} }
+            if (m) { try { specialActs = JSON.parse(m[0]).slice(0, 2); } catch(_) {} }
             specialDone = true;
             addSpecialCards();
           }).catch(() => { specialDone = true; });
@@ -4331,7 +4331,7 @@ async function runSearch(fromMap) {
             }
           }
           const parsedFinal = _tryParseActivities(fullTextN);
-          normalActs = parsedFinal || [];
+          normalActs = (parsedFinal || []).slice(0, 4);
 
           // Attendre que les spéciales soient arrivées (max 30s)
           let waited = 0;
