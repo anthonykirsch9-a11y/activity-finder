@@ -3668,8 +3668,7 @@ function buildActivityCard(a, idx, location) {
 
   return `<div class="rc-card">
     <div class="rc-photo-wrap">
-      <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" loading="lazy"
-        data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
+      <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
         data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}"
         onerror="this.style.display='none'">
       <div class="rc-photo-overlay"></div>
