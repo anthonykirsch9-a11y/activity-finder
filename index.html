@@ -2966,7 +2966,7 @@ function getPhotoTheme(type, titre) {
     if (t.includes('moto') || t.includes('harley')) return 'moto';
     if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer')) return 'voiture';
     if (t.includes('food') || t.includes('burger') || t.includes('barbecue')) return 'food';
-    if (t.includes('concert') || t.includes('festival') || t.includes('rock') || t.includes('jazz') || t.includes('sinfon') || t.includes('konzert') || t.includes('live-show') || t.includes('live show') || t.includes('musica') || t.includes('flamenco') || t.includes('opera') || t.includes('show') || t.includes('gala') || t.includes('tributo') || t.includes('orquesta') || t.includes('orchester')) return 'concert';
+    if (t.includes('concert') || t.includes('festival') || t.includes('rock') || t.includes('jazz')) return 'concert';
     if (t.includes('bd') || t.includes('comics') || t.includes('manga')) return 'bd';
     if (t.includes('parade') || t.includes('carnaval') || t.includes('défilé')) return 'parade';
     if (t.includes('noël') || t.includes('noel')) return 'noel';
@@ -4413,8 +4413,13 @@ function loadPhotosForResults(activities) {
         loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       }
     } else {
-      // gPlace introuvable → placeId inventé par Claude → Pexels directement
-      loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      // loadGooglePhoto a un try/catch interne vide — on gère le fallback Pexels explicitement
+      loadGooglePhoto(img, placeId).then(() => {
+        // Si l'img n'a toujours pas de src valide après l'appel → Pexels
+        if (!img.src || img.src === window.location.href) {
+          loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+        }
+      }).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
     }
   });
 }
