@@ -4137,6 +4137,7 @@ async function runSearch(fromMap) {
           }
 
           _claudeData = { content: [{ type: 'text', text: fullText }] };
+          _claudeData._alreadyRendered = true;
 
         } else if (isMixMode) {
           // ── CAS 2 : PARALLÈLE — streaming 4 normales + web search 2 spéciales ──
@@ -4242,6 +4243,7 @@ async function runSearch(fromMap) {
           if (!specialDone) addSpecialCards(); // timeout
 
           _claudeData = { content: [{ type: 'text', text: JSON.stringify([...normalActs, ...specialActs]) }] };
+          _claudeData._alreadyRendered = true;
 
         } else {
           // ── MODE NORMAL (web search) ──
@@ -4291,7 +4293,7 @@ async function runSearch(fromMap) {
     }
     if (!jsonMatch) throw new Error('Pas de JSON dans la reponse');
 
-    const activities = JSON.parse(jsonMatch[0]);
+    const activities = JSON.parse(jsonMatch[0]).slice(0, 6);
     if (!Array.isArray(activities) || !activities.length) throw new Error('Tableau vide');
 
     // Stocker dans le cache Claude (2h)
@@ -4301,8 +4303,10 @@ async function runSearch(fromMap) {
 
     window._lastActivities = activities;
 
-    // Affichage progressif
-    renderResultsProgressive(activities, location, radius, budget, group, ages);
+    // Affichage progressif — seulement si pas déjà rendu (CAS 1 streaming et CAS 2 ont déjà affiché les cartes)
+    if (!_claudeData._alreadyRendered) {
+      renderResultsProgressive(activities, location, radius, budget, group, ages);
+    }
 
     // Sauvegarder le profil pour pré-remplir la prochaine fois
     if (userPlan === 'pro') {
