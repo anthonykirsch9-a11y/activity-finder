@@ -4379,13 +4379,23 @@ function loadPhotosForResults(activities) {
     const isEphemere = img.dataset.ephemere === '1';
 
     // Éphémères → toujours Pexels thématique
-    if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
+    if (isEphemere) {
       loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       return;
     }
 
-    // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
-    const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
+    // Chercher le lieu Google : par placeId exact, ou par nom si placeId absent
+    let gPlace = _lastGooglePlaces.find(p => p.id === placeId && placeId && placeId !== 'null');
+    if (!gPlace) {
+      const titre = (img.dataset.titre || '').toLowerCase().replace(/[^a-z0-9àáâãäåæçèéêëìíîïðñòóôõöùúûüý]/g,' ').substring(0, 20).trim();
+      const words = titre.split(' ').filter(w => w.length > 3);
+      if (words.length > 0) {
+        gPlace = _lastGooglePlaces.find(p => {
+          const pName = (p.displayName?.text || '').toLowerCase();
+          return words.some(w => pName.includes(w));
+        });
+      }
+    }
     if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
       const photoName = gPlace.photos[0].name;
       if (photoName) {
