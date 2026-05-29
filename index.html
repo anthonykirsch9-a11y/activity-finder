@@ -3190,6 +3190,71 @@ async function loadGooglePhoto(imgEl, placeId) {
   } catch(e) {}
 }
 
+function applyProfile() {
+  const profile = localLoad('user_profile');
+  if (!profile) return;
+  if (userPlan !== 'pro') return;
+
+  // Ville
+  if (profile.location) {
+    const locEl = document.getElementById('location');
+    if (locEl) locEl.value = profile.location;
+  }
+
+  // Groupe
+  if (profile.group) {
+    document.querySelectorAll('#group-type .pill').forEach(p => {
+      p.classList.toggle('selected', p.dataset.val === profile.group);
+    });
+    persons = [];
+    personCounter = 0;
+    syncAgesUI();
+  }
+
+  // Budget
+  if (profile.budget) {
+    const slider = document.getElementById('budget-slider');
+    if (slider) { slider.value = profile.budget; updateBudget(); }
+  }
+
+  // Rayon
+  if (profile.radius) {
+    const sel = document.getElementById('radius-select');
+    if (sel) sel.value = profile.radius;
+  }
+
+  // Envies
+  if (profile.moods && profile.moods.length) {
+    document.querySelectorAll('#moods .pill').forEach(p => {
+      p.classList.toggle('selected', profile.moods.includes(p.dataset.val));
+    });
+  }
+
+  // Âges — on ajoute les personnes puis on remplit les champs
+  if (profile.ages && profile.ages.length) {
+    while (persons.length < profile.ages.length) addPerson();
+    setTimeout(() => {
+      document.querySelectorAll('.age-input').forEach((inp, i) => {
+        if (profile.ages[i] !== undefined) inp.value = profile.ages[i];
+      });
+    }, 200);
+  }
+
+  // Bouton save visible
+  const wrap = document.getElementById('save-profile-wrap');
+  if (wrap) wrap.style.display = 'block';
+
+  // Message discret
+  const locEl = document.getElementById('location');
+  if (locEl && profile.location) {
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:11px;color:var(--primary);margin-top:4px;opacity:0.8';
+    hint.textContent = '✓ ' + ({fr:'Profil chargé — modifie si besoin',en:'Profile loaded — change if needed',es:'Perfil cargado — cambia si quieres',de:'Profil geladen — ändern möglich',it:'Profilo caricato — modifica se vuoi',pt:'Perfil carregado — muda se precisares'}[lang]||'Profil chargé');
+    locEl.parentNode.insertBefore(hint, locEl.nextSibling);
+    setTimeout(() => hint.remove(), 4000);
+  }
+}
+
 function saveProfileManual() {
   if (userPlan !== 'pro') return;
   const location = document.getElementById('location')?.value?.trim() || '';
@@ -6388,6 +6453,8 @@ function hideBetaScreen() {
   // Avatar APRÈS renderAuthUI sinon écrasé
   const savedAvatar = localLoad('user_avatar');
   if (savedAvatar) setTimeout(function() { updateAvatarDisplay(savedAvatar); }, 250);
+  // Charger le profil sauvegardé
+  setTimeout(() => applyProfile(), 300);
 }
 
 function initBetaGate() {
@@ -6406,6 +6473,8 @@ function initBetaGate() {
     // Avatar APRÈS renderAuthUI
     const savedAv = localLoad('user_avatar');
     if (savedAv) setTimeout(function() { updateAvatarDisplay(savedAv); }, 250);
+    // Charger le profil sauvegardé
+    setTimeout(() => applyProfile(), 300);
   }
   // App accessible à tous sans code (beta-screen désactivé)
 }
@@ -6613,79 +6682,8 @@ document.addEventListener('click', function(e) {
 window.addEventListener('load', () => {
   initBetaGate();
 
-  // Charger le profil sauvegardé (Pro)
-  setTimeout(() => {
-    if (userPlan !== 'pro') return;
-    const profile = localLoad('user_profile');
-    if (!profile) return;
-
-    // Ville
-    if (profile.location) {
-      const locEl = document.getElementById('location');
-      if (locEl) locEl.value = profile.location;
-    }
-
-    // Groupe
-    if (profile.group) {
-      document.querySelectorAll('#group-type .pill').forEach(p => {
-        p.classList.toggle('selected', p.dataset.val === profile.group);
-      });
-      // Mettre à jour persons
-      persons = [];
-      personCounter = 0;
-      syncAgesUI();
-    }
-
-    // Budget
-    if (profile.budget) {
-      const slider = document.getElementById('budget-slider');
-      if (slider) { slider.value = profile.budget; updateBudget(); }
-    }
-
-    // Rayon
-    if (profile.radius) {
-      const sel = document.getElementById('radius-select');
-      if (sel) sel.value = profile.radius;
-    }
-
-    // Envies
-    if (profile.moods && profile.moods.length) {
-      document.querySelectorAll('#moods .pill').forEach(p => {
-        p.classList.toggle('selected', profile.moods.includes(p.dataset.val));
-      });
-    }
-
-    // Âges
-    if (profile.ages && profile.ages.length) {
-      profile.ages.forEach((age, i) => {
-        if (i === 0) {
-          // Ajouter des personnes si nécessaire
-          while (persons.length < profile.ages.length) addPerson();
-        }
-      });
-      setTimeout(() => {
-        document.querySelectorAll('.age-input').forEach((inp, i) => {
-          if (profile.ages[i]) inp.value = profile.ages[i];
-        });
-      }, 100);
-    }
-
-    // Petit message discret
-    const locEl = document.getElementById('location');
-    if (locEl && profile.location) {
-      const hint = document.createElement('div');
-      hint.style.cssText = 'font-size:11px;color:var(--primary);margin-top:4px;opacity:0.8';
-      const t = tx();
-      hint.textContent = '✓ ' + ({fr:'Profil chargé — modifie si besoin',en:'Profile loaded — change if needed',es:'Perfil cargado — cambia si quieres',de:'Profil geladen — ändern möglich',it:'Profilo caricato — modifica se vuoi',pt:'Perfil carregado — muda se precisares'}[lang]||'Profil chargé');
-      locEl.parentNode.insertBefore(hint, locEl.nextSibling);
-      setTimeout(() => hint.remove(), 4000);
-    }
-  }, 500);
-  // Afficher le bouton save-profile si Pro ou Beta
-  setTimeout(() => {
-    const wrap = document.getElementById('save-profile-wrap');
-    if (wrap && userPlan === 'pro') wrap.style.display = 'block';
-  }, 600);
+  // Charger le profil sauvegardé — appelé aussi depuis hideBetaScreen/initBetaGate
+  setTimeout(() => applyProfile(), 500);
 
   setTimeout(function() { setLang(lang); }, 50);
   setTimeout(checkOnThisDayNotification, 2000);
