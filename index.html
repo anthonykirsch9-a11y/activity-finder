@@ -1626,7 +1626,7 @@ const LANGS = {
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
-      `Tu es un expert en loisirs et activités de week-end. Génère exactement 6 idées d'activités VARIÉES.\n\nCONTEXTE:\n- Groupe: ${group}\n- ${agesStr}${ageStr}\n- Budget: ${budget}\n- Lieu: ${location}${radius==='0' ? ' (dans la ville uniquement)' : ', rayon ' + radius + 'km'}\n- ${moods}\n\nRÈGLES STRICTES:\n- VÉRIFIE via web search que chaque lieu existe VRAIMENT.\n- Pour les éphémères: vérifie la date EXACTE sur le web. Ne jamais inventer une date.\n- Si tu n'es pas sûr à 100%, indique "à vérifier".\n- Adapte CHAQUE activité aux âges.\n- VARIES ABSOLUMENT les types: pense escape game, zoo, aquarium, mini-golf, laser game, accrobranche, karting, bowling, spa, musée, château, cinéma, restaurant gastronomique, marché, concert, atelier créatif, randonnée, vélo, kayak, trampoline. Ne propose pas toujours les mêmes activités classiques.${eph}${night}\n\nJSON valide uniquement, sans backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Gastronomie|Bien-être|Divertissement|Éphémère|Nocturne","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases concrètes avec lieux réels vérifiés.","pourquoi_adapte":"1 phrase pour CE groupe et CES âges.","infos_pratiques":["...","...","..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
+      `Tu es un expert en loisirs et activités de week-end. Génère exactement 6 idées d'activités VARIÉES.\n\nCONTEXTE:\n- Groupe: ${group}\n- ${agesStr}${ageStr}\n- Budget: ${budget}\n- Lieu: ${location}${radius==='0' ? ' (dans la ville uniquement)' : ', rayon ' + radius + 'km'}\n- ${moods}\n\nRÈGLES STRICTES:\n- VÉRIFIE via web search que chaque lieu existe VRAIMENT.\n- Pour les éphémères: vérifie la date EXACTE sur le web. Ne jamais inventer une date.\n- Si tu n'es pas sûr à 100%, indique "à vérifier".\n- Adapte CHAQUE activité aux âges.\n- VARIES ABSOLUMENT les types: pense escape game, zoo, aquarium, mini-golf, laser game, accrobranche, karting, bowling, spa, musée, château, cinéma, restaurant gastronomique, marché, concert, atelier créatif, randonnée, vélo, kayak, trampoline. Ne propose pas toujours les mêmes activités classiques.${eph}${night}\n\nJSON valide uniquement, sans backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Gastronomie|Bien-être|Divertissement|Éphémère|Nocturne" IMPORTANT: always use exactly one of these French type values, never translate them,"cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases concrètes avec lieux réels vérifiés.","pourquoi_adapte":"1 phrase pour CE groupe et CES âges.","infos_pratiques":["...","...","..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
       `Expert loisirs. 6 activités autour de lat:${lat},lng:${lng}${radius==='0' ? ' (ville)' : ', rayon ' + radius + 'km'}.\nGroupe:${group}, ${agesStr}, Budget:${budget}€, ${moods}\nJSON valide sans backticks:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases.","pourquoi_adapte":"1 phrase.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
@@ -4388,7 +4388,17 @@ function loadPhotosForResults(activities) {
     }
 
     // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
-    const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
+    // Chercher d'abord par placeId exact, sinon par nom approx (pour langues non-FR)
+    let gPlace = _lastGooglePlaces.find(p => p.id === placeId);
+    if (!gPlace) {
+      const titre = (img.dataset.titre || '').toLowerCase().substring(0, 15);
+      if (titre.length > 5) {
+        gPlace = _lastGooglePlaces.find(p => {
+          const pName = (p.displayName?.text || p.name || '').toLowerCase();
+          return pName.includes(titre) || titre.includes(pName.substring(0, 10));
+        });
+      }
+    }
     if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
       const photoName = gPlace.photos[0].name;
       if (photoName) {
