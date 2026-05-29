@@ -3194,7 +3194,7 @@ function formatGooglePlacesForPrompt(places) {
     (p.location ? ' | GPS:' + p.location.latitude.toFixed(4) + ',' + p.location.longitude.toFixed(4) : '') +
     (p.id ? ' | id:' + p.id : '')
   ).join('\n');
-  return list + '\nCRUCIAL: Use THESE real places as priority (lieu_certain:true, exact placeId from the list above). Varied mix — max 1 bowling/karting/escape among 6 activities.';
+  return list + '\nCRUCIAL: Use THESE real places as priority. For each place used, copy the EXACT id value as placeId (e.g. placeId:"ChIJ..."). lieu_certain:true. Varied mix — max 1 bowling/karting/escape among 6 activities.';
 }
 
 // Traduire les types d'activités pour les badges
