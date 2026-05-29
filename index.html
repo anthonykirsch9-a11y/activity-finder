@@ -3194,7 +3194,7 @@ function formatGooglePlacesForPrompt(places) {
     (p.location ? ' | GPS:' + p.location.latitude.toFixed(4) + ',' + p.location.longitude.toFixed(4) : '') +
     (p.id ? ' | id:' + p.id : '')
   ).join('\n');
-  return list + '\nCRUCIAL: Utilise CES lieux réels en priorité absolue (lieu_certain:true, placeId exact). Propose un mix varié — si bowling, karting ou escape game sont dans la liste, en inclure AU MAXIMUM 1 sur les 6 activités.';
+  return list + '\nCRUCIAL: Use THESE real places as priority (lieu_certain:true, exact placeId from the list above). Varied mix — max 1 bowling/karting/escape among 6 activities.';
 }
 
 // Traduire les types d'activités pour les badges
@@ -4145,7 +4145,7 @@ async function runSearch(fromMap) {
           const rawNormal = fromMap && mapSearchCoords
             ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
             : t.promptFn(group, agesStr, ageStr, budgetContext, location, radius, moodsStr + doneContext, '', '');
-          const promptNormal = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + getSpecialEventContext() + seenContext + '\nGénère exactement 4 activités (pas 6).\n' + rawNormal;
+          const promptNormal = langInstruction + '\n' + placesHeader + dateHeader + weatherHeader + strictRules + getSpecialEventContext() + seenContext + '\nGENERATE EXACTLY 4 activities (not 6, not 8). Maximum 4.\n' + rawNormal;
 
           // Prompt 2 activités spéciales
           const specialLabel = nightOn ? (lang==='fr'?'nocturnes':lang==='en'?'nightlife':lang==='es'?'nocturnas':lang==='de'?'Nachtleben':lang==='it'?'notturne':'noturnas') : (lang==='fr'?'éphémères':lang==='en'?'ephemeral events':lang==='es'?'efímeros':lang==='de'?'kurzfristige Events':lang==='it'?'effimeri':'efémeros');
@@ -4378,10 +4378,12 @@ function loadPhotosForResults(activities) {
   document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
     const placeId = img.dataset.placeid;
     const isEphemere = img.dataset.ephemere === '1';
+    // Utiliser le type technique pour Pexels (indépendant de la langue)
+    const actType = img.dataset.type || '';
 
     // Éphémères → toujours Pexels thématique
     if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
-      loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      loadPexelsPhoto(img, actType || img.dataset.type, img.dataset.titre);
       return;
     }
 
