@@ -4322,9 +4322,10 @@ async function runSearch(fromMap) {
                   fullTextN += evt.text;
                   const parsed = _tryParseActivities(fullTextN);
                   if (parsed && parsed.length > renderedN) {
-                    _renderStreamCards(parsed, renderedN, location);
-                    renderedN = parsed.length;
-                    normalActs = parsed;
+                    const limited = parsed.slice(0, 4);
+                    _renderStreamCards(limited, renderedN, location);
+                    renderedN = limited.length;
+                    normalActs = limited;
                   }
                 }
               } catch(_) {}
