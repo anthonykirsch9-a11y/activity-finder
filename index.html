@@ -1626,7 +1626,7 @@ const LANGS = {
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
-      `Tu es un expert en loisirs et activités de week-end. Génère exactement 6 idées d'activités VARIÉES.\n\nCONTEXTE:\n- Groupe: ${group}\n- ${agesStr}${ageStr}\n- Budget: ${budget}\n- Lieu: ${location}${radius==='0' ? ' (dans la ville uniquement)' : ', rayon ' + radius + 'km'}\n- ${moods}\n\nRÈGLES STRICTES:\n- VÉRIFIE via web search que chaque lieu existe VRAIMENT.\n- Pour les éphémères: vérifie la date EXACTE sur le web. Ne jamais inventer une date.\n- Si tu n'es pas sûr à 100%, indique "à vérifier".\n- Adapte CHAQUE activité aux âges.\n- VARIES ABSOLUMENT les types: pense escape game, zoo, aquarium, mini-golf, laser game, accrobranche, karting, bowling, spa, musée, château, cinéma, restaurant gastronomique, marché, concert, atelier créatif, randonnée, vélo, kayak, trampoline. Ne propose pas toujours les mêmes activités classiques.${eph}${night}\n\nJSON valide uniquement, sans backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Gastronomie|Bien-être|Divertissement|Éphémère|Nocturne" IMPORTANT: always use exactly one of these French type values, never translate them,"cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases concrètes avec lieux réels vérifiés.","pourquoi_adapte":"1 phrase pour CE groupe et CES âges.","infos_pratiques":["...","...","..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
+      `Tu es un expert en loisirs et activités de week-end. Génère exactement 6 idées d'activités VARIÉES.\n\nCONTEXTE:\n- Groupe: ${group}\n- ${agesStr}${ageStr}\n- Budget: ${budget}\n- Lieu: ${location}${radius==='0' ? ' (dans la ville uniquement)' : ', rayon ' + radius + 'km'}\n- ${moods}\n\nRÈGLES STRICTES:\n- VÉRIFIE via web search que chaque lieu existe VRAIMENT.\n- Pour les éphémères: vérifie la date EXACTE sur le web. Ne jamais inventer une date.\n- Si tu n'es pas sûr à 100%, indique "à vérifier".\n- Adapte CHAQUE activité aux âges.\n- VARIES ABSOLUMENT les types: pense escape game, zoo, aquarium, mini-golf, laser game, accrobranche, karting, bowling, spa, musée, château, cinéma, restaurant gastronomique, marché, concert, atelier créatif, randonnée, vélo, kayak, trampoline. Ne propose pas toujours les mêmes activités classiques.${eph}${night}\n\nJSON valide uniquement, sans backticks:\n[{"titre":"...","type":"Nature|Culture|Sport|Gastronomie|Bien-être|Divertissement|Éphémère|Nocturne","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases concrètes avec lieux réels vérifiés.","pourquoi_adapte":"1 phrase pour CE groupe et CES âges.","infos_pratiques":["...","...","..."],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
     mapPromptFn:(lat,lng,radius,agesStr,group,budget,moods)=>
       `Expert loisirs. 6 activités autour de lat:${lat},lng:${lng}${radius==='0' ? ' (ville)' : ', rayon ' + radius + 'km'}.\nGroupe:${group}, ${agesStr}, Budget:${budget}€, ${moods}\nJSON valide sans backticks:\n[{"titre":"...","type":"...","cout_estime":"...","budget_niveau":"low|mid|high","duree":"...","distance":"...","description":"3 phrases.","pourquoi_adapte":"1 phrase.","infos_pratiques":[],"ephemere":false,"nocturne":false,"frequence":null,"lat":0.0,"lng":0.0,"lieu_certain":true,"placeId":null}]`,
   },
@@ -2283,12 +2283,10 @@ const mapDd = document.getElementById('map-city-dropdown');
 async function fetchCities(q) {
   try {
     // Photon (komoot) — plus fiable que Nominatim, pas de blocage GitHub Pages
-    const langMap = { fr:'fr', en:'en', es:'es', de:'de', it:'it', pt:'pt' };
+    const langMap = { fr:'fr', en:'en', es:'fr', de:'de', it:'it', pt:'fr' }; // komoot ne supporte pas es/pt
     const l = langMap[lang] || 'fr';
-    // Komoot accepte seulement de, en, fr, it
-    const komootLang = ['de','en','fr','it'].includes(l) ? l : 'fr';
     const r = await fetch(
-      'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + komootLang
+      'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + l
     );
     if (!r.ok) throw new Error('photon fail');
     const data = await r.json();
@@ -3196,7 +3194,7 @@ function formatGooglePlacesForPrompt(places) {
     (p.location ? ' | GPS:' + p.location.latitude.toFixed(4) + ',' + p.location.longitude.toFixed(4) : '') +
     (p.id ? ' | id:' + p.id : '')
   ).join('\n');
-  return list + '\nCRUCIAL: Use THESE real places as priority. For each place used, copy the EXACT id value as placeId (e.g. placeId:"ChIJ..."). lieu_certain:true. Varied mix — max 1 bowling/karting/escape among 6 activities.';
+  return list + '\nCRUCIAL: Utilise CES lieux réels en priorité absolue (lieu_certain:true, placeId exact). Propose un mix varié — si bowling, karting ou escape game sont dans la liste, en inclure AU MAXIMUM 1 sur les 6 activités.';
 }
 
 // Traduire les types d'activités pour les badges
@@ -3520,7 +3518,6 @@ function renderCoupDeCoeurLoading() {
 }
 
 function renderCoupDeCoeurResult(cdc) {
-  const t = tx();
   if (!cdc) { const c = document.getElementById('cdc-card'); if (c) c.remove(); return; }
   let card = document.getElementById('cdc-card');
   // Si la carte n'existe pas encore (résultats arrivés avant le CDC)
@@ -3563,7 +3560,7 @@ function renderCoupDeCoeurResult(cdc) {
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px">📍 ${cdc.address}</div>
       <div class="rc-desc" style="margin-bottom:12px;font-style:italic;color:var(--muted)">"${cdc.description}"</div>
       <a class="rc-gmaps" href="${cdc.gmapsUrl}" target="_blank" rel="noopener">
-        🗺 ${t.seeOnGMaps||'Voir sur Google Maps'}
+        🗺 Voir sur Google Maps
       </a>
     </div>`;
 }
@@ -3670,8 +3667,9 @@ function buildActivityCard(a, idx, location) {
 
   return `<div class="rc-card">
     <div class="rc-photo-wrap">
-      <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
-        data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}" data-lat="${a.lat||''}" data-lng="${a.lng||''}"
+      <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" loading="lazy"
+        data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
+        data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}"
         onerror="this.style.display='none'">
       <div class="rc-photo-overlay"></div>
       <div class="rc-photo-top">
@@ -4068,7 +4066,7 @@ async function runSearch(fromMap) {
         const weatherHeader = weatherContext ? '🌤 METEO: ' + weatherContext.replace('\n- Météo: ','') + '\n' : '';
         const LANG_NAMES = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
         const langInstruction = `Réponds en ${LANG_NAMES[lang] || 'français'}.\n`;
-        const strictRules = "RULES(follow in any language):1.Use certified places(lieu_certain:true).2.No invented names(lieu_certain:false).3.EXACT GPS coordinates NEVER 0.0 — use real lat/lng of the place.4.No GPS in description.5.ephemere:true ONLY for unique date events.Casino/restaurant/museum/spa/bowling/karting/cinema/bar=never ephemere:true.";
+        const strictRules = "REGLES:1.Utilise les lieux certifiés fournis(lieu_certain:true).2.Pas de noms inventés(lieu_certain:false).3.GPS précis jamais 0.0.4.Pas de coords GPS dans description.5.ephemere:true SEULEMENT si date unique(brocante,fête locale,concert ponctuel).Casino/restaurant/musée/spa/bowling/karting/cinéma/bar=jamais ephemere:true.";
 
         const varietyInstruction = ''; // variété gérée côté prompt
 
@@ -4079,7 +4077,7 @@ async function runSearch(fromMap) {
         const placesHeader = realPlacesContext
           ? 'LIEUX CERTIFIÉS:\n' + realPlacesContext + '\n\n'
           : '';
-        const prompt = langInstruction + '\n' + placesHeader + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + seenContext + '\n\n' + rawPrompt;
+        const prompt = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + strictMoodFilter + varietyInstruction + getSpecialEventContext() + seenContext + '\n\n' + rawPrompt;
 
         // ── Modèle adaptatif ──
         const isOnlyMode = onlyMode === 'ephem' || onlyMode === 'night';
@@ -4146,7 +4144,7 @@ async function runSearch(fromMap) {
           const rawNormal = fromMap && mapSearchCoords
             ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
             : t.promptFn(group, agesStr, ageStr, budgetContext, location, radius, moodsStr + doneContext, '', '');
-          const promptNormal = langInstruction + '\n' + placesHeader + dateHeader + weatherHeader + strictRules + getSpecialEventContext() + seenContext + '\nGENERATE EXACTLY 4 activities (not 6, not 8). Maximum 4.\n' + rawNormal;
+          const promptNormal = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + getSpecialEventContext() + seenContext + '\nGénère exactement 4 activités (pas 6).\n' + rawNormal;
 
           // Prompt 2 activités spéciales
           const specialLabel = nightOn ? (lang==='fr'?'nocturnes':lang==='en'?'nightlife':lang==='es'?'nocturnas':lang==='de'?'Nachtleben':lang==='it'?'notturne':'noturnas') : (lang==='fr'?'éphémères':lang==='en'?'ephemeral events':lang==='es'?'efímeros':lang==='de'?'kurzfristige Events':lang==='it'?'effimeri':'efémeros');
@@ -4379,40 +4377,15 @@ function loadPhotosForResults(activities) {
   document.querySelectorAll('.rc-photo[data-placeid]').forEach(img => {
     const placeId = img.dataset.placeid;
     const isEphemere = img.dataset.ephemere === '1';
-    // Utiliser le type technique pour Pexels (indépendant de la langue)
-    const actType = img.dataset.type || '';
 
     // Éphémères → toujours Pexels thématique
     if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
-      loadPexelsPhoto(img, actType || img.dataset.type, img.dataset.titre);
+      loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       return;
     }
 
     // Activité fixe avec placeId : tenter Google Places photo, fallback Pexels
-    // Chercher par placeId exact, puis par GPS (fiable toutes langues), puis par nom
-    let gPlace = _lastGooglePlaces.find(p => p.id === placeId);
-    if (!gPlace) {
-      // Match par GPS — le plus fiable peu importe la langue
-      const aLat = parseFloat(img.dataset.lat || img.closest('[data-lat]')?.dataset.lat || '0');
-      const aLng = parseFloat(img.dataset.lng || img.closest('[data-lng]')?.dataset.lng || '0');
-      if (aLat && aLng) {
-        gPlace = _lastGooglePlaces.find(p => {
-          const pLat = p.location?.latitude || 0;
-          const pLng = p.location?.longitude || 0;
-          return Math.abs(pLat - aLat) < 0.005 && Math.abs(pLng - aLng) < 0.005;
-        });
-      }
-    }
-    if (!gPlace) {
-      // Match par nom en dernier recours
-      const titre = (img.dataset.titre || '').toLowerCase().substring(0, 12);
-      if (titre.length > 4) {
-        gPlace = _lastGooglePlaces.find(p => {
-          const pName = (p.displayName?.text || '').toLowerCase();
-          return pName.includes(titre) || titre.includes(pName.substring(0, 8));
-        });
-      }
-    }
+    const gPlace = _lastGooglePlaces.find(p => p.id === placeId);
     if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
       const photoName = gPlace.photos[0].name;
       if (photoName) {
