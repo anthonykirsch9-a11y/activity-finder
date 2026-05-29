@@ -4413,13 +4413,8 @@ function loadPhotosForResults(activities) {
         loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       }
     } else {
-      // loadGooglePhoto a un try/catch interne vide — on gère le fallback Pexels explicitement
-      loadGooglePhoto(img, placeId).then(() => {
-        // Si l'img n'a toujours pas de src valide après l'appel → Pexels
-        if (!img.src || img.src === window.location.href) {
-          loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
-        }
-      }).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
+      // gPlace introuvable → placeId inventé par Claude → Pexels directement
+      loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
     }
   });
 }
