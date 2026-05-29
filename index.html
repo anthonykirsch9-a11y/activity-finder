@@ -2285,8 +2285,10 @@ async function fetchCities(q) {
     // Photon (komoot) — plus fiable que Nominatim, pas de blocage GitHub Pages
     const langMap = { fr:'fr', en:'en', es:'es', de:'de', it:'it', pt:'pt' };
     const l = langMap[lang] || 'fr';
+    // Komoot accepte seulement de, en, fr, it
+    const komootLang = ['de','en','fr','it'].includes(l) ? l : 'fr';
     const r = await fetch(
-      'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + l
+      'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + komootLang
     );
     if (!r.ok) throw new Error('photon fail');
     const data = await r.json();
@@ -4066,7 +4068,7 @@ async function runSearch(fromMap) {
         const weatherHeader = weatherContext ? '🌤 METEO: ' + weatherContext.replace('\n- Météo: ','') + '\n' : '';
         const LANG_NAMES = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
         const langInstruction = `Réponds en ${LANG_NAMES[lang] || 'français'}.\n`;
-        const strictRules = "REGLES:1.Utilise les lieux certifiés fournis(lieu_certain:true).2.Pas de noms inventés(lieu_certain:false).3.GPS précis jamais 0.0.4.Pas de coords GPS dans description.5.ephemere:true SEULEMENT si date unique(brocante,fête locale,concert ponctuel).Casino/restaurant/musée/spa/bowling/karting/cinéma/bar=jamais ephemere:true.";
+        const strictRules = "RULES(follow in any language):1.Use certified places(lieu_certain:true).2.No invented names(lieu_certain:false).3.EXACT GPS coordinates NEVER 0.0 — use real lat/lng of the place.4.No GPS in description.5.ephemere:true ONLY for unique date events.Casino/restaurant/museum/spa/bowling/karting/cinema/bar=never ephemere:true.";
 
         const varietyInstruction = ''; // variété gérée côté prompt
 
