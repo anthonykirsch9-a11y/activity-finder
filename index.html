@@ -2787,7 +2787,7 @@ function formatPlacesForPrompt(places) {
     (p.lat ? ' [GPS: ' + p.lat.toFixed(4) + ',' + p.lng.toFixed(4) + ']' : '')
   ).join('\n');
   return "\n\nLIEUX REELS VERIFIES (OpenStreetMap):\n" + list +
-    "\n\nCRUCIAL (follow in any language): Use THESE real places. Copy EXACT id as placeId. lieu_certain:true. Exact GPS provided. Max 1 bowling/karting/escape among 6.";
+    "\n\nCRUCIAL: Utilise CES lieux dans tes suggestions. Au moins 4 parmi cette liste. lieu_certain:true pour eux. GPS exacts fournis. Si escape game, karting ou bowling dans la liste, inclus-les obligatoirement.";
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3667,7 +3667,8 @@ function buildActivityCard(a, idx, location) {
 
   return `<div class="rc-card">
     <div class="rc-photo-wrap">
-      <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
+      <img class="rc-photo" src="${photoUrl(a.type, a.titre)}" alt="${a.titre}" loading="lazy"
+        data-type="${a.type}" data-titre="${(a.titre||'').replace(/"/g,'')}"
         data-placeid="${a.placeId||''}" data-ephemere="${a.ephemere?'1':''}"
         onerror="this.style.display='none'">
       <div class="rc-photo-overlay"></div>
@@ -4143,7 +4144,7 @@ async function runSearch(fromMap) {
           const rawNormal = fromMap && mapSearchCoords
             ? t.mapPromptFn(mapSearchCoords.lat.toFixed(5), mapSearchCoords.lng.toFixed(5), radius, agesStr, group, budgetContext, moodsStr + doneContext)
             : t.promptFn(group, agesStr, ageStr, budgetContext, location, radius, moodsStr + doneContext, '', '');
-          const promptNormal = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + getSpecialEventContext() + seenContext + '\nGENERATE EXACTLY 4 activities (NOT 6, NOT 8).\n' + rawNormal;
+          const promptNormal = placesHeader + langInstruction + dateHeader + weatherHeader + strictRules + getSpecialEventContext() + seenContext + '\nGénère exactement 4 activités (pas 6).\n' + rawNormal;
 
           // Prompt 2 activités spéciales
           const specialLabel = nightOn ? (lang==='fr'?'nocturnes':lang==='en'?'nightlife':lang==='es'?'nocturnas':lang==='de'?'Nachtleben':lang==='it'?'notturne':'noturnas') : (lang==='fr'?'éphémères':lang==='en'?'ephemeral events':lang==='es'?'efímeros':lang==='de'?'kurzfristige Events':lang==='it'?'effimeri':'efémeros');
@@ -4395,7 +4396,20 @@ function loadPhotosForResults(activities) {
         loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       }
     } else {
-      loadGooglePhoto(img, placeId).catch(() => loadPexelsPhoto(img, img.dataset.type, img.dataset.titre));
+      // placeId présent mais pas dans _lastGooglePlaces — chercher par nom
+      const titre2 = (img.dataset.titre || '').toLowerCase();
+      const words2 = titre2.split(/\s+/).filter(w => w.length > 4).slice(0, 3);
+      const gByName = words2.length ? _lastGooglePlaces.find(p => {
+        const n = (p.displayName?.text || '').toLowerCase();
+        return words2.some(w => n.includes(w));
+      }) : null;
+      if (gByName && gByName.photos && gByName.photos[0]) {
+        const photoUrlN = 'https://places.googleapis.com/v1/' + gByName.photos[0].name + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+        img.src = photoUrlN;
+        img.onerror = () => { img.onerror = null; loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
+      } else {
+        loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      }
     }
   });
 }
