@@ -1241,6 +1241,11 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 
   <div class="submit-section">
     <button class="submit-btn" id="submit-btn" onclick="runSearch(false)"><span id="submit-label">Trouver mes activités →</span></button>
+    <div id="save-profile-wrap" style="display:none;text-align:center;margin-top:10px">
+      <button onclick="saveProfileManual()" style="background:none;border:1.5px solid var(--primary);color:var(--primary);border-radius:99px;padding:7px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s" id="save-profile-btn">
+        💾 <span id="save-profile-lbl">Sauvegarder mon profil</span>
+      </button>
+    </div>
   </div>
 
 </div>
@@ -1589,7 +1594,7 @@ const LANGS = {
     mNature:'Nature',mCulture:'Culture',mSport:'Sport',mGastro:'Gastronomie',mRelax:'Détente',mShop:'Shopping',mShow:'Spectacle',mGames:'Jeux',
     ephemMain:'Inclure les événements éphémères', ephemSub:'Brocantes, marchés, fêtes locales, expos temporaires…',
     nightMain:'Inclure les sorties nocturnes', nightSub:'Bars, clubs, concerts, soirées, restaurants de nuit…',
-    submitLabel:'Trouver mes activités →', submitLoading:'Recherche en cours…', submitRefine:'Affiner la recherche →',
+    submitLabel:'Trouver mes activités →',saveProfile:'💾 Sauvegarder mon profil', submitLoading:'Recherche en cours…', submitRefine:'Affiner la recherche →',
     addPerson:'+ Ajouter une personne', radCity:'Ville uniquement',
     radOptions:['Ville uniquement','Rayon 10 km','Rayon 25 km','Rayon 50 km','Rayon 100 km','Rayon 200 km'],
     agePlaceholder:'—',
@@ -1641,7 +1646,7 @@ const LANGS = {
     mNature:'Nature',mCulture:'Culture',mSport:'Sport',mGastro:'Food & Drink',mRelax:'Relaxation',mShop:'Shopping',mShow:'Entertainment',mGames:'Games',
     ephemMain:'Include ephemeral events', ephemSub:'Markets, fairs, festivals, temporary exhibitions…',
     nightMain:'Include nightlife', nightSub:'Bars, clubs, concerts, evening events, late restaurants…',
-    submitLabel:'Find activities →', submitLoading:'Searching…', submitRefine:'Refine search →',
+    submitLabel:'Find activities →',saveProfile:'💾 Save my profile', submitLoading:'Searching…', submitRefine:'Refine search →',
     addPerson:'+ Add a person', radCity:'City only',
     radOptions:['City only','10 km radius','25 km radius','50 km radius','100 km radius','200 km radius'],
     agePlaceholder:'—',
@@ -1693,7 +1698,7 @@ const LANGS = {
     mNature:'Naturaleza',mCulture:'Cultura',mSport:'Deporte',mGastro:'Gastronomía',mRelax:'Relax',mShop:'Compras',mShow:'Espectáculo',mGames:'Juegos',
     ephemMain:'Incluir eventos efímeros',ephemSub:'Mercadillos, ferias, fiestas locales, exposiciones temporales…',
     nightMain:'Incluir vida nocturna',nightSub:'Bares, clubs, conciertos, restaurantes nocturnos…',
-    submitLabel:'Encontrar actividades →',submitLoading:'Buscando…',submitRefine:'Refinar búsqueda →',
+    submitLabel:'Encontrar actividades →',saveProfile:'💾 Guardar mi perfil',submitLoading:'Buscando…',submitRefine:'Refinar búsqueda →',
     addPerson:'+ Añadir persona',radCity:'Solo ciudad',
     radOptions:['Solo ciudad','Radio 10 km','Radio 25 km','Radio 50 km','Radio 100 km','Radio 200 km'],
     agePlaceholder:'—',
@@ -1745,7 +1750,7 @@ const LANGS = {
     mNature:'Natur',mCulture:'Kultur',mSport:'Sport',mGastro:'Kulinarik',mRelax:'Entspannung',mShop:'Shopping',mShow:'Unterhaltung',mGames:'Spiele',
     ephemMain:'Kurzfristige Events einbeziehen',ephemSub:'Flohmärkte, Feste, temporäre Ausstellungen…',
     nightMain:'Nachtleben einbeziehen',nightSub:'Bars, Clubs, Konzerte, Restaurants…',
-    submitLabel:'Aktivitäten finden →',submitLoading:'Suche läuft…',submitRefine:'Suche verfeinern →',
+    submitLabel:'Aktivitäten finden →',saveProfile:'💾 Profil speichern',submitLoading:'Suche läuft…',submitRefine:'Suche verfeinern →',
     addPerson:'+ Person hinzufügen',radCity:'Nur Stadt',
     radOptions:['Nur Stadt','10 km Radius','25 km Radius','50 km Radius','100 km Radius','200 km Radius'],
     agePlaceholder:'—',
@@ -1797,7 +1802,7 @@ const LANGS = {
     mNature:'Natura',mCulture:'Cultura',mSport:'Sport',mGastro:'Gastronomia',mRelax:'Relax',mShop:'Shopping',mShow:'Spettacolo',mGames:'Giochi',
     ephemMain:'Includi eventi effimeri',ephemSub:'Mercatini, sagre, mostre temporanee…',
     nightMain:'Includi vita notturna',nightSub:'Bar, club, concerti, ristoranti serali…',
-    submitLabel:'Trova attività →',submitLoading:'Ricerca in corso…',submitRefine:'Affina la ricerca →',
+    submitLabel:'Trova attività →',saveProfile:'💾 Salva il mio profilo',submitLoading:'Ricerca in corso…',submitRefine:'Affina la ricerca →',
     addPerson:'+ Aggiungi persona',radCity:'Solo città',
     radOptions:['Solo città','Raggio 10 km','Raggio 25 km','Raggio 50 km','Raggio 100 km','Raggio 200 km'],
     agePlaceholder:'—',
@@ -1849,7 +1854,7 @@ const LANGS = {
     mNature:'Natureza',mCulture:'Cultura',mSport:'Desporto',mGastro:'Gastronomia',mRelax:'Relaxamento',mShop:'Compras',mShow:'Espetáculo',mGames:'Jogos',
     ephemMain:'Incluir eventos efémeros',ephemSub:'Feiras, mercados, festas locais, exposições temporárias…',
     nightMain:'Incluir vida noturna',nightSub:'Bares, clubes, concertos, restaurantes noturnos…',
-    submitLabel:'Encontrar atividades →',submitLoading:'A pesquisar…',submitRefine:'Refinar pesquisa →',
+    submitLabel:'Encontrar atividades →',saveProfile:'💾 Guardar o meu perfil',submitLoading:'A pesquisar…',submitRefine:'Refinar pesquisa →',
     addPerson:'+ Adicionar pessoa',radCity:'Apenas cidade',
     radOptions:['Apenas cidade','Raio 10 km','Raio 25 km','Raio 50 km','Raio 100 km','Raio 200 km'],
     agePlaceholder:'—',
@@ -1970,6 +1975,7 @@ function setLang(l) {
   document.getElementById('night-main-lbl').textContent = t.nightMain;
   document.getElementById('night-sub-lbl').textContent = t.nightSub;
   document.getElementById('submit-label').textContent = t.submitLabel;
+  const _spl = document.getElementById('save-profile-lbl'); if (_spl && t.saveProfile) _spl.textContent = t.saveProfile;
   document.getElementById('btn-add-person').textContent = t.addPerson;
   document.getElementById('rad-0').textContent = t.radCity;
   // Traduire les options du select rayon
@@ -3182,6 +3188,34 @@ async function loadGooglePhoto(imgEl, placeId) {
       imgEl.src = data.photoUrl;
     }
   } catch(e) {}
+}
+
+function saveProfileManual() {
+  if (userPlan !== 'pro') return;
+  const location = document.getElementById('location')?.value?.trim() || '';
+  const groupEl = document.querySelector('#group-type .pill.selected');
+  const group = groupEl ? groupEl.dataset.val : '';
+  const budget = document.getElementById('budget-slider')?.value || '50';
+  const moods = [...document.querySelectorAll('#moods .pill.selected')].map(p => p.dataset.val);
+  const radius = document.getElementById('radius-select')?.value || '25';
+  const ages = [...document.querySelectorAll('.age-input')].map(i => i.value);
+
+  localSave('user_profile', { location, group, budget, moods, radius, ages });
+
+  // Feedback visuel
+  const btn = document.getElementById('save-profile-btn');
+  const lbl = document.getElementById('save-profile-lbl');
+  if (btn && lbl) {
+    const orig = lbl.textContent;
+    lbl.textContent = {fr:'Profil sauvegardé ✓',en:'Profile saved ✓',es:'Perfil guardado ✓',de:'Profil gespeichert ✓',it:'Profilo salvato ✓',pt:'Perfil guardado ✓'}[lang] || 'Profil sauvegardé ✓';
+    btn.style.background = 'var(--primary)';
+    btn.style.color = '#fff';
+    setTimeout(() => {
+      lbl.textContent = orig;
+      btn.style.background = 'none';
+      btn.style.color = 'var(--primary)';
+    }, 2000);
+  }
 }
 
 function formatGooglePlacesForPrompt(places) {
@@ -6621,6 +6655,21 @@ window.addEventListener('load', () => {
       });
     }
 
+    // Âges
+    if (profile.ages && profile.ages.length) {
+      profile.ages.forEach((age, i) => {
+        if (i === 0) {
+          // Ajouter des personnes si nécessaire
+          while (persons.length < profile.ages.length) addPerson();
+        }
+      });
+      setTimeout(() => {
+        document.querySelectorAll('.age-input').forEach((inp, i) => {
+          if (profile.ages[i]) inp.value = profile.ages[i];
+        });
+      }, 100);
+    }
+
     // Petit message discret
     const locEl = document.getElementById('location');
     if (locEl && profile.location) {
@@ -6632,6 +6681,12 @@ window.addEventListener('load', () => {
       setTimeout(() => hint.remove(), 4000);
     }
   }, 500);
+  // Afficher le bouton save-profile si Pro ou Beta
+  setTimeout(() => {
+    const wrap = document.getElementById('save-profile-wrap');
+    if (wrap && userPlan === 'pro') wrap.style.display = 'block';
+  }, 600);
+
   setTimeout(function() { setLang(lang); }, 50);
   setTimeout(checkOnThisDayNotification, 2000);
   setTimeout(showRecentCities, 600);
