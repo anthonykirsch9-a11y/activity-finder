@@ -3194,7 +3194,7 @@ function formatGooglePlacesForPrompt(places) {
     (p.location ? ' | GPS:' + p.location.latitude.toFixed(4) + ',' + p.location.longitude.toFixed(4) : '') +
     (p.id ? ' | id:' + p.id : '')
   ).join('\n');
-  return list + '\nCRUCIAL: Utilise CES lieux réels en priorité absolue (lieu_certain:true, placeId exact). Propose un mix varié — si bowling, karting ou escape game sont dans la liste, en inclure AU MAXIMUM 1 sur les 6 activités.';
+  return list + '\nCRUCIAL INSTRUCTION (mandatory in any language): Use THESE real places above. Copy the EXACT id value as placeId for each place used. lieu_certain:true. Max 1 bowling/karting/escape among 6.';
 }
 
 // Traduire les types d'activités pour les badges
@@ -4390,10 +4390,8 @@ function loadPhotosForResults(activities) {
       const photoName = gPlace.photos[0].name;
       if (photoName) {
         const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
-        const testImg = new Image();
-        testImg.onload = () => { img.src = photoUrlG; };
-        testImg.onerror = () => { loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
-        testImg.src = photoUrlG;
+        img.src = photoUrlG;
+        img.onerror = () => { img.onerror = null; loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
       } else {
         loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
       }
