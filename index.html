@@ -4012,8 +4012,8 @@ async function runSearch(fromMap) {
       const data = await res.json();
       if (!data.allowed) { openUpgrade(); return; }
     } catch(e) {
-      // Si l'Edge Function est inaccessible, fallback sur le compteur local
-      if (!canSearch()) { openUpgrade(); return; }
+      // Si l'Edge Function est inaccessible → laisser passer (ne pas bloquer)
+      console.warn('check-search-limit error:', e);
     }
   }
 
