@@ -4742,6 +4742,9 @@ async function loadUserProfile() {
     loadHistory();
   }
 
+  // Charger les favoris depuis Supabase
+  if (userPlan === 'pro') await initFavorites();
+
   renderAuthUI();
   updateLimitBanner();
 }
@@ -5503,7 +5506,9 @@ async function renderAccountStats() {
   const searches = (_sb && currentUser?.id !== 'beta-user')
     ? ((await _sb.from('searches').select('*').eq('user_id', currentUser.id)).data || [])
     : (localLoad('searches') || []);
-  const favs = localLoad('favorites') || [];
+  const favs = (_sb && currentUser && currentUser.id !== 'beta-user')
+    ? ((await _sb.from('favorites').select('*').eq('user_id', currentUser.id)).data || [])
+    : (localLoad('favorites') || []);
 
   const totalDone = notes.length;
   const avgStars = notes.filter(n=>n.stars>0).length
@@ -5626,8 +5631,12 @@ function closeWeekendProgram() {
 }
 
 async function generateWeekendProgram() {
-  const favs = localLoad('favorites') || [];
-  const notes = localLoad('notes') || [];
+  const favs = (_sb && currentUser && currentUser.id !== 'beta-user')
+    ? ((await _sb.from('favorites').select('*').eq('user_id', currentUser.id)).data || [])
+    : (localLoad('favorites') || []);
+  const notes = (_sb && currentUser && currentUser.id !== 'beta-user')
+    ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id)).data || [])
+    : (localLoad('notes') || []);
   const body = document.getElementById('weekend-program-body');
 
   if (favs.length < 2) {
@@ -5999,10 +6008,13 @@ async function renderAccountActivities() {
 
 function removeFavorite(activityId) {
   favorites.delete(activityId);
-  const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==activityId);
-  localSave('favorites', saved);
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    _sb.from('favorites').delete().eq('user_id', currentUser.id).eq('activity_id', activityId).then(() => {});
+  } else {
+    const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==activityId);
+    localSave('favorites', saved);
+  }
   renderAccountActivities();
-  // Mettre à jour le bouton cœur sur la carte si visible
   const favBtn = document.querySelector(`[data-fav-id="${activityId}"]`);
   if (favBtn) favBtn.textContent = '🤍';
 }
@@ -6363,25 +6375,42 @@ function localPush(key, item) {
 }
 
 // ── Favoris ──
-function initFavorites() {
-  const saved = localLoad('favorites') || [];
-  favorites = new Set(saved.map(f => f.activity_id));
+async function initFavorites() {
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const { data } = await _sb.from('favorites').select('activity_id').eq('user_id', currentUser.id);
+    favorites = new Set((data || []).map(f => f.activity_id));
+  } else {
+    const saved = localLoad('favorites') || [];
+    favorites = new Set(saved.map(f => f.activity_id));
+  }
+  // Mettre à jour les boutons déjà affichés
+  document.querySelectorAll('[data-fav-id]').forEach(btn => {
+    btn.textContent = favorites.has(btn.dataset.favId) ? '❤️' : '🤍';
+  });
 }
 
 function toggleFavorite(titleEncoded, activityId) {
   if (userPlan !== 'pro') { openUpgrade(); return; }
-  // Support appel depuis dataset
   const id = activityId || '';
   const btn = document.querySelector(`[data-fav-id="${id}"]`);
   if (favorites.has(id)) {
     favorites.delete(id);
     if (btn) btn.textContent = '🤍';
-    const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==id);
-    localSave('favorites', saved);
+    if (_sb && currentUser && currentUser.id !== 'beta-user') {
+      _sb.from('favorites').delete().eq('user_id', currentUser.id).eq('activity_id', id).then(() => {});
+    } else {
+      const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==id);
+      localSave('favorites', saved);
+    }
   } else {
     favorites.add(id);
     if (btn) btn.textContent = '❤️';
-    localPush('favorites', { activity_id: id, activity_title: decodeURIComponent(titleEncoded||''), saved_at: new Date().toISOString() });
+    const favData = { user_id: currentUser?.id, activity_id: id, titre: decodeURIComponent(titleEncoded||''), created_at: new Date().toISOString() };
+    if (_sb && currentUser && currentUser.id !== 'beta-user') {
+      _sb.from('favorites').upsert(favData, { onConflict: 'user_id,activity_id' }).then(() => {});
+    } else {
+      localPush('favorites', { activity_id: id, activity_title: decodeURIComponent(titleEncoded||''), saved_at: new Date().toISOString() });
+    }
   }
 }
 
