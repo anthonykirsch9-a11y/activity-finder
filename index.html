@@ -3451,7 +3451,7 @@ function _getPreviousCdcNames(lat, lng) {
   for (let w = currentWeek - 1; w >= currentWeek - 4; w--) {
     const key = 'cdc_' + latR + '_' + lngR + '_w' + Math.max(1, w) + '_' + lang;
     try {
-      const cached = localStorage.getItem(key);
+      const cached = _store.getItem(key);
       if (cached) { const d = JSON.parse(cached); if (d.name) names.push(d.name.toLowerCase()); }
     } catch(e) {}
   }
@@ -3461,7 +3461,7 @@ function _getPreviousCdcNames(lat, lng) {
 async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
   const cacheKey = _cdcCacheKey(lat, lng);
   try {
-    const cached = localStorage.getItem(cacheKey);
+    const cached = _store.getItem(cacheKey);
     if (cached) {
       console.log('💛 CDC cache hit');
       return JSON.parse(cached);
@@ -3556,7 +3556,7 @@ async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
     }
 
     // Mettre en cache pour la semaine
-    try { localStorage.setItem(cacheKey, JSON.stringify(result)); } catch(e) {}
+    try { _store.setItem(cacheKey, JSON.stringify(result)); } catch(e) {}
 
     return result;
   } catch(e) {
@@ -5081,7 +5081,7 @@ const AP_TRANSLATIONS = {
     addEventTitle:'Ajouter un événement local',
     addEventDesc:'Partage un événement de ton village ou quartier avec la communauté.',
     addEventName:'Nom de l\'événement',
-    addEventNamePh:'Ex: Fête des voisins, Marche de Rochonvillers…',
+    addEventNamePh:'Ex: Fête des voisins, Marché de Noël, Concert local…',
     addEventType:'Type',
     addEventTypes:['Marche/Randonnée','Fête de village','Brocante/Vide-grenier','Marché','Événement sportif','Concert/Spectacle','Autre'],
     addEventDate:'Date',
@@ -5467,7 +5467,7 @@ function switchAccountTab(tab) {
   if (paneEl) paneEl.classList.add('active');
   if (tab === 'stats') {
     // Re-vérifier le plan beta avant de render
-    try { if (localStorage.getItem('af_beta_ok') === '1') userPlan = 'pro'; } catch(e) {}
+    try { if (_store.getItem('af_beta_ok') === '1') userPlan = 'pro'; } catch(e) {}
     renderAccountStats();
   }
   if (tab === 'activities') renderAccountActivities();
@@ -5488,7 +5488,7 @@ async function renderAccountStats() {
   const el = document.getElementById('ap-stats-content');
   const t = apt();
   // Re-vérifier le plan depuis localStorage (beta users)
-  try { if (localStorage.getItem('af_beta_ok') === '1') userPlan = 'pro'; } catch(e) {}
+  try { if (_store.getItem('af_beta_ok') === '1') userPlan = 'pro'; } catch(e) {}
   const isPro = userPlan === 'pro';
   if (!isPro) { renderAccountProfile(); return; }
 
