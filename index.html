@@ -659,7 +659,26 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 .weekend-program-modal.open { display:flex; }
 .weekend-program-card { background:var(--card); border-radius:20px; max-width:520px; width:100%; box-shadow:0 24px 80px rgba(0,0,0,0.4); overflow:hidden; margin:auto; }
 .weekend-program-header { background:linear-gradient(135deg,#3A5C38,#5C7A5A); padding:20px; display:flex; align-items:center; justify-content:space-between; }
-.weekend-program-body { padding:20px; max-height:70vh; overflow-y:auto; }
+.weekend-program-body { padding:20px; max-height:75vh; overflow-y:auto; }
+.prog-day-header { display:flex; align-items:center; gap:10px; margin:20px 0 14px; }
+.prog-day-badge { background:linear-gradient(135deg,var(--primary),var(--primary-mid)); color:#fff; border-radius:12px; padding:6px 14px; font-family:'Fraunces',serif; font-size:13px; font-weight:700; letter-spacing:.03em; }
+.prog-step { display:flex; gap:12px; margin-bottom:4px; }
+.prog-step-left { display:flex; flex-direction:column; align-items:center; min-width:48px; }
+.prog-step-time { font-size:12px; font-weight:700; color:var(--primary); font-family:'DM Sans',sans-serif; white-space:nowrap; }
+.prog-step-dot { width:12px; height:12px; border-radius:50%; background:var(--primary); margin:4px 0; flex-shrink:0; }
+.prog-step-dot.meal { background:#C4714A; }
+.prog-step-dot.hotel { background:#6B5B95; }
+.prog-step-line { width:2px; flex:1; background:var(--border); min-height:20px; }
+.prog-step-content { flex:1; background:var(--bg); border-radius:14px; padding:12px 14px; margin-bottom:8px; border:1px solid var(--border); }
+.prog-step-title { font-weight:700; font-size:14px; color:var(--text); margin-bottom:4px; }
+.prog-step-meta { font-size:12px; color:var(--muted); line-height:1.5; }
+.prog-step-note { font-size:11px; color:var(--primary); background:var(--primary-light); border-radius:8px; padding:4px 8px; margin-top:6px; display:inline-block; }
+.prog-transport-pill { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); padding:3px 0 3px 60px; margin-bottom:4px; }
+.prog-hotel-card { background:linear-gradient(135deg,#6B5B9510,#6B5B9520); border:1.5px solid #6B5B9540; border-radius:14px; padding:14px 16px; margin:16px 0; }
+.prog-hotel-title { font-weight:700; font-size:13px; color:#6B5B95; margin-bottom:4px; }
+.prog-hotel-link { display:inline-flex; align-items:center; gap:6px; background:#6B5B95; color:#fff; border-radius:99px; padding:7px 16px; font-size:12px; font-weight:700; text-decoration:none; margin-top:8px; }
+.prog-actions { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+.prog-action-btn { flex:1; min-width:120px; padding:11px 16px; border-radius:12px; border:none; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:all .15s; }
 .program-day { margin-bottom:20px; }
 .program-day-title { font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700; color:var(--text); margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid var(--primary); }
 .program-step { display:flex; gap:12px; margin-bottom:12px; align-items:flex-start; }
@@ -5799,56 +5818,85 @@ ${jsonStructure}`;
 
 function renderWeekendProgram(program, dur) {
   const body = document.getElementById('weekend-program-body');
-  const dayNames = { fr: ['SAMEDI', 'DIMANCHE'], en: ['SATURDAY', 'SUNDAY'], es: ['SÁBADO', 'DOMINGO'], de: ['SAMSTAG', 'SONNTAG'], it: ['SABATO', 'DOMENICA'], pt: ['SÁBADO', 'DOMINGO'] };
+  const dayNames = {
+    fr:['Samedi','Dimanche'], en:['Saturday','Sunday'], es:['Sábado','Domingo'],
+    de:['Samstag','Sonntag'], it:['Sabato','Domenica'], pt:['Sábado','Domingo']
+  };
   const days = dayNames[lang] || dayNames.fr;
-  const typeIcons = { activite: '📍', repas: '🍽️', transport: '🚗', pause: '☕' };
   const durMode = dur || _programDuration || 'soiree';
+  const typeIcons = { activite:'📍', repas:'🍽️', pause:'☕', hotel:'🏨' };
+  const typeDot = { activite:'', repas:' meal', hotel:' hotel' };
+
+  // Détecter si multi-jours (samedi+dimanche) → proposer hôtel
+  const isMultiDay = (durMode === 'weekend' || durMode === 'we') &&
+    program.samedi?.length && program.dimanche?.length;
+
+  // Récupérer la ville depuis le formulaire
+  const villeRaw = document.getElementById('location')?.value?.trim() || '';
+  const ville = villeRaw.split(',')[0].trim();
 
   function renderSteps(steps) {
     if (!steps?.length) return '';
     let h = '';
     steps.forEach((step, i) => {
-      h += `<div class="program-step">
-        <div class="program-time">${step.heure}</div>
-        <div class="program-step-content">
-          <div class="program-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
-          <div class="program-step-detail">⏱ ${step.duree}${step.note ? ' · ' + step.note : ''}</div>
+      const isLast = i === steps.length - 1;
+      const dotClass = 'prog-step-dot' + (typeDot[step.type] || '');
+      h += `<div class="prog-step">
+        <div class="prog-step-left">
+          <div class="prog-step-time">${step.heure||''}</div>
+          <div class="${dotClass}"></div>
+          ${!isLast ? '<div class="prog-step-line"></div>' : ''}
+        </div>
+        <div class="prog-step-content">
+          <div class="prog-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
+          <div class="prog-step-meta">⏱ ${step.duree||''}${step.trajet ? ' · 🚗 '+step.trajet : ''}</div>
+          ${step.note ? `<div class="prog-step-note">💡 ${step.note}</div>` : ''}
         </div>
       </div>`;
-      if (step.transport && i < steps.length - 1) {
-        h += `<div class="program-transport">↓ ${step.transport}${step.trajet ? ' · ' + step.trajet : ''}</div>`;
+      if (step.transport && !isLast) {
+        h += `<div class="prog-transport-pill">↓ ${step.transport}</div>`;
       }
     });
     return h;
   }
 
-  const sectionTitles = {
-    soiree:  { fr:'🌙 SOIRÉE', en:'🌙 EVENING', es:'🌙 TARDE-NOCHE', de:'🌙 ABEND', it:'🌙 SERATA', pt:'🌙 NOITE' },
-    journee: { fr:'☀️ JOURNÉE', en:'☀️ DAY', es:'☀️ DÍA', de:'☀️ TAG', it:'☀️ GIORNATA', pt:'☀️ DIA' },
-  };
+  function renderDay(steps, label, emoji) {
+    if (!steps?.length) return '';
+    return `<div class="prog-day-header">
+      <div class="prog-day-badge">${emoji} ${label}</div>
+    </div>${renderSteps(steps)}`;
+  }
+
+  // Bloc hôtel Booking.com affilié
+  function hotelBlock() {
+    if (!isMultiDay || !ville) return '';
+    const bookingUrl = 'https://www.booking.com/search.html?ss=' + encodeURIComponent(ville) + '&aid=WEEKIO_AFF_ID';
+    const hotelLabels = {
+      fr:`Dormir sur place à ${ville}`, en:`Stay overnight in ${ville}`,
+      es:`Alojarse en ${ville}`, de:`Übernachten in ${ville}`,
+      it:`Pernottare a ${ville}`, pt:`Ficar em ${ville}`
+    };
+    const hotelCta = { fr:'Voir les hôtels', en:'Find hotels', es:'Ver hoteles', de:'Hotels anzeigen', it:'Vedi hotel', pt:'Ver hotéis' };
+    return `<div class="prog-hotel-card">
+      <div class="prog-hotel-title">🏨 ${hotelLabels[lang]||hotelLabels.fr}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">${{fr:'Programme sur 2 jours — pense à réserver ton hébergement !',en:'2-day program — book your stay!',es:'Programa de 2 días — ¡reserva tu alojamiento!',de:'2-Tages-Programm — buche deine Unterkunft!',it:'Programma su 2 giorni — prenota il tuo alloggio!',pt:'Programa de 2 dias — reserva o teu alojamento!'}[lang]||'Programme sur 2 jours — pense à réserver ton hébergement !'}</div>
+      <a href="${bookingUrl}" target="_blank" class="prog-hotel-link">🔍 ${hotelCta[lang]||hotelCta.fr}</a>
+    </div>`;
+  }
 
   let html = '';
 
-  if (durMode === 'soiree' && program.soiree?.length) {
-    const title = (sectionTitles.soiree[lang] || sectionTitles.soiree.fr);
-    html += `<div class="program-day"><div class="program-day-title">${title}</div>${renderSteps(program.soiree)}</div>`;
-  } else if (durMode === 'journee' && program.journee?.length) {
-    const title = (sectionTitles.journee[lang] || sectionTitles.journee.fr);
-    html += `<div class="program-day"><div class="program-day-title">${title}</div>${renderSteps(program.journee)}</div>`;
+  if (durMode === 'soiree') {
+    html += renderDay(program.soiree, {fr:'Soirée',en:'Evening',es:'Tarde-noche',de:'Abend',it:'Serata',pt:'Noite'}[lang]||'Soirée', '🌙');
+  } else if (durMode === 'journee') {
+    html += renderDay(program.journee, {fr:'Journée',en:'Day',es:'Día',de:'Tag',it:'Giornata',pt:'Dia'}[lang]||'Journée', '☀️');
   } else {
-    // Week-end (samedi + dimanche)
-    if (program.samedi?.length) {
-      html += `<div class="program-day"><div class="program-day-title">📅 ${days[0]}</div>${renderSteps(program.samedi)}</div>`;
-    }
-    if (program.dimanche?.length) {
-      html += `<div class="program-day"><div class="program-day-title">📅 ${days[1]}</div>${renderSteps(program.dimanche)}</div>`;
-    }
-    // Fallback si Claude a renvoyé soiree/journee en mode weekend
+    html += renderDay(program.samedi, days[0], '📅');
+    html += hotelBlock();
+    html += renderDay(program.dimanche, days[1], '📅');
     if (!program.samedi?.length && !program.dimanche?.length) {
       const firstKey = Object.keys(program)[0];
-      if (firstKey && program[firstKey]?.length) {
-        html += `<div class="program-day"><div class="program-day-title">📋 Programme</div>${renderSteps(program[firstKey])}</div>`;
-      }
+      if (firstKey) html += renderDay(program[firstKey], 'Programme', '📋');
     }
   }
 
@@ -5856,8 +5904,33 @@ function renderWeekendProgram(program, dur) {
     html = `<p style="color:var(--muted);padding:20px;text-align:center">Impossible de générer le programme. Réessaie !</p>`;
   }
 
-  html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">${apt().programRegenerate||'🔄 Régénérer'}</button>`;
+  // Actions : régénérer + partager WhatsApp
+  const programText = buildProgramShareText(program, durMode, days);
+  const waUrl = 'https://wa.me/?text=' + encodeURIComponent(programText);
+  const regenLabel = apt().programRegenerate || '🔄 Régénérer';
+  const shareLabel = {fr:'Partager',en:'Share',es:'Compartir',de:'Teilen',it:'Condividi',pt:'Partilhar'}[lang]||'Partager';
+
+  html += `<div class="prog-actions">
+    <button onclick="generateWeekendProgram()" class="prog-action-btn" style="background:var(--primary);color:#fff">${regenLabel}</button>
+    <a href="${waUrl}" target="_blank" class="prog-action-btn" style="background:#25D366;color:#fff;text-decoration:none">📤 ${shareLabel}</a>
+  </div>`;
+
   body.innerHTML = html;
+}
+
+function buildProgramShareText(program, durMode, days) {
+  let text = '🗓 Mon programme Weekio\n\n';
+  const allDays = durMode === 'soiree' ? [['🌙 Soirée', program.soiree]] :
+                  durMode === 'journee' ? [['☀️ Journée', program.journee]] :
+                  [['📅 ' + (days[0]||'Samedi'), program.samedi], ['📅 ' + (days[1]||'Dimanche'), program.dimanche]];
+  allDays.forEach(([label, steps]) => {
+    if (!steps?.length) return;
+    text += label + '\n';
+    steps.forEach(s => { text += `  ${s.heure||''} ${s.titre} (${s.duree||''})\n`; });
+    text += '\n';
+  });
+  text += '\nCréé avec Weekio 🌿';
+  return text;
 }
 
 // ══════════════════════════════════════════════════════════════
