@@ -5915,19 +5915,31 @@ async function renderAccountActivities() {
     ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false})).data || [])
     : (localLoad('notes') || []);
 
-  // Recharger les favoris depuis localStorage ET depuis la variable en mémoire
-  const favsRaw = localLoad('favorites') || [];
-  // Sync la variable favorites en mémoire
-  favorites = new Set(favsRaw.map(f => f.activity_id));
+  // Recharger les favoris depuis Supabase si connecté
+  let favsRaw = [];
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const { data: favsData } = await _sb.from('favorites').select('*').eq('user_id', currentUser.id);
+    favsRaw = favsData || [];
+    favorites = new Set(favsRaw.map(f => f.activity_id));
+  } else {
+    favsRaw = localLoad('favorites') || [];
+    favorites = new Set(favsRaw.map(f => f.activity_id));
+  }
   const favs = favsRaw;
 
+  // Recharger photos depuis Supabase
   const photos = localLoad('activity_photos') || {};
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    try {
+      const { data: notesWithPhotos } = await _sb.from('notes').select('activity_id, photo_url').eq('user_id', currentUser.id).not('photo_url', 'is', null);
+      if (notesWithPhotos) notesWithPhotos.forEach(n => { if (n.photo_url) photos[n.activity_id] = n.photo_url; });
+    } catch(e) {}
+  }
 
   let html = '';
 
   // Bouton Mémoires en haut si des activités faites existent
-  const allNotes = localLoad('notes') || [];
-  const doneCnt = allNotes.filter(n => n.done).length;
+  const doneCnt = notes.length;
   if (doneCnt > 0) {
     const memLabel = apt().memoriesBtn || '✨ Mes Mémoires';
     const souvenirWord = {'fr':'souvenir','en':'memory','es':'recuerdo','de':'Erinnerung','it':'ricordo','pt':'memória'}[lang] || 'souvenir';
