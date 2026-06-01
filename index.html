@@ -5752,6 +5752,32 @@ async function generateWeekendProgram() {
     return;
   }
 
+  // Animation de chargement
+  const loadMsgs = {
+    fr:['✨ Ton concierge personnel prépare ton programme…','📍 Organisation des activités dans le bon ordre…','🗓 Création d\'un itinéraire sur mesure…','🎯 Finalisation des horaires et conseils…'],
+    en:['✨ Your personal concierge is preparing your program…','📍 Organising activities in the best order…','🗓 Creating a tailor-made itinerary…','🎯 Finalising times and tips…'],
+    es:['✨ Tu conserje personal prepara tu programa…','📍 Organizando actividades en el orden correcto…','🗓 Creando un itinerario a medida…','🎯 Finalizando horarios y consejos…'],
+    de:['✨ Dein persönlicher Concierge bereitet dein Programm vor…','📍 Aktivitäten werden optimal geordnet…','🗓 Maßgeschneiderter Reiseplan wird erstellt…','🎯 Zeiten und Tipps werden finalisiert…'],
+    it:['✨ Il tuo concierge personale prepara il tuo programma…','📍 Organizzazione delle attività nel giusto ordine…','🗓 Creazione di un itinerario su misura…','🎯 Finalizzazione degli orari e consigli…'],
+    pt:['✨ O teu concierge pessoal está a preparar o teu programa…','📍 A organizar as atividades pela melhor ordem…','🗓 A criar um itinerário personalizado…','🎯 A finalizar horários e dicas…']
+  };
+  const msgs = loadMsgs[lang] || loadMsgs.fr;
+  let msgIdx = 0;
+  body.innerHTML = `<div style="text-align:center;padding:40px 20px">
+    <div style="font-size:48px;margin-bottom:16px;animation:spin 2s linear infinite;display:inline-block">🗓</div>
+    <div id="prog-load-msg" style="font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--text);line-height:1.5;max-width:280px;margin:0 auto;transition:opacity 0.4s">${msgs[0]}</div>
+    <div style="margin-top:20px;display:flex;gap:6px;justify-content:center">${[0,1,2,3].map(i=>`<div style="width:8px;height:8px;border-radius:50%;background:${i===0?'var(--primary)':'var(--border)'};transition:background 0.4s" id="prog-dot-${i}"></div>`).join('')}</div>
+  </div>`;
+  const progTimer = setInterval(() => {
+    msgIdx = (msgIdx + 1) % msgs.length;
+    const el = document.getElementById('prog-load-msg');
+    if (el) { el.style.opacity='0'; setTimeout(()=>{ el.textContent=msgs[msgIdx]; el.style.opacity='1'; },300); }
+    [0,1,2,3].forEach((i,_) => {
+      const dot = document.getElementById('prog-dot-'+i);
+      if (dot) dot.style.background = i===msgIdx ? 'var(--primary)' : 'var(--border)';
+    });
+  }, 2000);
+
   const favDetails = favs.map(f => {
     const note = notes.find(n => n.activity_id === f.activity_id);
     return `- ${f.activity_title}${note?.stars ? ' (noté ' + note.stars + '/5)' : ''}`;
@@ -5770,27 +5796,29 @@ async function generateWeekendProgram() {
   let jsonStructure = '';
 
   if (dur === 'journee') {
-    durInstr = `Crée un programme pour UNE JOURNÉE (environ 9h-20h) en sélectionnant 3-4 activités parmi les favorites. Inclus une pause déjeuner logique.`;
-    jsonStructure = `{"journee": [{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"},{"heure":"12h30","titre":"Déjeuner","duree":"1h30","transport":"","trajet":"","note":"suggestion de restaurant","type":"repas"}]}`;
+    durInstr = `Programme pour UNE JOURNÉE. Utilise EXACTEMENT les noms des activités favorites listées. Répartis-les de façon optimale sur la journée (9h-20h). Ajoute UNE pause déjeuner entre les activités.`;
+    jsonStructure = `{"journee":[{"heure":"09h30","titre":"NOM EXACT DE L'ACTIVITÉ FAVORITE","duree":"2h30","transport":"voiture","trajet":"15 min","note":"Conseil précis et pratique : réservation, parking, tenue, meilleur moment...","type":"activite"},{"heure":"12h30","titre":"Déjeuner — Restaurant [type de cuisine recommandé]","duree":"1h30","transport":"à pied","trajet":"5 min","note":"Suggestion de restaurant proche de l'activité précédente","type":"repas"}]}`;
   } else {
-    durInstr = `Crée un programme sur les dates indiquées en organisant toutes les activités favorites de façon optimale. Si plusieurs jours, répartis sur SAMEDI et DIMANCHE. Inclus des pauses repas logiques.`;
-    jsonStructure = `{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite"}]}`;
+    durInstr = `Programme sur 2 jours (SAMEDI et DIMANCHE). Utilise EXACTEMENT les noms des activités favorites listées, répartis-les intelligemment sur les 2 jours selon leur type et horaires. Ajoute des pauses repas logiques entre les activités. NE GÉNÈRE PAS d'activités génériques — utilise uniquement ce qui est dans la liste.`;
+    jsonStructure = `{"samedi":[{"heure":"09h30","titre":"NOM EXACT DE L'ACTIVITÉ FAVORITE","duree":"2h","transport":"voiture","trajet":"15 min","note":"Conseil précis : réservation obligatoire/recommandée, parking, tenue adaptée, astuce locale...","type":"activite"},{"heure":"12h30","titre":"Déjeuner — [suggestion restaurant type]","duree":"1h30","transport":"à pied","trajet":"5 min","note":"Restaurant recommandé proche","type":"repas"}],"dimanche":[{"heure":"10h00","titre":"NOM EXACT DE L'ACTIVITÉ FAVORITE","duree":"3h","transport":"à pied","trajet":"10 min","note":"Conseil pratique spécifique à cette activité","type":"activite"}]}`;
   }
 
   const prompt = `${langInstr}${dateInstr}
-Tu es un expert en organisation de sorties. L'utilisateur a sélectionné ces activités favorites:
+Tu es un concierge d'hôtel 5 étoiles expert en organisation de sorties. Ton rôle : créer un itinéraire PROFESSIONNEL et PRÉCIS.
+
+ACTIVITÉS FAVORITES À PLACER (utilise ces noms EXACTEMENT, ne les modifie pas) :
 ${favDetails}
+
+RÈGLES ABSOLUES :
+1. Utilise UNIQUEMENT les activités de la liste ci-dessus — aucune activité inventée ou générique
+2. Les titres JSON doivent être les noms EXACTS des activités favorites
+3. Les notes doivent être des conseils PRÉCIS et UTILES (pas des généralités comme "portez des chaussures confortables")
+4. Propose des suggestions de restaurants RÉELLES et spécifiques à la ville/région
+5. Les horaires doivent être réalistes (trajets, durées de visite, temps de repas)
 
 ${durInstr}
 
-Pour chaque activité inclue:
-- L'heure de début recommandée
-- La durée estimée
-- Le moyen de transport (voiture, à pied, transports en commun)
-- Le temps de trajet approximatif
-- Une note pratique courte (réservation, tenue, etc.)
-
-Réponds UNIQUEMENT en JSON valide, structure exacte:
+Réponds UNIQUEMENT en JSON valide sans commentaires, structure exacte :
 ${jsonStructure}`;
 
   try {
@@ -5799,6 +5827,7 @@ ${jsonStructure}`;
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
       body: JSON.stringify({ prompt, model: 'claude-sonnet-4-6' })
     });
+    clearInterval(progTimer);
     if (!res.ok) {
       const errText = await res.text().catch(() => 'unknown');
       throw new Error('HTTP ' + res.status + ': ' + errText.substring(0, 200));
@@ -5811,6 +5840,7 @@ ${jsonStructure}`;
     const program = JSON.parse(match[0]);
     renderWeekendProgram(program, dur);
   } catch(e) {
+    clearInterval(progTimer);
     body.innerHTML = `<p style="color:#C0392B;padding:20px;text-align:center">${apt().programError||'Erreur lors de la génération.'}</p>
     <button onclick="generateWeekendProgram()" class="generate-program-btn">🔄 ${apt().programRegenerate||'Régénérer'}</button>`;
   }
