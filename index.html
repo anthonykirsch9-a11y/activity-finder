@@ -4661,13 +4661,39 @@ function renderResults(activities, location, radius, budget, group, ages) {
 
 // ── Init Supabase (désactivé si clés non configurées) ──
 const _SUPABASE_READY = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('ICI');
-// Custom storage adapter pour contourner le blocage Edge/Safari sur GitHub Pages
-const _sbStorage = {
-  getItem: (key) => { try { return localStorage.getItem(key); } catch(e) { try { return sessionStorage.getItem(key); } catch(e2) { return _sbMemStore[key] || null; } } },
-  setItem: (key, val) => { try { localStorage.setItem(key, val); } catch(e) { try { sessionStorage.setItem(key, val); } catch(e2) { _sbMemStore[key] = val; } } },
-  removeItem: (key) => { try { localStorage.removeItem(key); } catch(e) { try { sessionStorage.removeItem(key); } catch(e2) { delete _sbMemStore[key]; } } }
-};
+// Custom storage adapter avec fallback cookie pour Safari iOS
 const _sbMemStore = {};
+const _sbStorage = {
+  getItem: (key) => {
+    try { const v = localStorage.getItem(key); if (v) return v; } catch(e) {}
+    try { const v = sessionStorage.getItem(key); if (v) return v; } catch(e) {}
+    // Fallback cookie
+    try {
+      const match = document.cookie.match('(^|;)\\s*sb_' + key.replace(/[^a-z0-9]/gi,'_') + '\\s*=\\s*([^;]+)');
+      if (match) return decodeURIComponent(match[2]);
+    } catch(e) {}
+    return _sbMemStore[key] || null;
+  },
+  setItem: (key, val) => {
+    try { localStorage.setItem(key, val); return; } catch(e) {}
+    try { sessionStorage.setItem(key, val); return; } catch(e) {}
+    // Fallback cookie (7 jours)
+    try {
+      const ckey = 'sb_' + key.replace(/[^a-z0-9]/gi,'_');
+      document.cookie = ckey + '=' + encodeURIComponent(val) + ';max-age=604800;path=/;SameSite=Lax';
+    } catch(e) {}
+    _sbMemStore[key] = val;
+  },
+  removeItem: (key) => {
+    try { localStorage.removeItem(key); } catch(e) {}
+    try { sessionStorage.removeItem(key); } catch(e) {}
+    try {
+      const ckey = 'sb_' + key.replace(/[^a-z0-9]/gi,'_');
+      document.cookie = ckey + '=;max-age=0;path=/';
+    } catch(e) {}
+    delete _sbMemStore[key];
+  }
+};
 const _sb = (_SUPABASE_READY && window.supabase)
   ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: {
