@@ -3265,7 +3265,22 @@ function saveProfileManual() {
   const radius = document.getElementById('radius-select')?.value || '25';
   const ages = [...document.querySelectorAll('.age-input')].map(i => i.value);
 
+  // Sauvegarde locale (fallback)
   localSave('user_profile', { location, group, budget, moods, radius, ages });
+
+  // Sauvegarde Supabase si connecté
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    _sb.from('profiles').update({
+      location,
+      group_type: group,
+      budget,
+      radius,
+      moods,
+      ages
+    }).eq('id', currentUser.id).then(({ error }) => {
+      if (error) console.warn('Supabase profile save error:', error);
+    });
+  }
 
   // Feedback visuel
   const btn = document.getElementById('save-profile-btn');
@@ -4410,14 +4425,15 @@ async function runSearch(fromMap) {
 
     // Sauvegarder le profil pour pré-remplir la prochaine fois
     if (userPlan === 'pro') {
-      localSave('user_profile', {
-        location,
-        group,
-        budget,
-        moods: [...document.querySelectorAll('#moods .pill.selected')].map(p => p.dataset.val),
-        radius: document.getElementById('radius-select')?.value || '25',
-        ages: [...document.querySelectorAll('.age-input')].map(i => i.value)
-      });
+      const _moods = [...document.querySelectorAll('#moods .pill.selected')].map(p => p.dataset.val);
+      const _radius = document.getElementById('radius-select')?.value || '25';
+      const _ages = [...document.querySelectorAll('.age-input')].map(i => i.value);
+      localSave('user_profile', { location, group, budget, moods: _moods, radius: _radius, ages: _ages });
+      // Auto-save vers Supabase
+      if (_sb && currentUser && currentUser.id !== 'beta-user') {
+        _sb.from('profiles').update({ location, group_type: group, budget, radius: _radius, moods: _moods, ages: _ages })
+          .eq('id', currentUser.id).then(() => {});
+      }
     }
 
     setTimeout(() => {
@@ -4682,7 +4698,7 @@ async function loadUserProfile() {
 
   // Upsert profile row
   const { data: profile } = await _sb.from('profiles')
-    .select('plan, search_count, search_month')
+    .select('plan, search_count, search_month, location, group_type, budget, radius, moods, ages')
     .eq('id', currentUser.id)
     .single();
 
@@ -4690,6 +4706,17 @@ async function loadUserProfile() {
     userPlan = profile.plan || 'free';
     // Reset count if new month
     searchCount = (profile.search_month === monthKey) ? (profile.search_count || 0) : 0;
+    // Sauvegarder en local pour applyProfile()
+    if (userPlan === 'pro' && profile.location) {
+      localSave('user_profile', {
+        location: profile.location,
+        group: profile.group_type,
+        budget: profile.budget,
+        radius: profile.radius,
+        moods: profile.moods || [],
+        ages: profile.ages || []
+      });
+    }
   } else {
     // Create profile
     await _sb.from('profiles').insert({
