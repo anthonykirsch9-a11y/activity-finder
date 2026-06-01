@@ -4728,12 +4728,17 @@ async function loadUserProfile() {
 
     // Charger photos activités depuis notes Supabase
     if (userPlan === 'pro') {
-      const { data: notesWithPhotos } = await _sb.from('notes').select('activity_id, photo_url').eq('user_id', currentUser.id).not('photo_url', 'is', null);
-      if (notesWithPhotos && notesWithPhotos.length) {
-        const photos = localLoad('activity_photos') || {};
-        notesWithPhotos.forEach(n => { if (n.photo_url) photos[n.activity_id] = n.photo_url; });
-        localSave('activity_photos', photos);
-      }
+      try {
+        const { data: notesWithPhotos } = await _sb.from('notes')
+          .select('activity_id, photo_url')
+          .eq('user_id', currentUser.id)
+          .not('photo_url', 'is', null);
+        if (notesWithPhotos && notesWithPhotos.length) {
+          const photos = {};
+          notesWithPhotos.forEach(n => { if (n.photo_url) photos[n.activity_id] = n.photo_url; });
+          localSave('activity_photos', photos);
+        }
+      } catch(e) { console.warn('Photos load error:', e); }
     }
 
     // Sauvegarder en local pour applyProfile()
@@ -4926,12 +4931,27 @@ let _memoryItems = [];   // liste de toutes les mémoires
 let _memoryIndex = 0;    // index courant
 let _memoryTimer = null; // auto-avance
 
-function buildMemoryItems() {
-  const notes = localLoad('notes') || [];
+async function buildMemoryItems() {
+  let notes = [];
   const photos = localLoad('activity_photos') || {};
-  // Construire la liste : toutes les activités notées, triées par date DESC
-  const items = notes
-    .filter(n => n.done)
+
+  // Charger depuis Supabase si connecté
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    try {
+      const { data } = await _sb.from('notes')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('done', true)
+        .order('created_at', { ascending: false });
+      notes = data || [];
+      // Mettre à jour les photos depuis photo_url Supabase
+      notes.forEach(n => { if (n.photo_url) photos[n.activity_id] = n.photo_url; });
+    } catch(e) { notes = localLoad('notes') || []; }
+  } else {
+    notes = (localLoad('notes') || []).filter(n => n.done);
+  }
+
+  return notes
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .map(n => ({
       activityId: n.activity_id,
@@ -4941,7 +4961,6 @@ function buildMemoryItems() {
       date: n.created_at,
       photo: photos[n.activity_id] || null
     }));
-  return items;
 }
 
 function getTimeAgoLabel(dateStr) {
@@ -4973,8 +4992,8 @@ function getTimeAgoLabel(dateStr) {
   return n(ta[7], diffYears);
 }
 
-function openMemory(activityId) {
-  const items = buildMemoryItems();
+async function openMemory(activityId) {
+  const items = await buildMemoryItems();
   if (!items.length) return;
   _memoryItems = items;
   _memoryIndex = activityId ? Math.max(0, items.findIndex(i => i.activityId === activityId)) : 0;
@@ -4982,8 +5001,8 @@ function openMemory(activityId) {
   document.getElementById('memory-modal').classList.add('open');
 }
 
-function openMemoriesAll() {
-  const items = buildMemoryItems();
+async function openMemoriesAll() {
+  const items = await buildMemoryItems();
   if (!items.length) return;
   _memoryItems = items;
   _memoryIndex = 0;
@@ -5804,11 +5823,11 @@ function renderWeekendProgram(program, dur) {
 // ══════════════════════════════════════════════════════════════
 // PANNEAU MÉMOIRES — grille + stories style Snapchat
 // ══════════════════════════════════════════════════════════════
-function renderMemoriesPane() {
+async function renderMemoriesPane() {
   const el = document.getElementById('ap-memories-content');
   if (!el) return;
 
-  const items = buildMemoryItems();
+  const items = await buildMemoryItems();
   const photos = localLoad('activity_photos') || {};
 
   if (!items.length) {
@@ -6112,7 +6131,10 @@ function triggerPhotoUpload(activityId) {
   newInput.accept = 'image/*';
   newInput.style.display = 'none';
   newInput.dataset.activityId = activityId;
-  newInput.onchange = function() { handleGlobalPhotoUpload(this); document.body.removeChild(this); };
+  newInput.onchange = async function() {
+    await handleGlobalPhotoUpload(this);
+    if (document.body.contains(this)) document.body.removeChild(this);
+  };
   document.body.appendChild(newInput);
   newInput.click();
 }
