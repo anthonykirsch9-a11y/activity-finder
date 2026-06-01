@@ -4720,6 +4720,22 @@ async function loadUserProfile() {
     userPlan = profile.plan || 'free';
     // Reset count if new month
     searchCount = (profile.search_month === monthKey) ? (profile.search_count || 0) : 0;
+    // Charger avatar depuis Supabase
+    if (profile.avatar_url) {
+      const avatarData = { type: 'custom', url: profile.avatar_url };
+      localSave('user_avatar', avatarData);
+    }
+
+    // Charger photos activités depuis notes Supabase
+    if (userPlan === 'pro') {
+      const { data: notesWithPhotos } = await _sb.from('notes').select('activity_id, photo_url').eq('user_id', currentUser.id).not('photo_url', 'is', null);
+      if (notesWithPhotos && notesWithPhotos.length) {
+        const photos = localLoad('activity_photos') || {};
+        notesWithPhotos.forEach(n => { if (n.photo_url) photos[n.activity_id] = n.photo_url; });
+        localSave('activity_photos', photos);
+      }
+    }
+
     // Sauvegarder en local pour applyProfile()
     if (userPlan === 'pro' && profile.location) {
       localSave('user_profile', {
@@ -6066,11 +6082,30 @@ function handleStaticPhotoUpload(input, activityId) {
   setTimeout(() => { input.value = ''; }, 100);
 }
 
-function handleGlobalPhotoUpload(input) {
+async function handleGlobalPhotoUpload(input) {
   const file = input.files[0];
   if (!file) return;
   const actId = input.dataset.activityId;
   if (!actId) return;
+
+  // Upload vers Supabase Storage si connecté
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    try {
+      const ext = file.type.split('/')[1] || 'jpg';
+      const path = currentUser.id + '/' + actId + '.' + ext;
+      const publicUrl = await uploadToStorage('activity-photos', path, file);
+      if (publicUrl) {
+        const photos = localLoad('activity_photos') || {};
+        photos[actId] = publicUrl;
+        localSave('activity_photos', photos);
+        await _sb.from('notes').update({ photo_url: publicUrl }).eq('user_id', currentUser.id).eq('activity_id', actId);
+        renderAccountActivities();
+        return;
+      }
+    } catch(e) { console.warn('Photo upload error:', e); }
+  }
+
+  // Fallback localStorage
   const reader = new FileReader();
   reader.onload = e => {
     const photos = localLoad('activity_photos') || {};
@@ -6684,8 +6719,40 @@ function handleAvatarUpload(input) {
   reader.readAsDataURL(file);
 }
 
-function saveAvatar() {
+
+// ── Supabase Storage helpers ──
+async function uploadToStorage(bucket, path, file) {
+  if (!_sb || !currentUser || currentUser.id === 'beta-user') return null;
+  const { data, error } = await _sb.storage.from(bucket).upload(path, file, { upsert: true });
+  if (error) { console.warn('Storage upload error:', error); return null; }
+  const { data: urlData } = _sb.storage.from(bucket).getPublicUrl(path);
+  return urlData?.publicUrl || null;
+}
+
+async function deleteFromStorage(bucket, path) {
+  if (!_sb || !currentUser || currentUser.id === 'beta-user') return;
+  await _sb.storage.from(bucket).remove([path]);
+}
+
+async function saveAvatar() {
   if (!_selectedAvatar) return;
+
+  // Si c'est un fichier uploadé (data URL), uploader vers Supabase Storage
+  if (_selectedAvatar.url && _selectedAvatar.url.startsWith('data:') && _sb && currentUser && currentUser.id !== 'beta-user') {
+    try {
+      const res = await fetch(_selectedAvatar.url);
+      const blob = await res.blob();
+      const ext = blob.type.split('/')[1] || 'jpg';
+      const path = currentUser.id + '/avatar.' + ext;
+      const publicUrl = await uploadToStorage('avatars', path, blob);
+      if (publicUrl) {
+        _selectedAvatar = { ..._selectedAvatar, url: publicUrl };
+        // Sauvegarder l'URL dans profiles
+        await _sb.from('profiles').update({ avatar_url: publicUrl }).eq('id', currentUser.id);
+      }
+    } catch(e) { console.warn('Avatar upload error:', e); }
+  }
+
   localSave('user_avatar', _selectedAvatar);
   updateAvatarDisplay(_selectedAvatar);
   // Forcer mise à jour topbar immédiatement
