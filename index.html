@@ -4005,9 +4005,10 @@ async function runSearch(fromMap) {
   // Vérification limite côté serveur pour les users gratuits
   if (userPlan !== 'pro') {
     try {
+      const _anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc3ljc3diY2JvZnhnZmx1dWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NjU4ODMsImV4cCI6MjA5MjQ0MTg4M30.UbvPqIrqaFaOygik4l60Ik3nXQ52LroaQPKcqwCdGI4';
       const res = await fetch('https://scsycswbcbofxgfluukr.supabase.co/functions/v1/check-search-limit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc3ljc3diY2JvZnhnZmx1dWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NjU4ODMsImV4cCI6MjA5MjQ0MTg4M30.UbvPqIrqaFaOygik4l60Ik3nXQ52LroaQPKcqwCdGI4' }
+        headers: { 'Content-Type': 'application/json', 'apikey': _anonKey, 'Authorization': 'Bearer ' + _anonKey }
       });
       const data = await res.json();
       if (!data.allowed) { openUpgrade(); return; }
