@@ -4892,6 +4892,8 @@ async function loadUserProfile() {
     if (profile.avatar_url) {
       const avatarData = { type: 'custom', url: profile.avatar_url };
       localSave('user_avatar', avatarData);
+      // Mettre à jour l'affichage immédiatement — renderAuthUI() a déjà tourné sans l'avatar
+      updateAvatarDisplay(avatarData);
     }
 
     // Charger photos activités depuis notes Supabase
