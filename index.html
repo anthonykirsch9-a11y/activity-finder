@@ -3784,38 +3784,82 @@ const BOOKING_AFF_ID = 'WEEKIO_BOOKING_AFF';
 const GYG_AFF_ID = 'WEEKIO_GYG_AFF';
 
 function extractKeywords(titre) {
-  // Mots à ignorer pour extraire le nom du lieu
-  const stopWords = ['du','de','des','le','la','les','en','au','aux','un','une','et','à','a','par','pour','sur','sous','avec','dans','près','entre','vers','chez','via','lors','soirée','journée','après-midi','matinée','découverte','exploration','visite','aventure','balade','promenade','excursion','séjour','escapade','week-end','weekend','expérience','activité','moment','temps','pause','détente','plaisir','session','cours','atelier','initiation','nuit','nocturne','aqua','fun','dîner','déjeuner','brunch','repas','spa','thermes','médiévale','médiéval','medieval','historique','romantique','culturel','culturelle','aquatique','ludique','magique','unique','insolite','authentique','exceptionnel','exceptionnelle','immersif','immersive','privée','privé','guidée','guidé','nocturne','progressive','libre'];
-  const words = titre.toLowerCase()
-    .replace(/[,;:!?()«»""'']/g, ' ')
-    .split(/\s+/)
-    .filter(w => w.length > 3 && !stopWords.includes(w));
-  return words.slice(0, 3).join(' ');
+  // Catégories génériques GYG — on garde seulement les mots qui matchent sur GYG
+  const activityTypes = {
+    'escape':['escape','escape game','escape room'],
+    'karting':['karting','kart'],
+    'paintball':['paintball'],
+    'laser':['laser','lasergame','laser game'],
+    'bowling':['bowling'],
+    'accrobranche':['accrobranche','accrobranches','treetop'],
+    'spa':['spa','thermes','hammam','bain'],
+    'aquaparc':['aquapark','aqua','piscine','waterpark'],
+    'randonnée':['randonn','hiking','trek'],
+    'kayak':['kayak','canoe','canoë'],
+    'vélo':['vélo','bike','cycling','vtt'],
+    'yoga':['yoga'],
+    'cuisine':['cuisine','cooking','gastronom'],
+    'dégustation':['dégust','wine','tasting','oenolog'],
+    'musée':['musée','museum'],
+    'château':['château','castle'],
+    'concert':['concert','show','spectacle'],
+    'théâtre':['théâtre','theater'],
+    'cinéma':['cinéma','cinema'],
+    'golf':['golf'],
+    'tennis':['tennis'],
+    'escalade':['escalade','climbing'],
+    'surf':['surf','kitesurf'],
+    'parachute':['parachute','saut'],
+    'zoo':['zoo','safari','aquarium'],
+    'croisière':['croisière','cruise','bateau'],
+    'quad':['quad','moto'],
+    'marché':['marché','market'],
+    'atelier':['atelier','workshop','poterie','cocktail'],
+  };
+  const tit = titre.toLowerCase();
+  for (const [key, variants] of Object.entries(activityTypes)) {
+    if (variants.some(v => tit.includes(v))) return key;
+  }
+  // Fallback : 1 mot significatif (> 4 lettres, pas stopword)
+  const stopWords = new Set(['découverte','exploration','visite','aventure','balade','excursion','expérience','activité','détente','plaisir','initiation','nocturne','journée','après-midi','matinée','soirée','week-end','weekend','escapade','séjour','moment','pause','session','cours','repas','brunch','dîner','déjeuner']);
+  const words = tit.replace(/[,;:!?()«»""'']/g, ' ').split(/\s+/).filter(w => w.length > 4 && !stopWords.has(w));
+  return words[0] || '';
+}
+
+// Catégories réellement présentes sur GetYourGuide
+const GYG_BOOKABLE = ['escape','karting','kart','paintball','laser','bowling','accrobranche','spa','hammam','thermes','kayak','canoe','canoë','vélo','bike','vtt','yoga','cuisine','cooking','dégustation','wine','tasting','oenolog','croisière','cruise','bateau','parachute','saut','golf','tennis','escalade','climbing','surf','kitesurf','quad','atelier','workshop','poterie','cocktail','zoo','safari','aquarium','concert','show','spectacle','théâtre','theater','musée','museum','château','castle'];
+
+function isGygBookable(titre) {
+  const t = titre.toLowerCase();
+  return GYG_BOOKABLE.some(k => t.includes(k));
 }
 
 function buildBookingLink(titre, lieu, city) {
   if (!titre) return '';
   
-  const keywords = extractKeywords(titre);
-  const searchQuery = keywords || (titre.split(' ').slice(0,3).join(' '));
+  const keyword = extractKeywords(titre);
   const cityName = (city || lieu || '').split(',')[0].trim();
-  
-  const gygQuery = encodeURIComponent(searchQuery + (cityName ? ' ' + cityName : ''));
-  const bookingCity = encodeURIComponent(cityName || searchQuery);
-  
   const titLow = (titre||'').toLowerCase();
   
   // Booking.com pour les hébergements
   const bookTypes = ['hôtel','hotel','auberge','gîte','camping','chambre','hébergement','logement','bed'];
   const isHotel = bookTypes.some(t => titLow.includes(t));
-  
   if (isHotel) {
+    const bookingCity = encodeURIComponent(cityName || keyword);
     const bookUrl = `https://www.booking.com/searchresults.html?ss=${bookingCity}&aid=${BOOKING_AFF_ID}`;
     const label = {fr:'🏨 Réserver',en:'🏨 Book',es:'🏨 Reservar',de:'🏨 Buchen',it:'🏨 Prenota',pt:'🏨 Reservar'}[lang]||'🏨 Réserver';
     return `<a class="rc-gmaps" href="${bookUrl}" target="_blank" rel="noopener" style="background:#003580;color:#fff;border-color:#003580;font-weight:700">${label}</a>`;
   }
   
-  // GetYourGuide pour tout le reste (activités, restaurants, bars, etc.)
+  // GetYourGuide uniquement si l'activité a des chances d'exister sur GYG
+  // Activités locales uniques (châteaux régionaux, randonnées, parcs...) → pas de bouton
+  if (!isGygBookable(titre)) return '';
+  
+  const gygParts = [];
+  if (keyword) gygParts.push(keyword);
+  if (cityName) gygParts.push(cityName);
+  const gygQuery = encodeURIComponent(gygParts.join(' ') || titre.split(' ').slice(0,2).join(' '));
+  
   const gygUrl = `https://www.getyourguide.com/s/?q=${gygQuery}&partner_id=${GYG_AFF_ID}`;
   const label = {fr:'🎟 Réserver',en:'🎟 Book',es:'🎟 Reservar',de:'🎟 Buchen',it:'🎟 Prenota',pt:'🎟 Reservar'}[lang]||'🎟 Réserver';
   return `<a class="rc-gmaps" href="${gygUrl}" target="_blank" rel="noopener" style="background:#FF6B35;color:#fff;border-color:#FF6B35;font-weight:700">${label}</a>`;
@@ -5292,7 +5336,7 @@ const AP_TRANSLATIONS = {
     // Filtres rapides
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
-    or:'ou', memoriesBtn:'✨ Mes Mémoires', timeAgo:['Aujourd\'hui','Il y a {n} jour','Il y a {n} jours','Il y a {n} semaine','Il y a {n} semaines','Il y a {n} mois','Il y a 1 an 🎉','Il y a {n} ans 🎉'], betaCode:'Code d\'accès bêta', betaPlaceholder:'Code invitation…',
+    or:'ou', memoriesBtn:'✨ Mes Mémoires', timeAgo:['Aujourd\'hui','Il y a 1 jour','Il y a {n} jours','Il y a 1 semaine','Il y a {n} semaines','Il y a {n} mois','Il y a 1 an 🎉','Il y a {n} ans 🎉'], betaCode:'Code d\'accès bêta', betaPlaceholder:'Code invitation…',
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté', avatarTitle:'Choisis ton avatar', avatarUpload:'Utiliser ma propre photo', avatarSave:'Valider',
     proTitle:'Weekio Pro', proPrice:'2,99 €', proPerMonth:'/mois',
