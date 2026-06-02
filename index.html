@@ -3783,36 +3783,49 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
 const BOOKING_AFF_ID = 'WEEKIO_BOOKING_AFF';
 const GYG_AFF_ID = 'WEEKIO_GYG_AFF';
 
+function extractKeywords(titre) {
+  // Mots à ignorer pour extraire le nom du lieu
+  const stopWords = ['du','de','des','le','la','les','en','au','aux','un','une','et','à','a','par','pour','sur','sous','avec','dans','près','entre','vers','chez','via','lors','soirée','journée','après-midi','matinée','découverte','exploration','visite','aventure','balade','promenade','excursion','séjour','escapade','week-end','weekend','expérience','activité','moment','temps','pause','détente','plaisir','session','cours','atelier','initiation','nuit','nocturne','aqua','fun','dîner','déjeuner','brunch','repas','spa','thermes'];
+  const words = titre.toLowerCase()
+    .replace(/[,;:!?()«»""'']/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !stopWords.includes(w));
+  return words.slice(0, 3).join(' ');
+}
+
 function buildBookingLink(titre, lieu, city) {
   if (!titre) return '';
-  const query = encodeURIComponent((titre || '') + ' ' + (city || lieu || ''));
-  const cityQ = encodeURIComponent(city || lieu || '');
   
-  // GetYourGuide pour les activités (musées, visites, expériences)
-  const actTypes = ['musée','museum','visite','tour','château','castle','parc','park','aquatique','thermes','spa','concert','spectacle','zoo','cirque','escape','karting','laser','accrobranche','kayak','vélo','bike','randonnée','hike'];
+  const keywords = extractKeywords(titre);
+  const searchQuery = keywords || (titre.split(' ').slice(0,3).join(' '));
+  const cityName = (city || lieu || '').split(',')[0].trim();
+  
+  const gygQuery = encodeURIComponent(searchQuery + (cityName ? ' ' + cityName : ''));
+  const bookingCity = encodeURIComponent(cityName || searchQuery);
+  
   const titLow = (titre||'').toLowerCase();
-  const isActivity = actTypes.some(t => titLow.includes(t));
   
-  if (isActivity) {
-    const gygUrl = `https://www.getyourguide.com/s/?q=${query}&partner_id=${GYG_AFF_ID}`;
-    const label = {fr:'🎟 Réserver',en:'🎟 Book',es:'🎟 Reservar',de:'🎟 Buchen',it:'🎟 Prenota',pt:'🎟 Reservar'}[lang]||'🎟 Réserver';
-    return `<a class="rc-gmaps" href="${gygUrl}" target="_blank" rel="noopener" style="background:#FF6B35;color:#fff;border-color:#FF6B35;font-weight:700">${label}</a>`;
-  }
+  // Booking.com pour les hébergements
+  const bookTypes = ['hôtel','hotel','auberge','gîte','camping','chambre','hébergement','logement','bed'];
+  const isHotel = bookTypes.some(t => titLow.includes(t));
   
-  // Booking.com pour les restaurants, bars, hôtels
-  const bookTypes = ['restaurant','brasserie','bistrot','café','bar','hôtel','hotel','auberge','gîte','camping'];
-  const isBooking = bookTypes.some(t => titLow.includes(t));
-  
-  if (isBooking) {
-    const bookUrl = `https://www.booking.com/searchresults.html?ss=${cityQ}&aid=${BOOKING_AFF_ID}`;
+  if (isHotel) {
+    const bookUrl = `https://www.booking.com/searchresults.html?ss=${bookingCity}&aid=${BOOKING_AFF_ID}`;
     const label = {fr:'🏨 Réserver',en:'🏨 Book',es:'🏨 Reservar',de:'🏨 Buchen',it:'🏨 Prenota',pt:'🏨 Reservar'}[lang]||'🏨 Réserver';
     return `<a class="rc-gmaps" href="${bookUrl}" target="_blank" rel="noopener" style="background:#003580;color:#fff;border-color:#003580;font-weight:700">${label}</a>`;
   }
   
-  // Fallback GetYourGuide pour tout le reste
-  const gygUrl = `https://www.getyourguide.com/s/?q=${query}&partner_id=${GYG_AFF_ID}`;
+  // GetYourGuide pour tout le reste (activités, restaurants, bars, etc.)
+  const gygUrl = `https://www.getyourguide.com/s/?q=${gygQuery}&partner_id=${GYG_AFF_ID}`;
   const label = {fr:'🎟 Réserver',en:'🎟 Book',es:'🎟 Reservar',de:'🎟 Buchen',it:'🎟 Prenota',pt:'🎟 Reservar'}[lang]||'🎟 Réserver';
   return `<a class="rc-gmaps" href="${gygUrl}" target="_blank" rel="noopener" style="background:#FF6B35;color:#fff;border-color:#FF6B35;font-weight:700">${label}</a>`;
+}
+
+function buildBookingHotelLink(city) {
+  if (!city) return '';
+  const cityQ = encodeURIComponent(city.split(',')[0].trim());
+  const label = {fr:'🏨 Trouver un hôtel',en:'🏨 Find a hotel',es:'🏨 Buscar hotel',de:'🏨 Hotel suchen',it:'🏨 Trova hotel',pt:'🏨 Encontrar hotel'}[lang]||'🏨 Trouver un hôtel';
+  return `<a href="https://www.booking.com/searchresults.html?ss=${cityQ}&aid=${BOOKING_AFF_ID}" target="_blank" class="prog-hotel-link">${label}</a>`;
 }
 
 function buildActivityCard(a, idx, location) {
@@ -5950,7 +5963,7 @@ function renderWeekendProgram(program, dur) {
     return `<div class="prog-hotel-card">
       <div class="prog-hotel-title">🏨 ${hotelLabels[lang]||hotelLabels.fr}</div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px">${{fr:'Programme sur 2 jours — pense à réserver ton hébergement !',en:'2-day program — book your stay!',es:'Programa de 2 días — ¡reserva tu alojamiento!',de:'2-Tages-Programm — buche deine Unterkunft!',it:'Programma su 2 giorni — prenota il tuo alloggio!',pt:'Programa de 2 dias — reserva o teu alojamento!'}[lang]||'Programme sur 2 jours — pense à réserver ton hébergement !'}</div>
-      <a href="${bookingUrl}" target="_blank" class="prog-hotel-link">🔍 ${hotelCta[lang]||hotelCta.fr}</a>
+      ${buildBookingHotelLink(ville)}
     </div>`;
   }
 
