@@ -5014,7 +5014,7 @@ async function buildMemoryItems() {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .map(n => ({
       activityId: n.activity_id,
-      title: n.activity_title || n.activity_id,
+      title: n.activity_title || n.titre || n.activity_id,
       stars: n.stars || 0,
       note: n.note || '',
       date: n.created_at,
@@ -5780,7 +5780,7 @@ async function generateWeekendProgram() {
 
   const favDetails = favs.map(f => {
     const note = notes.find(n => n.activity_id === f.activity_id);
-    return `- ${f.activity_title}${note?.stars ? ' (noté ' + note.stars + '/5)' : ''}`;
+    return `- ${f.titre || f.activity_title || f.activity_id}${note?.stars ? ' (noté ' + note.stars + '/5)' : ''}`;
   }).join('\n');
 
   const langNames = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
@@ -6124,7 +6124,7 @@ async function renderAccountActivities() {
     html += favs.map(f => `
       <div class="activity-item" style="display:flex;gap:10px;align-items:flex-start">
         <div style="flex:1">
-          <div class="activity-item-title">${f.activity_title}</div>
+          <div class="activity-item-title">${f.titre || f.activity_title || f.activity_id}</div>
           <div class="activity-item-meta">${new Date(f.saved_at).toLocaleDateString()}</div>
         </div>
         <button onclick="removeFavorite('${f.activity_id}')" style="background:none;border:none;cursor:pointer;font-size:18px;flex-shrink:0">❤️</button>
@@ -6142,7 +6142,7 @@ async function renderAccountActivities() {
       <div class="activity-item" style="cursor:pointer;position:relative" onclick="openMemory('${n.activity_id}')">
         ${isAnniversary ? `<div style="position:absolute;top:8px;right:8px;background:#C4714A;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px">🎉 ${ago}</div>` : ''}
         ${photo ? `<img src="${photo}" alt="" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block">` : ''}
-        <div class="activity-item-title">${n.activity_title||n.activity_id}</div>
+        <div class="activity-item-title">${n.activity_title || n.activity_id}</div>
         <div class="activity-item-stars">${'⭐'.repeat(n.stars||0)}</div>
         ${n.note ? `<div class="activity-item-meta" style="font-style:italic">"${n.note}"</div>` : ''}
         <div class="activity-item-meta" style="display:flex;justify-content:space-between;margin-top:4px">
@@ -6151,7 +6151,7 @@ async function renderAccountActivities() {
         </div>
         <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
           <button onclick="event.stopPropagation();setPhotoTarget('${n.activity_id}')" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:5px 10px;cursor:pointer">📷 ${photo ? (apt().photoChange||'Changer la photo') : (apt().photoAdd||'Ajouter une photo')}</button>
-          <button onclick="event.stopPropagation();editNote('${n.activity_id}','${(n.activity_title||'').replace(/'/g,'').replace(/"/g,'')}',${n.stars||0},'${(n.note||'').replace(/'/g,'').replace(/"/g,'')}')" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer">✏️ Modifier</button>
+          <button onclick="event.stopPropagation();editNote('${n.activity_id}','${(n.activity_title||n.activity_id||'').replace(/'/g,'').replace(/"/g,'')}',${n.stars||0},'${(n.note||'').replace(/'/g,'').replace(/"/g,'')}')" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer">✏️ Modifier</button>
         </div>
       </div>`;
     }).join('');
@@ -7119,7 +7119,7 @@ function checkOnThisDayNotification() {
     banner.id = 'on-this-day-banner';
     banner.onclick = () => { banner.remove(); openAccountPanel(); setTimeout(() => switchAccountTab('memories'), 300); };
     banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:linear-gradient(135deg,#C4714A,#D4855C);color:#fff;border-radius:14px;padding:12px 20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(196,113,74,0.4);display:flex;align-items:center;gap:10px;white-space:nowrap;max-width:90vw;animation:slideUp 0.4s ease';
-    banner.innerHTML = `<span style="font-size:20px">🎉</span><div><div style="font-weight:700">Ce jour il y a ${years} an${years>1?'s':''}</div><div style="font-size:11px;opacity:0.9">${(match.activity_title||'').substring(0,35)}</div></div><span style="margin-left:8px;opacity:0.7">→</span>`;
+    banner.innerHTML = `<span style="font-size:20px">🎉</span><div><div style="font-weight:700">Ce jour il y a ${years} an${years>1?'s':''}</div><div style="font-size:11px;opacity:0.9">${(match.activity_title||match.titre||'').substring(0,35)}</div></div><span style="margin-left:8px;opacity:0.7">→</span>`;
     document.body.appendChild(banner);
     // Auto-disparaît après 6s
     setTimeout(() => { if (banner.parentNode) { banner.style.opacity='0'; banner.style.transition='opacity 0.4s'; setTimeout(() => banner.remove(), 400); }}, 6000);
