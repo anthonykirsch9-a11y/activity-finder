@@ -3785,7 +3785,7 @@ const GYG_AFF_ID = 'WEEKIO_GYG_AFF';
 
 function extractKeywords(titre) {
   // Mots à ignorer pour extraire le nom du lieu
-  const stopWords = ['du','de','des','le','la','les','en','au','aux','un','une','et','à','a','par','pour','sur','sous','avec','dans','près','entre','vers','chez','via','lors','soirée','journée','après-midi','matinée','découverte','exploration','visite','aventure','balade','promenade','excursion','séjour','escapade','week-end','weekend','expérience','activité','moment','temps','pause','détente','plaisir','session','cours','atelier','initiation','nuit','nocturne','aqua','fun','dîner','déjeuner','brunch','repas','spa','thermes'];
+  const stopWords = ['du','de','des','le','la','les','en','au','aux','un','une','et','à','a','par','pour','sur','sous','avec','dans','près','entre','vers','chez','via','lors','soirée','journée','après-midi','matinée','découverte','exploration','visite','aventure','balade','promenade','excursion','séjour','escapade','week-end','weekend','expérience','activité','moment','temps','pause','détente','plaisir','session','cours','atelier','initiation','nuit','nocturne','aqua','fun','dîner','déjeuner','brunch','repas','spa','thermes','médiévale','médiéval','medieval','historique','romantique','culturel','culturelle','aquatique','ludique','magique','unique','insolite','authentique','exceptionnel','exceptionnelle','immersif','immersive','privée','privé','guidée','guidé','nocturne','progressive','libre'];
   const words = titre.toLowerCase()
     .replace(/[,;:!?()«»""'']/g, ' ')
     .split(/\s+/)
@@ -5911,8 +5911,7 @@ function renderWeekendProgram(program, dur) {
   const typeDot = { activite:'', repas:' meal', hotel:' hotel' };
 
   // Détecter si multi-jours (samedi+dimanche) → proposer hôtel
-  const isMultiDay = (durMode === 'weekend' || durMode === 'we') &&
-    program.samedi?.length && program.dimanche?.length;
+  const isMultiDay = program.samedi?.length && program.dimanche?.length;
 
   // Récupérer la ville depuis le formulaire
   const villeRaw = document.getElementById('location')?.value?.trim() || '';
@@ -5952,7 +5951,10 @@ function renderWeekendProgram(program, dur) {
 
   // Bloc hôtel Booking.com affilié
   function hotelBlock() {
-    if (!isMultiDay || !ville) return '';
+    if (!isMultiDay) return '';
+    // Utiliser la ville du formulaire ou extraire de la dernière activité du samedi
+    const hotelVille = ville || (program.samedi?.length ? extractKeywords(program.samedi[program.samedi.length-1]?.titre||'') : '');
+    if (!hotelVille) return '';
     const bookingUrl = 'https://www.booking.com/search.html?ss=' + encodeURIComponent(ville) + '&aid=WEEKIO_AFF_ID';
     const hotelLabels = {
       fr:`Dormir sur place à ${ville}`, en:`Stay overnight in ${ville}`,
@@ -5963,7 +5965,7 @@ function renderWeekendProgram(program, dur) {
     return `<div class="prog-hotel-card">
       <div class="prog-hotel-title">🏨 ${hotelLabels[lang]||hotelLabels.fr}</div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px">${{fr:'Programme sur 2 jours — pense à réserver ton hébergement !',en:'2-day program — book your stay!',es:'Programa de 2 días — ¡reserva tu alojamiento!',de:'2-Tages-Programm — buche deine Unterkunft!',it:'Programma su 2 giorni — prenota il tuo alloggio!',pt:'Programa de 2 dias — reserva o teu alojamento!'}[lang]||'Programme sur 2 jours — pense à réserver ton hébergement !'}</div>
-      ${buildBookingHotelLink(ville)}
+      ${buildBookingHotelLink(hotelVille)}
     </div>`;
   }
 
@@ -6174,14 +6176,22 @@ async function renderAccountActivities() {
   // Favoris
   if (favs.length) {
     html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">❤️ ${ta.favsTitle||'Favoris'}</div>`;
-    html += favs.map(f => `
-      <div class="activity-item" style="display:flex;gap:10px;align-items:flex-start">
-        <div style="flex:1">
-          <div class="activity-item-title">${f.titre || f.activity_title || f.activity_id}</div>
-          <div class="activity-item-meta">${f.saved_at || f.created_at ? new Date(f.saved_at || f.created_at).toLocaleDateString() : ""}</div>
+    html += favs.map(f => {
+      const favTitre = f.titre || f.activity_title || f.activity_id;
+      const favCity = (document.getElementById('location')?.value||'').split(',')[0].trim();
+      const reserveBtn = buildBookingLink(favTitre, '', favCity);
+      return `
+      <div class="activity-item" style="cursor:pointer" onclick="openFavoriteDetail('${encodeURIComponent(favTitre)}','${f.activity_id}','${favCity}')">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="flex:1">
+            <div class="activity-item-title">${favTitre}</div>
+            <div class="activity-item-meta">${f.saved_at || f.created_at ? getTimeAgoLabel(f.saved_at || f.created_at) : ""}</div>
+          </div>
+          <button onclick="event.stopPropagation();removeFavorite('${f.activity_id}')" style="background:none;border:none;cursor:pointer;font-size:18px;flex-shrink:0">❤️</button>
         </div>
-        <button onclick="removeFavorite('${f.activity_id}')" style="background:none;border:none;cursor:pointer;font-size:18px;flex-shrink:0">❤️</button>
-      </div>`).join('');
+        ${reserveBtn ? `<div style="margin-top:8px">${reserveBtn}</div>` : ''}
+      </div>`;
+    }).join('');
   }
 
   // Activités faites
