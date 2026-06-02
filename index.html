@@ -3827,7 +3827,7 @@ function extractKeywords(titre) {
 }
 
 // Catégories réellement présentes sur GetYourGuide
-const GYG_BOOKABLE = ['escape','karting','kart','paintball','laser','bowling','accrobranche','spa','hammam','thermes','kayak','canoe','canoë','vélo','bike','vtt','yoga','cuisine','cooking','dégustation','wine','tasting','oenolog','croisière','cruise','bateau','parachute','saut','golf','tennis','escalade','climbing','surf','kitesurf','quad','atelier','workshop','poterie','cocktail','zoo','safari','aquarium','concert','show','spectacle','théâtre','theater','musée','museum','château','castle'];
+const GYG_BOOKABLE = ['escape','karting','kart','paintball','laser','bowling','accrobranche','spa','hammam','thermes','kayak','canoe','canoë','vélo','bike','vtt','yoga','cuisine','cooking','dégustation','wine','tasting','oenolog','croisière','cruise','bateau','parachute','saut','golf','tennis','escalade','climbing','surf','kitesurf','quad','atelier','workshop','poterie','cocktail','zoo','safari','aquarium','concert','show','spectacle','théâtre','theater'];
 
 function isGygBookable(titre) {
   const t = titre.toLowerCase();
@@ -3934,6 +3934,7 @@ function buildActivityCard(a, idx, location) {
         </a>
         <button class="rc-pro-action-btn ${isFav?'active':''}"
           data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
+          data-website="${websiteUrl||''}" data-photo="${photoUrl(a.type, a.titre)||''}"
           title="Favoris">${isFav?'❤️':'🤍'}</button>
         <button class="rc-pro-action-btn"
           data-action="note" data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
@@ -4748,6 +4749,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
           ${userPlan === 'pro' ? `
           <button class="rc-pro-action-btn ${isFav?'active':''}"
             data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
+            data-website="${websiteUrl||''}" data-photo="${photoUrl(a.type, a.titre)||''}"
             title="Favoris">${isFav?'❤️':'🤍'}</button>
           <button class="rc-pro-action-btn"
             data-action="note" data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
@@ -6234,8 +6236,11 @@ async function renderAccountActivities() {
       const favTitre = f.titre || f.activity_title || f.activity_id;
       const favCity = (document.getElementById('location')?.value||'').split(',')[0].trim();
       const reserveBtn = buildBookingLink(favTitre, '', favCity);
+      const favPhoto = f.photo_url || null;
+      const favWebsite = f.website || null;
       return `
-      <div class="activity-item" style="cursor:pointer" onclick="openFavoriteDetail('${encodeURIComponent(favTitre)}','${f.activity_id}','${favCity}')">
+      <div class="activity-item" style="cursor:pointer;overflow:hidden" onclick="openFavoriteDetail('${encodeURIComponent(favTitre)}','${f.activity_id}','${favCity}')">
+        ${favPhoto ? `<img src="${favPhoto}" alt="" loading="lazy" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block">` : ''}
         <div style="display:flex;gap:10px;align-items:flex-start">
           <div style="flex:1">
             <div class="activity-item-title">${favTitre}</div>
@@ -6243,7 +6248,10 @@ async function renderAccountActivities() {
           </div>
           <button onclick="event.stopPropagation();removeFavorite('${f.activity_id}')" style="background:none;border:none;cursor:pointer;font-size:18px;flex-shrink:0">❤️</button>
         </div>
-        ${reserveBtn ? `<div style="margin-top:8px">${reserveBtn}</div>` : ''}
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          ${favWebsite ? `<a href="${favWebsite}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="rc-gmaps" style="background:var(--primary-light);color:var(--primary);border-color:var(--primary)">🌐 Site officiel</a>` : ''}
+          ${reserveBtn ? reserveBtn : ''}
+        </div>
       </div>`;
     }).join('');
   }
@@ -6790,7 +6798,7 @@ async function initFavorites() {
   });
 }
 
-function toggleFavorite(titleEncoded, activityId) {
+function toggleFavorite(titleEncoded, activityId, website, photo) {
   if (userPlan !== 'pro') { openUpgrade(); return; }
   const id = activityId || '';
   const btn = document.querySelector(`[data-fav-id="${id}"]`);
@@ -6806,11 +6814,24 @@ function toggleFavorite(titleEncoded, activityId) {
   } else {
     favorites.add(id);
     if (btn) btn.textContent = '❤️';
-    const favData = { user_id: currentUser?.id, activity_id: id, titre: decodeURIComponent(titleEncoded||''), created_at: new Date().toISOString() };
+    const favData = {
+      user_id: currentUser?.id,
+      activity_id: id,
+      titre: decodeURIComponent(titleEncoded||''),
+      website: website || null,
+      photo_url: photo || null,
+      created_at: new Date().toISOString()
+    };
     if (_sb && currentUser && currentUser.id !== 'beta-user') {
       _sb.from('favorites').upsert(favData, { onConflict: 'user_id,activity_id' }).then(() => {});
     } else {
-      localPush('favorites', { activity_id: id, activity_title: decodeURIComponent(titleEncoded||''), saved_at: new Date().toISOString() });
+      localPush('favorites', {
+        activity_id: id,
+        activity_title: decodeURIComponent(titleEncoded||''),
+        website: website || null,
+        photo_url: photo || null,
+        saved_at: new Date().toISOString()
+      });
     }
   }
 }
@@ -7165,7 +7186,7 @@ document.addEventListener('click', function(e) {
   const action = btn.dataset.action;
   const encodedTitle = btn.dataset.encodedTitle;
   if (action === 'fav') {
-    toggleFavorite(encodedTitle, btn.dataset.favId);
+    toggleFavorite(encodedTitle, btn.dataset.favId, btn.dataset.website||'', btn.dataset.photo||'');
   } else if (action === 'note') {
     openNote(encodedTitle, btn.dataset.noteId);
   } else if (action === 'done') {
