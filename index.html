@@ -4856,34 +4856,46 @@ const _sb = (_SUPABASE_READY && window.supabase)
 
 // ── Auth state listener ──
 let _authProfileLoading = false;
+let _authInitialized = false;
+
 if (_sb) {
-  _sb.auth.onAuthStateChange(async (event, session) => {
-    // Ignore INITIAL_SESSION fired during getSession() — géré ci-dessous
-    if (event === 'INITIAL_SESSION') return;
-    if (session) {
-      currentUser = session.user;
-      if (!_authProfileLoading) {
-        _authProfileLoading = true;
-        await loadUserProfile();
-        _authProfileLoading = false;
-      }
+  // getSession() = seule source de vérité au chargement initial
+  _sb.auth.getSession().then(({ data }) => {
+    _authInitialized = true;
+    if (data.session) {
+      currentUser = data.session.user;
+      _authProfileLoading = true;
+      loadUserProfile().finally(() => { _authProfileLoading = false; });
     } else {
       currentUser = null;
       userPlan = 'free';
-      searchCount = 0;
       renderAuthUI();
     }
   });
-  // Seule source de vérité au chargement initial
-  _sb.auth.getSession().then(({ data }) => {
-    if (data.session) {
-      currentUser = data.session.user;
-      if (!_authProfileLoading) {
-        _authProfileLoading = true;
-        loadUserProfile().finally(() => { _authProfileLoading = false; });
+
+  // onAuthStateChange gère les changements APRÈS l'init (login, logout, token refresh)
+  _sb.auth.onAuthStateChange(async (event, session) => {
+    // Ignorer les events avant que getSession() ait fini
+    if (!_authInitialized) return;
+    // Ignorer INITIAL_SESSION (déjà géré par getSession)
+    if (event === 'INITIAL_SESSION') return;
+
+    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      if (session) {
+        currentUser = session.user;
+        if (!_authProfileLoading) {
+          _authProfileLoading = true;
+          await loadUserProfile();
+          _authProfileLoading = false;
+        }
       }
-    } else {
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      userPlan = 'free';
+      searchCount = 0;
+      favorites = new Set();
       renderAuthUI();
+      updateLimitBanner();
     }
   });
 }
@@ -6652,15 +6664,17 @@ async function markActivityDone(titleEncoded, activityId) {
   }
 }
 
-function signOut() {
-  if (_sb) _sb.auth.signOut();
+async function signOut() {
+  closeAccountPanel();
+  // Réinitialiser l'état local immédiatement
   currentUser = null;
   userPlan = 'free';
   searchCount = 0;
   favorites = new Set();
   renderAuthUI();
   updateLimitBanner();
-  closeAccountPanel();
+  // Puis déconnecter Supabase (onAuthStateChange SIGNED_OUT sera ignoré car déjà réinitialisé)
+  if (_sb) await _sb.auth.signOut();
 }
 
 async function confirmDeleteAccount() {
