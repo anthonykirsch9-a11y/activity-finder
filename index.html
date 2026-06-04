@@ -2913,8 +2913,8 @@ const PEXELS_QUERIES = {
 // URLs directes Pexels — fonctionnent depuis le navigateur (pas depuis serveur)
 const PEXELS_DIRECT = {
   // Éphémères
-  'brocante':      'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'vide-grenier':  'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'brocante':      'https://images.pexels.com/photos/2291731/pexels-photo-2291731.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vide-grenier':  'https://images.pexels.com/photos/2291731/pexels-photo-2291731.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche':        'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche-groupe': 'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'apero':         'https://images.pexels.com/photos/5935755/pexels-photo-5935755.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
@@ -3004,11 +3004,13 @@ function getPhotoTheme(type, titre) {
     if (t.includes('moto') || t.includes('harley')) return 'moto';
     if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer')) return 'voiture';
     if (t.includes('food') || t.includes('burger') || t.includes('barbecue')) return 'food';
-    if (t.includes('concert') || t.includes('festival') || t.includes('rock') || t.includes('jazz')) return 'concert';
+    if (t.includes('concert') || t.includes('festival') || t.includes('rock') || t.includes('jazz') || t.includes('musique') || t.includes('usina') || t.includes('electro') || t.includes('scène')) return 'concert';
     if (t.includes('bd') || t.includes('comics') || t.includes('manga')) return 'bd';
     if (t.includes('parade') || t.includes('carnaval') || t.includes('défilé')) return 'parade';
     if (t.includes('noël') || t.includes('noel')) return 'noel';
     if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie')) return 'brocante';
+    if (t.includes('boxe') || t.includes('gala') || t.includes('combat') || t.includes('sport')) return 'randonnee';
+    if (t.includes('château') || t.includes('fort') || t.includes('ouvrage') || t.includes('medieval') || t.includes('médiéval')) return 'chateau';
     return 'marche';
   }
   if (t.includes('randonnée') || t.includes('randonn') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
@@ -3902,7 +3904,7 @@ function buildActivityCard(a, idx, location) {
   const gmaps = `https://www.google.com/maps/search/${encodeURIComponent((a.titre||'')+' '+(location||''))}`;
   const infos = (a.infos_pratiques||[]).map(i=>`<li class="rc-info-item">${i}</li>`).join('');
   const gPlace = _lastGooglePlaces.find(p => p.id === a.placeId);
-  const websiteUrl = gPlace?.websiteUri || a.website || null;
+  const websiteUrl = a.ephemere ? (a.website || null) : (gPlace?.websiteUri || a.website || null);
   const favId = (a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase();
   const isFav = favorites.has(favId);
   const isDone = alreadyDoneIds.has(favId);
@@ -4707,7 +4709,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
 
     // Lien site officiel depuis Google Places si disponible
     const gPlace = _lastGooglePlaces.find(p => p.id === a.placeId);
-    const websiteUrl = gPlace?.websiteUri || a.website || null;
+    const websiteUrl = a.ephemere ? (a.website || null) : (gPlace?.websiteUri || a.website || null);
     // Ne pas afficher ouvert/fermé — trompeur car dépend de l'heure actuelle pas du weekend demandé
     const openBadge = '';
 
