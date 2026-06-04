@@ -5598,7 +5598,17 @@ function openAccountPanel() {
   // Afficher le bon contenu selon l'état
   if (isPro) {
     // Pro → aller sur Stats (onglets visibles)
-    switchAccountTab('stats');
+    // Si loadUserProfile pas encore terminé, attendre un peu
+    if (_authProfileLoading) {
+      const el = document.getElementById('ap-stats-content');
+      if (el) el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">⏳ Chargement…</div>';
+      document.getElementById('ap-tabs').style.display = 'flex';
+      document.getElementById('ap-tab-stats')?.classList.add('active');
+      document.getElementById('ap-pane-stats')?.classList.add('active');
+      setTimeout(() => switchAccountTab('stats'), 1500);
+    } else {
+      switchAccountTab('stats');
+    }
   } else {
     // Non-Pro → afficher le panneau promo dans ap-pane-stats (sans tabs)
     document.querySelectorAll('.account-pane').forEach(p => p.classList.remove('active'));
@@ -5733,6 +5743,13 @@ async function renderAccountStats() {
   try { if (_store.getItem('af_beta_ok') === '1') userPlan = 'pro'; } catch(e) {}
   const isPro = userPlan === 'pro';
   if (!isPro) { renderAccountProfile(); return; }
+
+  // Si Supabase pas encore prêt ou user pas chargé → spinner + retry
+  if (_sb && (!currentUser || currentUser.id === 'beta-user' && !_sb)) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">⏳ Chargement…</div>';
+    setTimeout(() => renderAccountStats(), 1200);
+    return;
+  }
 
   const notes = (_sb && currentUser?.id !== 'beta-user')
     ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true)).data || [])
