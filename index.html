@@ -4663,25 +4663,44 @@ const _sb = (_SUPABASE_READY && window.supabase)
 // ── State (déclaré en haut du script) ──
 
 // ── Auth state listener ──
+let _authReady = false;
+let _authLoading = false;
 if (_sb) {
-  _sb.auth.onAuthStateChange(async (event, session) => {
-    if (session) {
-      currentUser = session.user;
-      await loadUserProfile();
+  // getSession = source de vérité au chargement
+  _sb.auth.getSession().then(({ data }) => {
+    _authReady = true;
+    if (data.session) {
+      currentUser = data.session.user;
+      _authLoading = true;
+      loadUserProfile().finally(() => { _authLoading = false; });
     } else {
       currentUser = null;
       userPlan = 'free';
-      searchCount = 0;
       renderAuthUI();
     }
   });
-  // Get current session on load
-  _sb.auth.getSession().then(({ data }) => {
-    if (data.session) {
-      currentUser = data.session.user;
-      loadUserProfile();
-    } else {
+
+  // onAuthStateChange = gère login/logout APRÈS init
+  _sb.auth.onAuthStateChange(async (event, session) => {
+    // Ignorer avant que getSession() soit terminé
+    if (!_authReady) return;
+    // Ignorer INITIAL_SESSION (déjà géré par getSession)
+    if (event === 'INITIAL_SESSION') return;
+
+    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (session && !_authLoading) {
+        currentUser = session.user;
+        _authLoading = true;
+        await loadUserProfile();
+        _authLoading = false;
+      }
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      userPlan = 'free';
+      searchCount = 0;
+      favorites = new Set();
       renderAuthUI();
+      updateLimitBanner();
     }
   });
 }
@@ -4693,7 +4712,7 @@ async function loadUserProfile() {
 
   // Upsert profile row
   const { data: profile } = await _sb.from('profiles')
-    .select('plan, search_count, search_month')
+    .select('plan, search_count, search_month, avatar_url, location, group_type, budget, radius, moods, ages')
     .eq('id', currentUser.id)
     .single();
 
@@ -4714,7 +4733,7 @@ async function loadUserProfile() {
     searchCount = 0;
   }
 
-  // Load already-done activities (pro)
+  // Load already-done activities + favoris + avatar (pro)
   if (userPlan === 'pro') {
     const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     const { data: done } = await _sb.from('notes')
@@ -4724,6 +4743,13 @@ async function loadUserProfile() {
       .gte('created_at', oneYearAgo.toISOString());
     if (done) alreadyDoneIds = new Set(done.map(d => d.activity_id));
     loadHistory();
+    await initFavorites();
+  }
+
+  // Charger avatar depuis Supabase (multi-appareils)
+  if (profile && profile.avatar_url) {
+    const avatarData = { type: 'custom', url: profile.avatar_url };
+    localSave('user_avatar', avatarData);
   }
 
   renderAuthUI();
@@ -6181,9 +6207,17 @@ async function markActivityDone(titleEncoded, activityId) {
   }
 }
 
-function signOut() {
-  if (_sb) _sb.auth.signOut();
+async function signOut() {
+  // Réinitialiser immédiatement pour feedback instantané
+  currentUser = null;
+  userPlan = 'free';
+  searchCount = 0;
+  favorites = new Set();
+  renderAuthUI();
+  updateLimitBanner();
   closeAccountPanel();
+  // Puis déconnecter Supabase
+  if (_sb) await _sb.auth.signOut();
 }
 
 async function confirmDeleteAccount() {
