@@ -5959,6 +5959,24 @@ async function renderAccountActivities() {
       notesWithPhotos.forEach(n => { if (n.photo_url) photos[n.activity_id] = n.photo_url; });
       localSave('activity_photos', photos);
     }
+    // FIX rétroactif : si photos en localStorage (base64) sans URL Supabase, re-uploader
+    const localPhotos = localLoad('activity_photos') || {};
+    for (const [actId, photoData] of Object.entries(localPhotos)) {
+      if (photoData && photoData.startsWith('data:image') && !photos[actId]?.startsWith('http')) {
+        try {
+          const res = await fetch(photoData);
+          const blob = await res.blob();
+          const file = new File([blob], 'photo.jpg', { type: blob.type });
+          const publicUrl = await uploadActivityPhoto(file, actId);
+          if (publicUrl) {
+            await _sb.from('notes').update({ photo_url: publicUrl })
+              .eq('user_id', currentUser.id).eq('activity_id', actId);
+            photos[actId] = publicUrl;
+          }
+        } catch(e) { photos[actId] = photoData; } // fallback base64
+      }
+    }
+    localSave('activity_photos', photos);
   }
 
   let html = '';
@@ -6724,13 +6742,27 @@ function setPhotoTarget(activityId) {
   inp.addEventListener('change', function() {
     const file = this.files[0];
     if (!file) return;
+    const actId = _photoTargetId;
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
+      // Afficher immédiatement en local (base64)
       const photos = localLoad('activity_photos') || {};
-      photos[_photoTargetId] = e.target.result;
+      photos[actId] = e.target.result;
       localSave('activity_photos', photos);
       _photoTargetId = null;
       renderAccountActivities();
+      // FIX multi-appareils : uploader vers Supabase Storage et sauvegarder l'URL
+      if (_sb && currentUser && currentUser.id !== 'beta-user') {
+        try {
+          const publicUrl = await uploadActivityPhoto(file, actId);
+          if (publicUrl) {
+            await _sb.from('notes').update({ photo_url: publicUrl })
+              .eq('user_id', currentUser.id).eq('activity_id', actId);
+            photos[actId] = publicUrl;
+            localSave('activity_photos', photos);
+          }
+        } catch(e2) { console.warn('Photo upload failed:', e2); }
+      }
     };
     reader.readAsDataURL(file);
   });
