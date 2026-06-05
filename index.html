@@ -5913,7 +5913,7 @@ function renderMemoriesPane() {
       var note = items.find(function(i) { return i.activityId === actId; });
       var title = note ? note.title : actId;
       var stars = note ? note.stars : 0;
-      html += '<div class="photo-grid-item" onclick="openMemory('' + actId + '')" style="cursor:pointer">'
+      html += '<div class="photo-grid-item" onclick="openMemory(\'' + actId + '\')" style="cursor:pointer">'
         + '<img src="' + photoSrc + '" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">'
         + '<div class="photo-grid-label">' + title.substring(0, 22) + '<br>' + (stars > 0 ? '⭐'.repeat(stars) : '') + '</div>'
         + '</div>';
