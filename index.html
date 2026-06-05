@@ -4777,15 +4777,24 @@ async function loadUserProfile() {
     searchCount = 0;
   }
 
-  // Load already-done activities + favoris + avatar (pro)
+  // Load already-done activities + favoris + photos + avatar (pro)
   if (userPlan === 'pro') {
     const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     const { data: done } = await _sb.from('notes')
-      .select('activity_id')
+      .select('activity_id, photo_url')
       .eq('user_id', currentUser.id)
       .eq('done', true)
       .gte('created_at', oneYearAgo.toISOString());
-    if (done) alreadyDoneIds = new Set(done.map(d => d.activity_id));
+    if (done) {
+      alreadyDoneIds = new Set(done.map(d => d.activity_id));
+      // Charger les photos depuis Supabase → multi-appareils
+      const photos = localLoad('activity_photos') || {};
+      let photosUpdated = false;
+      done.forEach(d => {
+        if (d.photo_url) { photos[d.activity_id] = d.photo_url; photosUpdated = true; }
+      });
+      if (photosUpdated) localSave('activity_photos', photos);
+    }
     loadHistory();
     await initFavorites();
   }
@@ -6003,11 +6012,21 @@ async function renderAccountActivities() {
       const actId = this.dataset.activityId;
       if (!actId) return;
       const reader = new FileReader();
-      reader.onload = ev => {
+      reader.onload = async ev => {
+        // Sauvegarder en local immédiatement
         const photos = localLoad('activity_photos') || {};
         photos[actId] = ev.target.result;
         localSave('activity_photos', photos);
         renderAccountActivities();
+        // Uploader dans Supabase Storage en arrière-plan
+        const publicUrl = await uploadActivityPhoto(file, actId);
+        if (publicUrl && _sb && currentUser && currentUser.id !== 'beta-user') {
+          await _sb.from('notes').update({ photo_url: publicUrl })
+            .eq('user_id', currentUser.id).eq('activity_id', actId);
+          // Mettre à jour le local avec l'URL publique
+          photos[actId] = publicUrl;
+          localSave('activity_photos', photos);
+        }
       };
       reader.readAsDataURL(file);
     });
@@ -6033,12 +6052,19 @@ async function renderAccountActivities() {
       if (!file) { document.body.removeChild(tmp); return; }
       const actId = this.dataset.activityId;
       const reader = new FileReader();
-      reader.onload = ev => {
+      reader.onload = async ev => {
         const photos = localLoad('activity_photos') || {};
         photos[actId] = ev.target.result;
         localSave('activity_photos', photos);
         document.body.removeChild(tmp);
         renderAccountActivities();
+        const publicUrl = await uploadActivityPhoto(file, actId);
+        if (publicUrl && _sb && currentUser && currentUser.id !== 'beta-user') {
+          await _sb.from('notes').update({ photo_url: publicUrl })
+            .eq('user_id', currentUser.id).eq('activity_id', actId);
+          photos[actId] = publicUrl;
+          localSave('activity_photos', photos);
+        }
       };
       reader.readAsDataURL(file);
     });
@@ -6420,25 +6446,79 @@ function localPush(key, item) {
 }
 
 // ── Favoris ──
-function initFavorites() {
+// ── Upload photo vers Supabase Storage ──
+async function uploadActivityPhoto(file, activityId) {
+  if (!_sb || !currentUser || currentUser.id === 'beta-user') return null;
+  try {
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = currentUser.id + '/' + activityId + '.' + ext;
+    const { error } = await _sb.storage.from('activity-photos').upload(path, file, { upsert: true });
+    if (error) { console.warn('Upload error:', error); return null; }
+    const { data } = _sb.storage.from('activity-photos').getPublicUrl(path);
+    return data?.publicUrl || null;
+  } catch(e) { console.warn('Upload failed:', e); return null; }
+}
+
+async function initFavorites() {
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    // Charger depuis Supabase → multi-appareils
+    const { data } = await _sb.from('favorites')
+      .select('activity_id, titre, website, photo_url, created_at')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    if (data && data.length > 0) {
+      favorites = new Set(data.map(f => f.activity_id));
+      // Sync local pour accès rapide
+      localSave('favorites', data.map(f => ({
+        activity_id: f.activity_id,
+        activity_title: f.titre || f.activity_id,
+        website: f.website || null,
+        photo_url: f.photo_url || null,
+        saved_at: f.created_at
+      })));
+      return;
+    }
+  }
+  // Fallback localStorage (beta user ou hors ligne)
   const saved = localLoad('favorites') || [];
   favorites = new Set(saved.map(f => f.activity_id));
 }
 
-function toggleFavorite(titleEncoded, activityId) {
+async function toggleFavorite(titleEncoded, activityId, website, photoUrl) {
   if (userPlan !== 'pro') { openUpgrade(); return; }
-  // Support appel depuis dataset
   const id = activityId || '';
   const btn = document.querySelector(`[data-fav-id="${id}"]`);
   if (favorites.has(id)) {
+    // Supprimer
     favorites.delete(id);
     if (btn) btn.textContent = '🤍';
+    if (_sb && currentUser && currentUser.id !== 'beta-user') {
+      await _sb.from('favorites').delete().eq('user_id', currentUser.id).eq('activity_id', id);
+    }
     const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==id);
     localSave('favorites', saved);
   } else {
+    // Ajouter
     favorites.add(id);
     if (btn) btn.textContent = '❤️';
-    localPush('favorites', { activity_id: id, activity_title: decodeURIComponent(titleEncoded||''), saved_at: new Date().toISOString() });
+    const favData = {
+      user_id: currentUser?.id,
+      activity_id: id,
+      titre: decodeURIComponent(titleEncoded||''),
+      website: website || null,
+      photo_url: photoUrl || null,
+      created_at: new Date().toISOString()
+    };
+    if (_sb && currentUser && currentUser.id !== 'beta-user') {
+      await _sb.from('favorites').upsert(favData, { onConflict: 'user_id,activity_id' });
+    }
+    localPush('favorites', {
+      activity_id: id,
+      activity_title: favData.titre,
+      website: favData.website,
+      photo_url: favData.photo_url,
+      saved_at: favData.created_at
+    });
   }
 }
 
