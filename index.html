@@ -4659,7 +4659,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
 // ── Init Supabase (désactivé si clés non configurées) ──
 const _SUPABASE_READY = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('ICI');
 
-// Storage adapter avec fallback cookie pour Edge/Safari (qui bloquent localStorage)
+// Storage adapter robuste — écrit dans TOUS les stockages simultanément
 const _sbMemStore = {};
 const _sbStorage = {
   getItem: (key) => {
@@ -4673,14 +4673,13 @@ const _sbStorage = {
     return _sbMemStore[key] !== undefined ? _sbMemStore[key] : null;
   },
   setItem: (key, val) => {
-    try { localStorage.setItem(key, val); } catch(e) {
-      try { sessionStorage.setItem(key, val); } catch(e2) {
-        try {
-          const ck = 'sb_' + key.replace(/[^a-z0-9]/gi, '_');
-          document.cookie = ck + '=' + encodeURIComponent(val) + ';max-age=604800;path=/;SameSite=Lax';
-        } catch(e3) {}
-      }
-    }
+    // Écrire partout simultanément — pas en cascade
+    try { localStorage.setItem(key, val); } catch(e) {}
+    try { sessionStorage.setItem(key, val); } catch(e) {}
+    try {
+      const ck = 'sb_' + key.replace(/[^a-z0-9]/gi, '_');
+      document.cookie = ck + '=' + encodeURIComponent(val) + ';max-age=604800;path=/;SameSite=None;Secure';
+    } catch(e) {}
     _sbMemStore[key] = val;
   },
   removeItem: (key) => {
@@ -4688,7 +4687,7 @@ const _sbStorage = {
     try { sessionStorage.removeItem(key); } catch(e) {}
     try {
       const ck = 'sb_' + key.replace(/[^a-z0-9]/gi, '_');
-      document.cookie = ck + '=;max-age=0;path=/';
+      document.cookie = ck + '=;max-age=0;path=/;SameSite=None;Secure';
     } catch(e) {}
     delete _sbMemStore[key];
   }
@@ -6823,7 +6822,7 @@ function handleAvatarUpload(input) {
   reader.readAsDataURL(file);
 }
 
-function saveAvatar() {
+async function saveAvatar() {
   if (!_selectedAvatar) return;
   localSave('user_avatar', _selectedAvatar);
   updateAvatarDisplay(_selectedAvatar);
@@ -6833,6 +6832,12 @@ function saveAvatar() {
     const badge = topbarAv.querySelector('.user-plan');
     topbarAv.innerHTML = '<img src="' + _selectedAvatar.url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
     if (badge) topbarAv.appendChild(badge);
+  }
+  // FIX multi-appareils : sauvegarder avatar_url dans Supabase
+  if (_sb && currentUser && currentUser.id !== 'beta-user' && _selectedAvatar && _selectedAvatar.url) {
+    try {
+      await _sb.from('profiles').update({ avatar_url: _selectedAvatar.url }).eq('id', currentUser.id);
+    } catch(e) { console.warn('Avatar Supabase save failed:', e); }
   }
   // Supprimer le picker inline
   const inline = document.getElementById('inline-avatar-picker');
