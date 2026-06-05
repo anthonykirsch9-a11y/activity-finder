@@ -3815,6 +3815,7 @@ function buildActivityCard(a, idx, location) {
         </a>
         <button class="rc-pro-action-btn ${isFav?'active':''}"
           data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
+          data-website="${websiteUrl||''}" data-photo="${photoUrl(a.type,a.titre)||''}"
           title="Favoris">${isFav?'❤️':'🤍'}</button>
         <button class="rc-pro-action-btn"
           data-action="note" data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
@@ -6381,12 +6382,13 @@ async function saveSearch(location, group, budget, activities) {
   // ── Sauvegarder aussi dans l'historique global (pour panneau compte) ──
   const searchData = {
     user_id: currentUser?.id||'anon',
-    location, group, budget,
-    titles,
+    location,
+    group_type: group,
+    budget: parseInt(budget)||0,
     created_at: new Date().toISOString()
   };
   if (_sb && currentUser && currentUser.id !== 'beta-user') {
-    await _sb.from('searches').insert(searchData);
+    _sb.from('searches').insert(searchData).then(() => {});
   } else {
     const searches = localLoad('searches') || [];
     searches.unshift(searchData);
@@ -6397,7 +6399,7 @@ async function saveSearch(location, group, budget, activities) {
 async function loadHistory() {
   if (!_sb || !currentUser || userPlan !== 'pro') return;
   const { data } = await _sb.from('searches')
-    .select('id, location, group, budget, created_at')
+    .select('id, location, group_type, budget, created_at')
     .eq('user_id', currentUser.id)
     .order('created_at', { ascending: false })
     .limit(8);
@@ -6405,7 +6407,7 @@ async function loadHistory() {
   const list = document.getElementById('history-list');
   if (!list) return;
   list.innerHTML = data.map(s =>
-    '<div class="history-chip" onclick="reuseSearch(\'' + s.location + '\',\'' + s.group + '\',' + s.budget + ')">'
+    '<div class="history-chip" onclick="reuseSearch(\'' + s.location + '\',\'' + (s.group_type||'') + '\',' + s.budget + ')">'
     + '📍 ' + s.location + '</div>'
   ).join('');
   document.getElementById('history-panel')?.classList.add('show');
@@ -6844,7 +6846,7 @@ document.addEventListener('click', function(e) {
   const action = btn.dataset.action;
   const encodedTitle = btn.dataset.encodedTitle;
   if (action === 'fav') {
-    toggleFavorite(encodedTitle, btn.dataset.favId);
+    toggleFavorite(encodedTitle, btn.dataset.favId, btn.dataset.website||'', btn.dataset.photo||'');
   } else if (action === 'note') {
     openNote(encodedTitle, btn.dataset.noteId);
   } else if (action === 'done') {
