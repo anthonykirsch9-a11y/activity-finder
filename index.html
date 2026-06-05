@@ -5900,7 +5900,28 @@ function renderMemoriesPane() {
     return 0;
   });
 
-  var html = '<button onclick="openMemoriesAll()" style="width:100%;padding:11px;background:linear-gradient(135deg,#3A5C38,#5C7A5A);color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:8px">'
+  // Album souvenirs en haut (photos cliquables → agrandir)
+  var photos = localLoad('activity_photos') || {};
+  var photoEntries = Object.entries(photos);
+  var html = '';
+
+  if (photoEntries.length) {
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📸 Album Souvenirs</div>';
+    html += '<div class="photo-grid" style="margin-bottom:16px">';
+    photoEntries.forEach(function(entry) {
+      var actId = entry[0], photoSrc = entry[1];
+      var note = items.find(function(i) { return i.activityId === actId; });
+      var title = note ? note.title : actId;
+      var stars = note ? note.stars : 0;
+      html += '<div class="photo-grid-item" onclick="openMemory('' + actId + '')" style="cursor:pointer">'
+        + '<img src="' + photoSrc + '" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">'
+        + '<div class="photo-grid-label">' + title.substring(0, 22) + '<br>' + (stars > 0 ? '⭐'.repeat(stars) : '') + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  html += '<button onclick="openMemoriesAll()" style="width:100%;padding:11px;background:linear-gradient(135deg,#3A5C38,#5C7A5A);color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:8px">'
     + '▶ Voir en mode story'
     + '<span style="font-size:11px;opacity:0.8;font-weight:400">' + items.length + ' souvenir' + (items.length > 1 ? 's' : '') + '</span>'
     + '</button>';
@@ -6034,21 +6055,7 @@ async function renderAccountActivities() {
     </button>`;
   }
 
-  // Si on a des photos → afficher la grille album EN PREMIER
-  const photoEntries = Object.entries(photos);
-
-  if (photoEntries.length) {
-    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📸 ${ta.albumTitle||'Album Souvenirs'}</div>`;
-    html += `<div class="photo-grid">`;
-    html += photoEntries.map(([actId, photoSrc]) => {
-      const note = notes.find(n => n.activity_id === actId);
-      return `<div class="photo-grid-item" onclick="openMemory('${actId}')">
-        <img src="${photoSrc}" alt="" loading="lazy">
-        <div class="photo-grid-label">${(note?.activity_title||actId).substring(0,22)}<br>${note ? '⭐'.repeat(note.stars||0) : ''}</div>
-      </div>`;
-    }).join('');
-    html += `</div><div style="height:16px"></div>`;
-  }
+  // Album Souvenirs → déplacé dans l'onglet Mémoires
 
   if (favs.length >= 2) {
     html += `<button class="generate-program-btn" onclick="openWeekendProgram()">
@@ -6060,38 +6067,106 @@ async function renderAccountActivities() {
     html += `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:12px">${msg}</div>`;
   }
 
-  // Favoris groupés par zone géo (~80km)
+  // Favoris groupés par rayon géo 80km
   if (favs.length) {
+    // Coordonnées approx des villes courantes (Europe de l'Ouest)
+    var CITY_COORDS = {
+      'luxembourg':    [49.611, 6.132],
+      'esch':          [49.496, 5.986],
+      'eschesch':      [49.496, 5.986],
+      'eschsuralzette':[49.496, 5.986],
+      'dudelange':     [49.481, 6.087],
+      'differdange':   [49.524, 5.891],
+      'thionville':    [49.358, 6.169],
+      'metz':          [49.119, 6.176],
+      'nancy':         [48.692, 6.184],
+      'hayange':       [49.330, 6.065],
+      'longwy':        [49.521, 5.760],
+      'arlon':         [49.685, 5.812],
+      'liege':         [50.632, 5.569],
+      'namur':         [50.467, 4.867],
+      'bruxelles':     [50.846, 4.352],
+      'brussels':      [50.846, 4.352],
+      'paris':         [48.856, 2.352],
+      'strasbourg':    [48.573, 7.752],
+      'reims':         [49.258, 4.031],
+      'lille':         [50.629, 3.057],
+      'lyon':          [45.764, 4.834],
+      'marseille':     [43.296, 5.381],
+      'amsterdam':     [52.370, 4.895],
+      'cologne':       [50.938, 6.960],
+      'koln':          [50.938, 6.960],
+      'trier':         [49.749, 6.637],
+      'treve':         [49.749, 6.637],
+      'sarrebruck':    [49.234, 6.996],
+      'saarbrucken':   [49.234, 6.996],
+      'hackenberg':    [49.370, 6.380],
+      'feralia':       [49.330, 6.065],
+    };
+
+    function normalizeKey(str) {
+      return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+    }
+
+    function getCityCoords(cityName) {
+      var key = normalizeKey(cityName);
+      // Cherche exactement
+      if (CITY_COORDS[key]) return CITY_COORDS[key];
+      // Cherche si la clé contient le nom ou vice versa
+      for (var k in CITY_COORDS) {
+        if (key.includes(k) || k.includes(key)) return CITY_COORDS[k];
+      }
+      return null;
+    }
+
+    function haversineKm(c1, c2) {
+      var R = 6371;
+      var dLat = (c2[0] - c1[0]) * Math.PI / 180;
+      var dLon = (c2[1] - c1[1]) * Math.PI / 180;
+      var a = Math.sin(dLat/2) * Math.sin(dLat/2)
+        + Math.cos(c1[0]*Math.PI/180) * Math.cos(c2[0]*Math.PI/180)
+        * Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
     function extractCity(title) {
       if (!title) return 'Autres';
       var parts = title.split(',');
       if (parts.length >= 2) return parts[parts.length - 1].trim();
       var m = title.match(/(?:\bà|\bau|\ben|\bnear|\bin)\s+([A-ZÀ-Ü][a-zA-ZÀ-ÿ\s\-]+)/);
-      return m ? m[1].trim() : 'Autres';
-    }
-    function normalizeCity(city) {
-      return city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[-\s]/g,'');
+      return m ? m[1].trim() : title.trim();
     }
 
-    var cityGroups = {};
+    // Construire les clusters par rayon 80km
+    var clusters = []; // [{name, center, items}]
     favs.forEach(function(f) {
       var city = extractCity(f.activity_title);
-      var norm = normalizeCity(city);
-      var existingKey = Object.keys(cityGroups).find(function(k) { return normalizeCity(k) === norm; });
-      var key = existingKey || city;
-      if (!cityGroups[key]) cityGroups[key] = { displayName: city, items: [] };
-      cityGroups[key].items.push(f);
+      var coords = getCityCoords(city);
+      var placed = false;
+      for (var i = 0; i < clusters.length; i++) {
+        var c = clusters[i];
+        var dist = c.center && coords ? haversineKm(c.center, coords) : 999;
+        if (dist <= 80) {
+          c.items.push(f);
+          // Mettre à jour le nom du cluster avec la ville la plus représentée
+          if (coords && !c.center) c.center = coords;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        clusters.push({ name: city, center: coords, items: [f] });
+      }
     });
 
-    Object.entries(cityGroups).forEach(function(entry) {
-      var group = entry[1];
+    clusters.forEach(function(cluster) {
       html += '<div style="margin-bottom:4px">'
         + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;margin-top:14px">'
-        + '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">❤️ ' + group.displayName + '</div>'
-        + '<div style="background:var(--primary-light);color:var(--primary);font-size:10px;font-weight:700;border-radius:99px;padding:2px 8px">' + group.items.length + '</div>'
+        + '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">❤️ ' + cluster.name + '</div>'
+        + '<div style="background:var(--primary-light);color:var(--primary);font-size:10px;font-weight:700;border-radius:99px;padding:2px 8px">' + cluster.items.length + '</div>'
         + '<div style="flex:1;height:1px;background:var(--border)"></div>'
         + '</div>';
-      group.items.forEach(function(f) {
+      cluster.items.forEach(function(f) {
         html += '<div class="activity-item" style="display:flex;gap:10px;align-items:flex-start">'
           + '<div style="flex:1">'
           + '<div class="activity-item-title">' + f.activity_title + '</div>'
