@@ -5562,7 +5562,14 @@ async function renderAccountStats() {
   const searches = (_sb && currentUser?.id !== 'beta-user')
     ? ((await _sb.from('searches').select('*').eq('user_id', currentUser.id)).data || [])
     : (localLoad('searches') || []);
-  const favs = localLoad('favorites') || [];
+  // FIX multi-appareils : lire les favoris depuis Supabase
+  let favs = [];
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const { data: favsDb } = await _sb.from('favorites').select('activity_id').eq('user_id', currentUser.id);
+    favs = favsDb || localLoad('favorites') || [];
+  } else {
+    favs = localLoad('favorites') || [];
+  }
 
   const totalDone = notes.length;
   const avgStars = notes.filter(n=>n.stars>0).length
@@ -5916,13 +5923,44 @@ async function renderAccountActivities() {
     ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false})).data || [])
     : (localLoad('notes') || []);
 
-  // Recharger les favoris depuis localStorage ET depuis la variable en mémoire
-  const favsRaw = localLoad('favorites') || [];
+  // FIX multi-appareils : toujours lire les favoris depuis Supabase
+  let favsRaw = [];
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const { data: favsDb } = await _sb.from('favorites')
+      .select('activity_id, titre, website, photo_url, created_at')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    if (favsDb && favsDb.length > 0) {
+      favsRaw = favsDb.map(f => ({
+        activity_id: f.activity_id,
+        activity_title: f.titre || f.activity_id,
+        website: f.website || null,
+        photo_url: f.photo_url || null,
+        saved_at: f.created_at
+      }));
+      localSave('favorites', favsRaw);
+    } else {
+      favsRaw = localLoad('favorites') || [];
+    }
+  } else {
+    favsRaw = localLoad('favorites') || [];
+  }
   // Sync la variable favorites en mémoire
   favorites = new Set(favsRaw.map(f => f.activity_id));
   const favs = favsRaw;
 
-  const photos = localLoad('activity_photos') || {};
+  // FIX multi-appareils : recharger les photos depuis Supabase (notes avec photo_url)
+  let photos = localLoad('activity_photos') || {};
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const { data: notesWithPhotos } = await _sb.from('notes')
+      .select('activity_id, photo_url')
+      .eq('user_id', currentUser.id)
+      .not('photo_url', 'is', null);
+    if (notesWithPhotos && notesWithPhotos.length > 0) {
+      notesWithPhotos.forEach(n => { if (n.photo_url) photos[n.activity_id] = n.photo_url; });
+      localSave('activity_photos', photos);
+    }
+  }
 
   let html = '';
 
