@@ -2987,7 +2987,7 @@ function makePhotoSvg(theme) {
 
 function getPhotoTheme(type, titre) {
   const t = (titre || '').toLowerCase();
-  if (type === 'Éphémère' || type === 'Ephemeral') {
+  if (type === 'Éphémère' || type === 'Ephemeral' || type === 'Nocturne' || type === 'Nightlife' || type === 'Nocturno' || type === 'Notturno' || type === 'Noturno' || type === 'Nachtleben') {
     if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail')) return 'apero';
     if (t.includes('vin') || t.includes('dégustation') || t.includes('cave')) return 'vin';
     if (t.includes('moto') || t.includes('harley')) return 'moto';
@@ -2996,9 +2996,16 @@ function getPhotoTheme(type, titre) {
     if (t.includes('concert') || t.includes('festival') || t.includes('rock') || t.includes('jazz')) return 'concert';
     if (t.includes('bd') || t.includes('comics') || t.includes('manga')) return 'bd';
     if (t.includes('parade') || t.includes('carnaval') || t.includes('défilé')) return 'parade';
-    if (t.includes('noël') || t.includes('noel')) return 'noel';
+    if (t.includes('noël') || t.includes('noel') || t.includes('christmas')) return 'noel';
     if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie')) return 'brocante';
-    return 'marche';
+    if (t.includes('marché') || t.includes('marche') || t.includes('market')) return 'marche';
+    if (t.includes('bar') || t.includes('pub') || t.includes('soirée') || t.includes('nuit') || t.includes('club') || t.includes('rooftop')) return 'bar';
+    if (t.includes('restaurant') || t.includes('dîner') || t.includes('gastronomie')) return 'restaurant';
+    if (t.includes('spa') || t.includes('bien-être') || t.includes('détente')) return 'spa';
+    if (t.includes('musée') || t.includes('expo') || t.includes('galerie')) return 'museum';
+    if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
+    if (t.includes('escape') || t.includes('laser') || t.includes('jeu')) return 'escape';
+    return 'marche'; // fallback éphémère générique = marché
   }
   if (t.includes('randonnée') || t.includes('randonn') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
   if (t.includes('vélo') || t.includes('vtt') || t.includes('cycl')) return 'velo';
@@ -3780,7 +3787,7 @@ function buildActivityCard(a, idx, location) {
   const gmaps = `https://www.google.com/maps/search/${encodeURIComponent((a.titre||'')+' '+(location||''))}`;
   const infos = (a.infos_pratiques||[]).map(i=>`<li class="rc-info-item">${i}</li>`).join('');
   const gPlace = _lastGooglePlaces.find(p => p.id === a.placeId);
-  const websiteUrl = gPlace?.websiteUri || a.website || null;
+  const websiteUrl = (a.ephemere || a.nocturne) ? (a.website || null) : (gPlace?.websiteUri || a.website || null);
   const favId = (a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase();
   const isFav = favorites.has(favId);
   const isDone = alreadyDoneIds.has(favId);
@@ -4430,6 +4437,15 @@ async function runSearch(fromMap) {
       renderResultsProgressive(activities, location, radius, budget, group, ages);
     }
 
+    // FIX : relancer le CDC avec les vrais titres pour éviter les doublons
+    if (searchLat && searchLng) {
+      const actTitles = activities.map(a => a.titre || '');
+      fetchCoupDeCoeur(searchLat, searchLng, actTitles).then(cdc => {
+        if (cdc) renderCoupDeCoeurResult(cdc);
+        else { const el = document.getElementById('cdc-card'); if(el) el.remove(); }
+      });
+    }
+
     // Sauvegarder le profil pour pré-remplir la prochaine fois
     if (userPlan === 'pro') {
       localSave('user_profile', {
@@ -4569,7 +4585,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
 
     // Lien site officiel depuis Google Places si disponible
     const gPlace = _lastGooglePlaces.find(p => p.id === a.placeId);
-    const websiteUrl = gPlace?.websiteUri || a.website || null;
+    const websiteUrl = (a.ephemere || a.nocturne) ? (a.website || null) : (gPlace?.websiteUri || a.website || null);
     // Ne pas afficher ouvert/fermé — trompeur car dépend de l'heure actuelle pas du weekend demandé
     const openBadge = '';
 
@@ -5514,7 +5530,7 @@ function closeAccountPanel() {
   document.getElementById('account-overlay').classList.remove('open');
 }
 
-function switchAccountTab(tab) {
+async function switchAccountTab(tab) {
   // Mettre à jour l'avatar dans réglages
   if (tab === 'settings') {
     const saved = localLoad('user_avatar');
@@ -5543,7 +5559,7 @@ function switchAccountTab(tab) {
     renderAccountStats();
   }
   if (tab === 'activities') renderAccountActivities();
-  if (tab === 'memories') renderMemoriesPane();
+  if (tab === 'memories') await renderMemoriesPane();
   if (tab === 'add') renderAddEventForm();
 }
 
@@ -5839,11 +5855,39 @@ function renderWeekendProgram(program, dur) {
 // ══════════════════════════════════════════════════════════════
 // PANNEAU MÉMOIRES — grille + stories style Snapchat
 // ══════════════════════════════════════════════════════════════
-function renderMemoriesPane() {
+async function renderMemoriesPane() {
   var el = document.getElementById('ap-memories-content');
   if (!el) return;
 
-  var items = buildMemoryItems();
+  // Afficher un loader pendant le chargement
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">⏳ Chargement…</div>';
+
+  // Charger notes + photos depuis Supabase (multi-appareils)
+  var notes = [];
+  var photos = localLoad('activity_photos') || {};
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    var res = await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at', {ascending: false});
+    notes = res.data || localLoad('notes') || [];
+    // Charger photos depuis Supabase
+    var resP = await _sb.from('notes').select('activity_id, photo_url').eq('user_id', currentUser.id).not('photo_url', 'is', null);
+    if (resP.data) resP.data.forEach(function(n) { if (n.photo_url) photos[n.activity_id] = n.photo_url; });
+    localSave('activity_photos', photos);
+  } else {
+    notes = localLoad('notes') || [];
+  }
+
+  // Construire items
+  var items = notes
+    .filter(function(n) { return n.done; })
+    .sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); })
+    .map(function(n) { return {
+      activityId: n.activity_id,
+      title: n.activity_title || n.activity_id,
+      stars: n.stars || 0,
+      note: n.note || '',
+      date: n.created_at,
+      photo: photos[n.activity_id] || null
+    }; });
 
   if (!items.length) {
     el.innerHTML = '<div style="text-align:center;padding:40px 20px">'
@@ -5901,7 +5945,7 @@ function renderMemoriesPane() {
   });
 
   // Album souvenirs en haut (photos cliquables → agrandir)
-  var photos = localLoad('activity_photos') || {};
+  // photos déjà chargé depuis Supabase ci-dessus
   var photoEntries = Object.entries(photos);
   var html = '';
 
