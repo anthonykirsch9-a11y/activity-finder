@@ -4520,9 +4520,18 @@ function loadPhotosForResults(activities) {
     const placeId = img.dataset.placeid;
     const isEphemere = img.dataset.ephemere === '1';
 
-    // Éphémères → toujours Pexels thématique
+    // Éphémères / pas de placeId → photo thématique directe immédiate
     if (isEphemere || !placeId || placeId === 'null' || placeId === '') {
-      loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      const theme = getPhotoTheme(img.dataset.type, img.dataset.titre);
+      // 1. Essai immédiat avec URL directe vérifiée (pas d'attente)
+      if (PEXELS_DIRECT[theme]) {
+        img.src = PEXELS_DIRECT[theme];
+        img.onerror = () => { img.onerror = null; img.src = PEXELS_DIRECT['default']; };
+      } else {
+        // 2. Fallback : URL directe 'default' immédiate + tentative API en arrière-plan
+        img.src = PEXELS_DIRECT['default'];
+        loadPexelsPhoto(img, img.dataset.type, img.dataset.titre);
+      }
       return;
     }
 
@@ -4975,6 +4984,7 @@ function getSpecialEventContext() {
 let _memoryItems = [];   // liste de toutes les mémoires
 let _memoryIndex = 0;    // index courant
 let _memoryTimer = null; // auto-avance
+let _memoryItemsCache = []; // cache des items chargés depuis Supabase
 
 function buildMemoryItems() {
   const notes = localLoad('notes') || [];
@@ -5024,7 +5034,8 @@ function getTimeAgoLabel(dateStr) {
 }
 
 function openMemory(activityId) {
-  const items = buildMemoryItems();
+  // Utilise le cache Supabase si disponible, sinon fallback localStorage
+  const items = _memoryItemsCache.length ? _memoryItemsCache : buildMemoryItems();
   if (!items.length) return;
   _memoryItems = items;
   _memoryIndex = activityId ? Math.max(0, items.findIndex(i => i.activityId === activityId)) : 0;
@@ -5033,7 +5044,7 @@ function openMemory(activityId) {
 }
 
 function openMemoriesAll() {
-  const items = buildMemoryItems();
+  const items = _memoryItemsCache.length ? _memoryItemsCache : buildMemoryItems();
   if (!items.length) return;
   _memoryItems = items;
   _memoryIndex = 0;
@@ -5889,6 +5900,9 @@ async function renderMemoriesPane() {
       photo: photos[n.activity_id] || null
     }; });
 
+  // Sauvegarder dans le cache global pour openMemory/openMemoriesAll
+  _memoryItemsCache = items;
+
   if (!items.length) {
     el.innerHTML = '<div style="text-align:center;padding:40px 20px">'
       + '<div style="font-size:52px;margin-bottom:12px">🎞️</div>'
@@ -5944,27 +5958,27 @@ async function renderMemoriesPane() {
     return 0;
   });
 
-  // Album souvenirs en haut (photos cliquables → agrandir)
-  // photos déjà chargé depuis Supabase ci-dessus
-  var photoEntries = Object.entries(photos);
+  // ── GALERIE STYLE iPHONE ──
+  var photoItems = items.filter(function(m) { return m.photo; });
   var html = '';
 
-  if (photoEntries.length) {
-    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📸 Album Souvenirs</div>';
-    html += '<div class="photo-grid" style="margin-bottom:16px">';
-    photoEntries.forEach(function(entry) {
-      var actId = entry[0], photoSrc = entry[1];
-      var note = items.find(function(i) { return i.activityId === actId; });
-      var title = note ? note.title : actId;
-      var stars = note ? note.stars : 0;
-      html += '<div class="photo-grid-item" onclick="openMemory(\'' + actId + '\')" style="cursor:pointer">'
-        + '<img src="' + photoSrc + '" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">'
-        + '<div class="photo-grid-label">' + title.substring(0, 22) + '<br>' + (stars > 0 ? '⭐'.repeat(stars) : '') + '</div>'
+  if (photoItems.length) {
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">📸 Album Souvenirs</div>';
+    // Scroll horizontal style galerie iPhone
+    html += '<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none" class="memories-gallery">';
+    photoItems.forEach(function(m) {
+      html += '<div onclick="openMemory(\'' + m.activityId + '\')" style="flex:0 0 140px;height:160px;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;background:#000">'
+        + '<img src="' + m.photo + '" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">'
+        + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:8px 8px 6px">'
+        + '<div style="color:#fff;font-size:11px;font-weight:600;line-height:1.2">' + m.title.substring(0,20) + (m.title.length>20?'…':'') + '</div>'
+        + (m.stars > 0 ? '<div style="font-size:9px;color:#F5A623">' + '⭐'.repeat(m.stars) + '</div>' : '')
+        + '</div>'
         + '</div>';
     });
     html += '</div>';
   }
 
+  // Bouton story
   html += '<button onclick="openMemoriesAll()" style="width:100%;padding:11px;background:linear-gradient(135deg,#3A5C38,#5C7A5A);color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:8px">'
     + '▶ Voir en mode story'
     + '<span style="font-size:11px;opacity:0.8;font-weight:400">' + items.length + ' souvenir' + (items.length > 1 ? 's' : '') + '</span>'
