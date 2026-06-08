@@ -563,6 +563,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 /* Content */
 .account-content { flex:1; overflow-y:auto; padding:0; }
 .account-pane { display:none; padding:20px; }
+#ap-pane-memories { padding:0 0 20px; }
 .account-pane.active { display:block; }
 
 /* Pro promo (non connecté / gratuit) */
@@ -2901,9 +2902,9 @@ const PEXELS_QUERIES = {
 
 // URLs directes Pexels — fonctionnent depuis le navigateur (pas depuis serveur)
 const PEXELS_DIRECT = {
-  // Éphémères
-  'brocante':      'https://images.pexels.com/photos/4481258/pexels-photo-4481258.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'vide-grenier':  'https://images.pexels.com/photos/4481258/pexels-photo-4481258.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  // Éphémères — IDs vérifiés depuis pexels.com
+  'brocante':      'https://images.pexels.com/photos/29731401/pexels-photo-29731401.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vide-grenier':  'https://images.pexels.com/photos/29731401/pexels-photo-29731401.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche':        'https://images.pexels.com/photos/2292919/pexels-photo-2292919.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'marche-groupe': 'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'apero':         'https://images.pexels.com/photos/5935755/pexels-photo-5935755.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
@@ -2912,9 +2913,10 @@ const PEXELS_DIRECT = {
   'parade':        'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'noel':          'https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'food':          'https://images.pexels.com/photos/2983101/pexels-photo-2983101.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'fete':          'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'bourse':        'https://images.pexels.com/photos/4481258/pexels-photo-4481258.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
-  'artisanat':     'https://images.pexels.com/photos/4481258/pexels-photo-4481258.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'fete':          'https://images.pexels.com/photos/2002339/pexels-photo-2002339.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'fete_foraine':  'https://images.pexels.com/photos/671933/pexels-photo-671933.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'bourse':        'https://images.pexels.com/photos/15068406/pexels-photo-15068406.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'artisanat':     'https://images.pexels.com/photos/3965545/pexels-photo-3965545.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'moto':          'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'voiture':       'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   // Activités fixes
@@ -3000,10 +3002,11 @@ function getPhotoTheme(type, titre) {
     if (t.includes('bd') || t.includes('comics') || t.includes('manga')) return 'bd';
     if (t.includes('parade') || t.includes('carnaval') || t.includes('défilé')) return 'parade';
     if (t.includes('noël') || t.includes('noel') || t.includes('christmas')) return 'noel';
-    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie')) return 'brocante';
-    if (t.includes('bourse') || t.includes('collection') || t.includes('chineurs') || t.includes('antiquité')) return 'bourse';
-    if (t.includes('fête') || t.includes('fete') || t.includes('saint') || t.includes('patronale') || t.includes('village') || t.includes('feu d')) return 'fete';
-    if (t.includes('artisan') || t.includes('poterie') || t.includes('céramique') || t.includes('créateur')) return 'artisanat';
+    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie') || t.includes('vide dressing') || t.includes('vide-dressing')) return 'brocante';
+    if (t.includes('bourse') || t.includes('collection') || t.includes('chineurs') || t.includes('antiquité') || t.includes('pokemon') || t.includes('kidsbazar') || t.includes('kids bazar') || t.includes('swap')) return 'bourse';
+    if (t.includes('foraine') || t.includes('manège') || t.includes('barbe à papa') || t.includes('fête foraine') || t.includes('fair ')) return 'fete_foraine';
+    if (t.includes('fête') || t.includes('fete') || t.includes('saint') || t.includes('patronale') || t.includes('village') || t.includes('feu d') || t.includes('roue') || t.includes('folklore')) return 'fete';
+    if (t.includes('artisan') || t.includes('poterie') || t.includes('céramique') || t.includes('créateur') || t.includes('aquarelle') || t.includes('peinture') || t.includes('atelier')) return 'artisanat';
     if (t.includes('marché') || t.includes('marche') || t.includes('market')) return 'marche';
     if (t.includes('bar') || t.includes('pub') || t.includes('soirée') || t.includes('nuit') || t.includes('club') || t.includes('rooftop')) return 'bar';
     if (t.includes('restaurant') || t.includes('dîner') || t.includes('gastronomie')) return 'restaurant';
@@ -5964,55 +5967,49 @@ async function renderMemoriesPane() {
     return 0;
   });
 
-  // ── STORIES STYLE SNAPCHAT : cercles en haut ──
+  // ── SOUVENIRS STYLE SNAP : grille 2 colonnes plein écran ──
   var photoItems = items.filter(function(m) { return m.photo; });
+  var emojiMap2 = {brocante:'🛍',marche:'🛒',apero:'🍻',restaurant:'🍽️',spa:'🧖',chateau:'🏰',museum:'🏛️',cinema:'🎬',escape:'🔐',karting:'🏎️',bowling:'🎳',concert:'🎵',bar:'🍺',randonnee:'🥾',velo:'🚵',kayak:'🛶',zoo:'🦁',parc:'🎡',nature:'🌿',theatre:'🎭',ski:'⛷️'};
   var html = '';
 
-  // Stories circles
+  // Grille 2 colonnes style Snap Souvenirs — TOUT EN HAUT
   if (items.length) {
-    html += '<div style="margin-bottom:14px">';
-    html += '<div style="display:flex;gap:14px;overflow-x:auto;padding:4px 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none">';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin:-20px -20px 0 -20px">';
     items.forEach(function(m) {
-      var border = m.stars >= 5 ? 'linear-gradient(135deg,#C4714A,#F5A623)' : 'linear-gradient(135deg,#3A5C38,#5C7A5A)';
-      var emojiMap2 = {brocante:'🛍',marche:'🛒',apero:'🍻',restaurant:'🍽️',spa:'🧖',chateau:'🏰',museum:'🏛️',cinema:'🎬',escape:'🔐',karting:'🏎️',bowling:'🎳',concert:'🎵',bar:'🍺',randonnee:'🥾',velo:'🚵',kayak:'🛶',zoo:'🦁',parc:'🎡',nature:'🌿',theatre:'🎭',ski:'⛷️'};
+      var d = new Date(m.date);
+      var dayLabel = d.toLocaleDateString('fr-FR', {day:'numeric', month:'long'});
       var th = getPhotoTheme('', m.title);
-      html += '<div onclick="openMemory(\'' + m.activityId + '\')" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0">';
-      html += '<div style="width:60px;height:60px;border-radius:50%;padding:2.5px;background:' + border + '">';
-      html += '<div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--bg2);border:2px solid var(--card)">';
+      html += '<div onclick="openMemory(\'' + m.activityId + '\')" style="position:relative;aspect-ratio:1;cursor:pointer;overflow:hidden;background:#1a1a1a">';
       if (m.photo) {
-        html += '<img src="' + m.photo + '" style="width:100%;height:100%;object-fit:cover" loading="lazy">';
+        html += '<img src="' + m.photo + '" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">';
+        html += '<div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.65))">';
       } else {
-        html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:22px">' + (emojiMap2[th] || '📍') + '</div>';
+        html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#2a3a28,#3d5c3a)">' + (emojiMap2[th] || '📍') + '</div>';
+        html += '<div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.65))">';
       }
-      html += '</div></div>';
-      html += '<div style="font-size:10px;color:var(--text);font-weight:600;text-align:center;max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + m.title.substring(0,10) + (m.title.length>10?'…':'') + '</div>';
+      html += '<div style="position:absolute;bottom:8px;left:10px;right:10px">';
+      html += '<div style="color:#fff;font-size:12px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Flashback du ' + dayLabel + '</div>';
+      html += '<div style="color:rgba(255,255,255,0.85);font-size:10px;margin-top:1px;text-shadow:0 1px 2px rgba(0,0,0,0.8)">' + m.title.substring(0,20) + (m.title.length>20?'…':'') + '</div>';
+      html += '</div>';
+      html += '</div>';
       html += '</div>';
     });
     html += '</div>';
-    html += '<button onclick="openMemoriesAll()" style="width:100%;padding:10px;background:linear-gradient(135deg,#3A5C38,#5C7A5A);color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">'
+
+    // Bouton story en dessous de la grille
+    html += '<div style="padding:14px 20px 0">';
+    html += '<button onclick="openMemoriesAll()" style="width:100%;padding:11px;background:linear-gradient(135deg,#3A5C38,#5C7A5A);color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">'
       + '▶ Voir en mode story'
       + '<span style="font-size:11px;opacity:0.8;font-weight:400">' + items.length + ' souvenir' + (items.length > 1 ? 's' : '') + '</span>'
       + '</button>';
     html += '</div>';
   }
 
-  // ── ALBUM SOUVENIRS : galerie scrollable en dessous ──
-  if (photoItems.length) {
-    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 10px">📸 Album Souvenirs</div>';
-    html += '<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none">';
-    photoItems.forEach(function(m) {
-      html += '<div onclick="openMemory(\'' + m.activityId + '\')" style="flex:0 0 130px;height:150px;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;background:#000">'
-        + '<img src="' + m.photo + '" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">'
-        + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.72));padding:8px 7px 6px">'
-        + '<div style="color:#fff;font-size:11px;font-weight:600;line-height:1.2">' + m.title.substring(0,18) + (m.title.length>18?'…':'') + '</div>'
-        + (m.stars > 0 ? '<div style="font-size:9px;color:#F5A623">' + '⭐'.repeat(m.stars) + '</div>' : '')
-        + '</div></div>';
-    });
-    html += '</div>';
-  }
 
   var emojiMap = {brocante:'🛍',marche:'🛒',apero:'🍻',restaurant:'🍽️',spa:'🧖',chateau:'🏰',museum:'🏛️',cinema:'🎬',escape:'🔐',karting:'🏎️',bowling:'🎳',concert:'🎵',bar:'🍺',randonnee:'🥾',velo:'🚵',kayak:'🛶',zoo:'🦁',parc:'🎡',nature:'🌿',theatre:'🎭',ski:'⛷️'};
 
+  // Wrapper padding pour la timeline
+  html += '<div style="padding:0 20px">';
   sortedGroups.forEach(function(group) {
     if (group.isAnniv) {
       html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;margin-top:4px">'
@@ -6055,6 +6052,7 @@ async function renderMemoriesPane() {
     html += '</div>';
   });
 
+  html += '</div>'; // fin wrapper timeline
   el.innerHTML = html;
 }
 
