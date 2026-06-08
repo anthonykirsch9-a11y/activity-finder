@@ -1717,7 +1717,7 @@ const LANGS = {
     ephemExtra:`\n- Utilise le web search pour trouver 2-3 ÉVÉNEMENTS ÉPHÉMÈRES RÉELS et ACTUELS (brocante, marché, fête, festival, rassemblement, vide-greniers, expo…) près de la zone demandée cette semaine ou ce week-end. Pour chaque éphémère: mets l'adresse EXACTE ou la commune précise dans "infos_pratiques", et la date précise dans "frequence". "ephemere":true. Si aucun trouvé sur le web, propose un événement typique de saison avec lieu approximatif.`,
     noEphemExtra:'',
     nightExtra:`\n- Inclure 1 à 2 SORTIES NOCTURNES. RÈGLE STRICTE: bar branché avec NOM EXACT, club/discothèque, concert live, soirée, restaurant ouvert après 22h. JAMAIS zoo, musée, spa, karting. Utilise web search pour NOM EXACT et ADRESSE de vrais établissements. "nocturne":true OBLIGATOIRE.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1769,7 +1769,7 @@ const LANGS = {
     ephemExtra:`\n- Use web search to find 2-3 REAL and CURRENT ephemeral events (markets, fairs, festivals, rallies, car shows, food festivals…) near the requested area this week or weekend. For each ephemeral event: include the EXACT address or precise town in "infos_pratiques", and the real date in "frequence". "ephemere":true. If none found online, suggest a typical seasonal event with approximate location.`,
     noEphemExtra:'',
     nightExtra:`\n- Include 1-2 NIGHTLIFE options suited to the group. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Ephemeral only',
     onlyNight:'🌙 Nightlife only',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1821,7 +1821,7 @@ const LANGS = {
     ephemExtra:`\n- Usa la búsqueda web para encontrar 2-3 EVENTOS EFÍMEROS REALES y ACTUALES (mercadillos, ferias, fiestas, rallyes, festivales gastronómicos…) cerca de la zona solicitada esta semana o fin de semana. Para cada efímero: dirección EXACTA o municipio preciso en "infos_pratiques", fecha real en "frequence". "ephemere":true. Si no encuentras nada, propón un evento típico de temporada con ubicación aproximada.`,
     noEphemExtra:'',
     nightExtra:`\n- Incluir 1-2 opciones de vida nocturna. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Solo efímeros',
     onlyNight:'🌙 Solo nocturno',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1873,7 +1873,7 @@ const LANGS = {
     ephemExtra:`\n- Nutze die Websuche, um 2-3 ECHTE und AKTUELLE kurzfristige Events (Märkte, Messen, Feste, Oldtimertreffen, Foodfestivals…) in der Nähe der gesuchten Region diese Woche oder dieses Wochenende zu finden. Für jedes ephemere Event: GENAUE Adresse oder präziser Ort in "infos_pratiques", echtes Datum in "frequence". "ephemere":true. Falls nichts gefunden, typisches Saisonevent mit ungefährem Ort vorschlagen.`,
     noEphemExtra:'',
     nightExtra:`\n- 1-2 Nachtleben-Optionen. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Nur kurzfristige Events',
     onlyNight:'🌙 Nur Nachtleben',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1925,7 +1925,7 @@ const LANGS = {
     ephemExtra:`\n- Usa la ricerca web per trovare 2-3 EVENTI EFFIMERI REALI e ATTUALI (mercati, sagre, feste, raduni, festival gastronomici…) vicino alla zona richiesta questa settimana o weekend. Per ogni effimero: indirizzo ESATTO o comune preciso in "infos_pratiques", data reale in "frequence". "ephemere":true. Se non trovi nulla, proponi un evento tipico stagionale con luogo approssimativo.`,
     noEphemExtra:'',
     nightExtra:`\n- Includi 1-2 opzioni di vita notturna. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Solo effimeri',
     onlyNight:'🌙 Solo vita notturna',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1977,7 +1977,7 @@ const LANGS = {
     ephemExtra:`\n- Usa a pesquisa web para encontrar 2-3 EVENTOS EFÉMEROS REAIS e ATUAIS (feiras, mercados, festas, concentrações, festivais gastronómicos…) perto da zona solicitada esta semana ou fim de semana. Para cada efémero: endereço EXATO ou localidade precisa em "infos_pratiques", data real em "frequence". "ephemere":true. Se não encontrares nada, propõe um evento típico da estação com localização aproximada.`,
     noEphemExtra:'',
     nightExtra:`\n- Incluir 1-2 opções de vida noturna. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Só efémeros',
     onlyNight:'🌙 Só vida noturna',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -3912,7 +3912,7 @@ function buildActivityCard(a, idx, location) {
         <button class="rc-pro-action-btn ${isFav?'active':''}"
           data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
           data-website="${websiteUrl||''}" data-photo="${photoUrl(a.type,a.titre)||''}"
-          data-lat="${a.lat||''}" data-lng="${a.lng||''}" data-city="${encodeURIComponent(location||'')}"
+          data-lat="${(a.lat && a.lat!==0) ? a.lat : (_lastSearchLat||'')}" data-lng="${(a.lng && a.lng!==0) ? a.lng : (_lastSearchLng||'')}" data-city="${encodeURIComponent(location||_lastSearchCity||'')}"
           title="Favoris">${isFav?'❤️':'🤍'}</button>
         <button class="rc-pro-action-btn"
           data-action="note" data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
@@ -4194,7 +4194,9 @@ async function runSearch(fromMap) {
 
     // Bug 5 fix: utiliser les variables d'état ephemOn / nightOn au lieu d'IDs inexistants
     const eph = ephemOn ? (t.ephemExtra || '\n- Inclure événements éphémères (marchés, brocantes, fêtes locales).') : (t.noEphemExtra || '');
-    const night = nightOn ? (t.nightExtra || '\n- Inclure sorties nocturnes.') : (t.noNightExtra || '');
+    const night = nightOn
+      ? (t.nightExtra || '\n- Inclure sorties nocturnes.')
+      : '\nINTERDIT ABSOLU: NE JAMAIS proposer de sorties nocturnes (bar, club, boîte, concert de nuit, soirée). "nocturne" doit être false pour TOUTES les activités.';
     const dateStr = getDateStr();
 
     // ── PARALLÉLISATION : Géocodage + Google Places simultanés ──
@@ -4217,6 +4219,8 @@ async function runSearch(fromMap) {
             searchLng = geoData.features[0].geometry.coordinates[0];
             searchLat = geoData.features[0].geometry.coordinates[1];
             _selectedCityCoords = { lat: searchLat, lng: searchLng };
+            // Sauvegarder pour les boutons favoris
+            _lastSearchLat = searchLat; _lastSearchLng = searchLng; _lastSearchCity = location;
             console.log('✅ Geocoded:', searchLat, searchLng);
           }
         } catch(e) { console.error('❌ Geocoding error:', e.message); }
@@ -4224,6 +4228,7 @@ async function runSearch(fromMap) {
 
       // 🚀 Lancer le CDC dès que les coords sont connues — sans attendre Claude
       if (searchLat && searchLng) {
+        _lastSearchLat = searchLat; _lastSearchLng = searchLng; _lastSearchCity = location;
         fetchCoupDeCoeur(searchLat, searchLng, []).then(cdc => {
           if (cdc) renderCoupDeCoeurResult(cdc);
           else { const el = document.getElementById('cdc-card'); if(el) el.remove(); }
@@ -4267,7 +4272,7 @@ async function runSearch(fromMap) {
     const allSeenSet = new Set([...seenTitles24h.map(t => t.toLowerCase()), ..._sessionSeenTitles]);
     const seenTitles = [...allSeenSet];
     const seenContext = seenTitles.length > 0
-      ? '\n\nIMPORTANT — EXCLUSION ABSOLUE: Ces activités ont DÉJÀ été proposées. Ne JAMAIS les reproposer ni aucune variante proche. Propose des activités COMPLÈTEMENT DIFFÉRENTES : ' + seenTitles.slice(0, 25).join(' / ')
+      ? '\n\nEXCLUSION ABSOLUE ET STRICTE — RÈGLE N°1: Les activités suivantes ont été proposées récemment. Il est FORMELLEMENT INTERDIT de les reproposer, de les paraphraser, ou de proposer un lieu similaire (même lieu différent nom, même type d\'activité dans la même ville). Propose des activités 100% différentes en type ET en lieu:\n' + seenTitles.slice(0, 30).map((t,i) => (i+1)+'. '+t).join('\n')
       : '';
         // Date du jour — toujours injectée pour éviter les dates passées
         const _today = new Date();
@@ -4278,7 +4283,7 @@ async function runSearch(fromMap) {
         const weatherHeader = weatherContext ? '🌤 METEO: ' + weatherContext.replace('\n- Météo: ','') + '\n' : '';
         const LANG_NAMES = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
         const langInstruction = `Réponds en ${LANG_NAMES[lang] || 'français'}.\n`;
-        const strictRules = "REGLES:1.Utilise les lieux certifiés fournis(lieu_certain:true).2.Pas de noms inventés(lieu_certain:false).3.GPS précis jamais 0.0.4.Pas de coords GPS dans description.5.ephemere:true SEULEMENT si date unique(brocante,fête locale,concert ponctuel).Casino/restaurant/musée/spa/bowling/karting/cinéma/bar=jamais ephemere:true.";
+        const strictRules = "REGLES:1.Utilise les lieux certifiés fournis(lieu_certain:true).2.Pas de noms inventés(lieu_certain:false).3.GPS précis jamais 0.0.4.Pas de coords GPS dans description.5.ephemere:true SEULEMENT si date unique(brocante,fête locale,concert ponctuel).Casino/restaurant/musée/spa/bowling/karting/cinéma/bar=jamais ephemere:true.6.QUOTA TYPES: maximum 1 activité Gastronomie sur 6. Maximum 1 activité Bien-être sur 6. VARIE les types: Sport, Culture, Divertissement, Nature obligatoirement représentés.";
 
         const varietyInstruction = ''; // variété gérée côté prompt
 
@@ -4737,7 +4742,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
           ${userPlan === 'pro' ? `
           <button class="rc-pro-action-btn ${isFav?'active':''}"
             data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
-            data-lat="${a.lat||''}" data-lng="${a.lng||''}" data-city="${encodeURIComponent(location||'')}"
+            data-lat="${(a.lat && a.lat!==0) ? a.lat : (_lastSearchLat||'')}" data-lng="${(a.lng && a.lng!==0) ? a.lng : (_lastSearchLng||'')}" data-city="${encodeURIComponent(location||_lastSearchCity||'')}"
             title="Favoris">${isFav?'❤️':'🤍'}</button>
           <button class="rc-pro-action-btn"
             data-action="note" data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
@@ -5072,6 +5077,9 @@ function getSpecialEventContext() {
 // ══════════════════════════════════════════════════════════════
 let _memoryItems = [];   // liste de toutes les mémoires
 let _sessionSeenTitles = new Set(); // titres proposés dans cette session (en mémoire)
+let _lastSearchLat = null; // coords de la dernière recherche (pour fallback favoris)
+let _lastSearchLng = null;
+let _lastSearchCity = null;
 let _memoryIndex = 0;    // index courant
 let _memoryTimer = null; // auto-avance
 let _memoryItemsCache = []; // cache des items chargés depuis Supabase
@@ -6473,7 +6481,7 @@ async function renderAccountActivities() {
       var clusterName = 'Autres';
 
       // 1. Coords GPS stockées au moment du cœur
-      if (f.lat && f.lng && !isNaN(f.lat) && !isNaN(f.lng)) {
+      if (f.lat && f.lng && !isNaN(parseFloat(f.lat)) && !isNaN(parseFloat(f.lng)) && parseFloat(f.lat) !== 0) {
         coords = [parseFloat(f.lat), parseFloat(f.lng)];
         // Trouver la ville la plus proche dans CITY_TABLE
         var bestDist = 999, bestEntry = null;
@@ -7055,8 +7063,8 @@ async function toggleFavorite(titleEncoded, activityId, website, photoUrl, lat, 
       titre: decodeURIComponent(titleEncoded||''),
       website: website || null,
       photo_url: photoUrl || null,
-      lat: (lat && !isNaN(lat)) ? lat : null,
-      lng: (lng && !isNaN(lng)) ? lng : null,
+      lat: (lat !== null && !isNaN(lat) && lat !== 0) ? lat : null,
+      lng: (lng !== null && !isNaN(lng) && lng !== 0) ? lng : null,
       city: city || null,
       created_at: new Date().toISOString()
     };
