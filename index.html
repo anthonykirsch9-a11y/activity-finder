@@ -667,32 +667,82 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 @keyframes slideUp { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 
 /* ── Programme week-end ── */
-.weekend-program-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:25000; align-items:flex-start; justify-content:center; overflow-y:auto; padding:20px; backdrop-filter:blur(3px); }
+.weekend-program-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:25000; align-items:flex-start; justify-content:center; overflow-y:auto; padding:16px; backdrop-filter:blur(6px); }
 .weekend-program-modal.open { display:flex; }
-.weekend-program-card { background:var(--card); border-radius:20px; max-width:520px; width:100%; box-shadow:0 24px 80px rgba(0,0,0,0.4); overflow:hidden; margin:auto; }
-.weekend-program-header { background:linear-gradient(135deg,#3A5C38,#5C7A5A); padding:20px; display:flex; align-items:center; justify-content:space-between; }
-.weekend-program-body { padding:20px; max-height:70vh; overflow-y:auto; }
-.program-day { margin-bottom:20px; }
-.program-day-title { font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700; color:var(--text); margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid var(--primary); }
-.program-step { display:flex; gap:12px; margin-bottom:12px; align-items:flex-start; }
-.program-time { font-size:12px; font-weight:700; color:var(--primary); min-width:50px; padding-top:2px; }
-.program-step-content { flex:1; background:var(--bg); border-radius:10px; padding:10px 12px; }
-.program-step-title { font-size:14px; font-weight:600; color:var(--text); }
-.program-step-detail { font-size:12px; color:var(--muted); margin-top:3px; }
-.program-transport { font-size:11px; color:var(--primary); margin:4px 0 4px 62px; display:flex; align-items:center; gap:4px; }
-.program-loading { text-align:center; padding:30px; }
-.generate-program-btn { width:100%; padding:13px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:12px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
-.generate-program-btn:hover { opacity:0.9; transform:translateY(-1px); }
-.generate-program-btn:disabled { opacity:0.5; cursor:default; transform:none; }
-/* Boutons durée programme */
-.wp-dur-btn {
-  font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif;
-  padding:5px 12px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.4);
-  background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.8);
-  cursor:pointer; transition:all 0.15s; white-space:nowrap;
-}
+.weekend-program-card { background:var(--card); border-radius:24px; max-width:520px; width:100%; box-shadow:0 32px 100px rgba(0,0,0,0.5); overflow:hidden; margin:auto; }
+
+/* Header hero */
+.weekend-program-header { background:linear-gradient(160deg,#1e3a1c 0%,#3A5C38 60%,#5C7A5A 100%); padding:22px 20px 18px; position:relative; overflow:hidden; }
+.weekend-program-header::before { content:''; position:absolute; inset:0; background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="80" cy="20" r="40" fill="rgba(255,255,255,0.03)"/><circle cx="20" cy="80" r="30" fill="rgba(255,255,255,0.03)"/></svg>'); background-size:cover; pointer-events:none; }
+.wp-hero-title { font-family:'Fraunces',serif; font-size:1.35rem; font-weight:800; color:#fff; margin-bottom:4px; }
+.wp-hero-sub { font-size:12px; color:rgba(255,255,255,0.65); margin-bottom:14px; }
+.wp-hero-badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+.wp-hero-badge { font-size:11px; font-weight:600; padding:4px 10px; border-radius:99px; background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.25); }
+.wp-hero-badge.active { background:rgba(255,255,255,0.92); color:#3A5C38; border-color:transparent; }
+
+/* Ambiance selector */
+.wp-ambiance-row { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.wp-ambiance-btn { font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; padding:6px 13px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.35); background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.85); cursor:pointer; transition:all 0.15s; }
+.wp-ambiance-btn:hover { background:rgba(255,255,255,0.2); }
+.wp-ambiance-btn.active { background:rgba(255,255,255,0.92); color:#3A5C38; border-color:transparent; font-weight:700; }
+
+/* Date row */
+.wp-date-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.wp-date-input { width:76px; padding:6px 10px; border:1.5px solid rgba(255,255,255,0.35); border-radius:10px; background:rgba(255,255,255,0.12); color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; outline:none; text-align:center; }
+.wp-date-input::placeholder { color:rgba(255,255,255,0.4); }
+
+/* Contraintes */
+.wp-constraint-input { width:100%; padding:8px 12px; border:1.5px solid rgba(255,255,255,0.25); border-radius:10px; background:rgba(255,255,255,0.08); color:#fff; font-family:'DM Sans',sans-serif; font-size:12px; outline:none; margin-top:8px; resize:none; }
+.wp-constraint-input::placeholder { color:rgba(255,255,255,0.35); }
+
+/* Body */
+.weekend-program-body { padding:0; max-height:65vh; overflow-y:auto; }
+
+/* Day section */
+.program-day { margin-bottom:0; }
+.program-day-header { background:linear-gradient(90deg,var(--primary),transparent); padding:12px 20px 10px; display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:2; backdrop-filter:blur(8px); }
+.program-day-title { font-family:'Fraunces',serif; font-size:1rem; font-weight:800; color:#fff; letter-spacing:.02em; }
+.program-day-meta { font-size:11px; color:rgba(255,255,255,0.7); margin-left:auto; }
+
+/* Timeline */
+.program-timeline { padding:16px 20px; position:relative; }
+.program-timeline::before { content:''; position:absolute; left:36px; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,var(--primary),transparent); opacity:.25; }
+
+.program-step { display:flex; gap:0; margin-bottom:4px; align-items:stretch; }
+.program-step-left { display:flex; flex-direction:column; align-items:center; width:56px; flex-shrink:0; padding-top:4px; }
+.program-time { font-size:11px; font-weight:800; color:var(--primary); letter-spacing:.03em; text-align:center; }
+.program-dot { width:10px; height:10px; border-radius:50%; background:var(--primary); margin:4px 0; border:2px solid var(--card); box-shadow:0 0 0 2px var(--primary); flex-shrink:0; }
+.program-dot.repas { background:#C4714A; box-shadow:0 0 0 2px #C4714A; }
+.program-dot.pause { background:#888; box-shadow:0 0 0 2px #888; }
+.program-step-content { flex:1; background:var(--bg); border-radius:14px; padding:12px 14px; margin-bottom:8px; border:1px solid var(--border); position:relative; overflow:hidden; transition:transform 0.15s; }
+.program-step-content:hover { transform:translateX(2px); }
+.program-step-photo { position:absolute; right:0; top:0; bottom:0; width:70px; background-size:cover; background-position:center; opacity:0.18; border-radius:0 14px 14px 0; }
+.program-step-title { font-size:13px; font-weight:700; color:var(--text); padding-right:60px; }
+.program-step-detail { font-size:11px; color:var(--muted); margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; }
+.program-step-chip { background:var(--primary-light); color:var(--primary); padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600; }
+.program-step-chip.orange { background:#FDF0EA; color:#C4714A; }
+
+/* Transport capsule */
+.program-transport { margin:0 20px 4px 56px; display:flex; align-items:center; gap:6px; }
+.program-transport-pill { font-size:10px; font-weight:600; color:var(--muted); background:var(--bg2); border:1px solid var(--border); border-radius:99px; padding:3px 10px; display:flex; align-items:center; gap:4px; }
+
+/* Boutons */
+.wp-generate-btn { width:100%; padding:14px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:14px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.wp-generate-btn:hover { opacity:0.9; transform:translateY(-1px); box-shadow:0 8px 24px rgba(196,113,74,0.4); }
+.wp-regen-btn { width:100%; padding:11px; background:transparent; color:var(--primary); border:2px solid var(--primary); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; cursor:pointer; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:6px; }
+.wp-regen-btn:hover { background:var(--primary-light); }
+.wp-share-btn { flex:1; padding:11px; background:var(--bg2); color:var(--text); border:1.5px solid var(--border); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+.program-actions { display:flex; gap:8px; padding:16px 20px 20px; }
+
+/* Région selector */
+.wp-region-select { width:100%; padding:7px 12px; border:1.5px solid rgba(255,255,255,0.3); border-radius:10px; background:rgba(255,255,255,0.1); color:#fff; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; outline:none; margin-top:8px; cursor:pointer; }
+.wp-region-select option { background:#3A5C38; color:#fff; }
+
+/* Boutons durée (compat) */
+.wp-dur-btn { font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; padding:5px 12px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.4); background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.8); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
 .wp-dur-btn:hover { background:rgba(255,255,255,0.25); color:#fff; }
-.wp-dur-btn.active { background:rgba(255,255,255,0.9); color:#3A5C38; border-color:transparent; font-weight:700; }
+.wp-dur-btn.active { background:rgba(255,255,255,0.92); color:#3A5C38; border-color:transparent; font-weight:700; }
+.generate-program-btn { width:100%; padding:13px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:12px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
 .beta-screen {
   display:none; position:fixed; inset:0;
   background:linear-gradient(160deg,#2E4A2C 0%,#4A7248 50%,#7A9E78 100%);
@@ -1462,38 +1512,57 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 <div class="weekend-program-modal" id="weekend-program-modal">
   <div class="weekend-program-card">
     <div class="weekend-program-header">
-      <div style="flex:1">
-        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:800;color:#fff" id="wp-title">🗓 Mon programme</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:6px" id="wp-subtitle">Basé sur tes favoris · Choisis tes dates et génère</div>
-        <!-- Sélecteur dates -->
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <label style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.05em">Du</label>
-            <input type="text" id="wp-date-from" placeholder="jj/mm" maxlength="5"
-              style="width:80px;padding:5px 10px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center"
-              oninput="formatDateInput(this)">
-          </div>
-          <div style="color:rgba(255,255,255,0.5);font-size:16px;margin-top:14px">→</div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <label style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.05em">Au (optionnel)</label>
-            <input type="text" id="wp-date-to" placeholder="jj/mm" maxlength="5"
-              style="width:80px;padding:5px 10px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center"
-              oninput="formatDateInput(this)">
-          </div>
-          <div style="margin-top:14px">
-            <button onclick="generateWeekendProgram()" class="wp-dur-btn" style="background:rgba(255,255,255,0.9);color:#3A5C38;border-color:transparent;font-weight:700;padding:6px 14px">
-              ✨ Générer
-            </button>
-          </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div>
+          <div class="wp-hero-title">🗓 Mon programme</div>
+          <div class="wp-hero-sub" id="wp-subtitle">Basé sur tes favoris · Personnalise et génère</div>
         </div>
-        <!-- Raccourcis rapides -->
-        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="wp-shortcuts">
+        <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0">×</button>
+      </div>
+
+      <!-- Ambiance -->
+      <div style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ambiance</div>
+      <div class="wp-ambiance-row" id="wp-ambiance-row">
+        <button class="wp-ambiance-btn active" data-ambiance="equilibre" onclick="selectWpAmbiance(this)">⚖️ Équilibré</button>
+        <button class="wp-ambiance-btn" data-ambiance="tranquille" onclick="selectWpAmbiance(this)">🌿 Tranquille</button>
+        <button class="wp-ambiance-btn" data-ambiance="sportif" onclick="selectWpAmbiance(this)">⚡ Sportif</button>
+        <button class="wp-ambiance-btn" data-ambiance="culturel" onclick="selectWpAmbiance(this)">🏛️ Culturel</button>
+        <button class="wp-ambiance-btn" data-ambiance="festif" onclick="selectWpAmbiance(this)">🎉 Festif</button>
+      </div>
+
+      <!-- Région des favoris -->
+      <div style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">Favoris de quelle zone ?</div>
+      <select class="wp-region-select" id="wp-region-select">
+        <option value="all">🌍 Tous mes favoris</option>
+      </select>
+
+      <!-- Dates -->
+      <div style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">Dates</div>
+      <div class="wp-date-row">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <label style="font-size:10px;color:rgba(255,255,255,0.5)">Du</label>
+          <input type="text" id="wp-date-from" placeholder="jj/mm" maxlength="5" class="wp-date-input" oninput="formatDateInput(this)">
+        </div>
+        <div style="color:rgba(255,255,255,0.4);font-size:14px;margin-top:16px">→</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <label style="font-size:10px;color:rgba(255,255,255,0.5)">Au</label>
+          <input type="text" id="wp-date-to" placeholder="jj/mm" maxlength="5" class="wp-date-input" oninput="formatDateInput(this)">
+        </div>
+        <div style="margin-top:16px;display:flex;gap:5px;flex-wrap:wrap">
           <button class="wp-dur-btn" onclick="setWpDateShortcut('today')">Auj.</button>
           <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')">Demain</button>
-          <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Ce week-end</button>
+          <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Week-end</button>
         </div>
       </div>
-      <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0;align-self:flex-start">×</button>
+
+      <!-- Contraintes -->
+      <textarea class="wp-constraint-input" id="wp-constraints" rows="2"
+        placeholder="Contraintes (ex: rien le dimanche matin, budget serré le samedi, pas de voiture…)"></textarea>
+
+      <!-- Bouton générer -->
+      <button onclick="generateWeekendProgram()" class="wp-generate-btn" style="margin-top:12px">
+        ✨ Générer mon programme
+      </button>
     </div>
     <div class="weekend-program-body" id="weekend-program-body">
       <div style="text-align:center;padding:30px 20px">
@@ -5714,6 +5783,7 @@ function getWpDateLabel() {
 }
 
 function openWeekendProgram() {
+  populateWpRegions();
   const modal = document.getElementById('weekend-program-modal');
   const body = document.getElementById('weekend-program-body');
   modal.classList.add('open');
@@ -5738,55 +5808,76 @@ function closeWeekendProgram() {
 }
 
 async function generateWeekendProgram() {
-  const favs = localLoad('favorites') || [];
+  // Charger favoris depuis Supabase si dispo
+  let favs = [];
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const { data } = await _sb.from('favorites')
+      .select('activity_id, titre, website, photo_url, created_at')
+      .eq('user_id', currentUser.id);
+    if (data && data.length) {
+      favs = data.map(f => ({ activity_id: f.activity_id, activity_title: f.titre, photo_url: f.photo_url, saved_at: f.created_at }));
+      localSave('favorites', favs);
+    }
+  }
+  if (!favs.length) favs = localLoad('favorites') || [];
+
   const notes = localLoad('notes') || [];
   const body = document.getElementById('weekend-program-body');
 
   if (favs.length < 2) {
-    body.innerHTML = `<p style="color:var(--muted);padding:20px;text-align:center">${apt().programMinFavs||'Ajoute au moins 2 favoris !'}</p>`;
+    body.innerHTML = '<p style="color:var(--muted);padding:20px;text-align:center">Ajoute au moins 2 favoris pour générer un programme !</p>';
     return;
   }
 
-  const favDetails = favs.map(f => {
+  // Filtrer par région si sélectionnée
+  const regionVal = document.getElementById('wp-region-select')?.value || 'all';
+  let filteredFavs = favs;
+  if (regionVal !== 'all') {
+    filteredFavs = favs.filter(f => {
+      const city = extractFavCity(f.activity_title || '');
+      return normalizeCity(city) === normalizeCity(regionVal) || 
+             haversineKm(getCityCoords(city) || [0,0], getCityCoords(regionVal) || [0,0]) <= 80;
+    });
+    if (filteredFavs.length < 2) filteredFavs = favs; // fallback tous si pas assez
+  }
+
+  const ambiance = document.querySelector('.wp-ambiance-btn.active')?.dataset?.ambiance || 'equilibre';
+  const constraints = (document.getElementById('wp-constraints')?.value || '').trim();
+
+  const ambianceDesc = {
+    equilibre: 'équilibré, mixte activités culturelles et détente',
+    tranquille: 'calme et reposant, activités douces, sans stress ni fatigue, idéal pour se ressourcer',
+    sportif: 'dynamique et physique, privilégie les activités actives, marche, sport, plein air',
+    culturel: 'culturel et enrichissant, musées, patrimoine, découvertes historiques, gastronomie locale',
+    festif: 'festif et convivial, sorties, ambiances animées, restaurants, activités fun'
+  };
+
+  const favDetails = filteredFavs.map(f => {
     const note = notes.find(n => n.activity_id === f.activity_id);
-    return `- ${f.activity_title}${note?.stars ? ' (noté ' + note.stars + '/5)' : ''}`;
+    return '- ' + (f.activity_title || f.activity_id) + (note?.stars ? ' (noté ' + note.stars + '/5)' : '');
   }).join('\n');
 
   const langNames = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
-  const langInstr = `Réponds en ${langNames[lang]||'français'}.`;
-
-  // Date via le nouveau sélecteur jj/mm
+  const langInstr = 'Réponds en ' + (langNames[lang] || 'français') + '.';
   const dateLabel = getWpDateLabel();
-  const dateInstr = dateLabel ? `\nDATE: Le programme est prévu pour : ${dateLabel}.` : '';
-
-  // Durée déterminée par getWpDateLabel() (met à jour _programDuration)
+  const dateInstr = dateLabel ? '\nDATE: ' + dateLabel + '.' : '';
   const dur = _programDuration || 'weekend';
+  const constraintInstr = constraints ? '\nCONTRAINTES ABSOLUES à respecter: ' + constraints : '';
+
   let durInstr = '';
   let jsonStructure = '';
 
   if (dur === 'journee') {
-    durInstr = `Crée un programme pour UNE JOURNÉE (environ 9h-20h) en sélectionnant 3-4 activités parmi les favorites. Inclus une pause déjeuner logique.`;
-    jsonStructure = `{"journee": [{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"},{"heure":"12h30","titre":"Déjeuner","duree":"1h30","transport":"","trajet":"","note":"suggestion de restaurant","type":"repas"}]}`;
+    durInstr = 'Crée un programme pour UNE JOURNÉE (9h-20h), 3-4 activités. Inclus déjeuner.';
+    jsonStructure = '{"journee":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰"}]}';
   } else {
-    durInstr = `Crée un programme sur les dates indiquées en organisant toutes les activités favorites de façon optimale. Si plusieurs jours, répartis sur SAMEDI et DIMANCHE. Inclus des pauses repas logiques.`;
-    jsonStructure = `{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite"}]}`;
+    durInstr = 'Crée un programme sur ' + (dateLabel || 'le week-end') + ', répartis sur SAMEDI et DIMANCHE. Inclus repas logiques.';
+    jsonStructure = '{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰"}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite","emoji":"🌿"}]}';
   }
 
-  const prompt = `${langInstr}${dateInstr}
-Tu es un expert en organisation de sorties. L'utilisateur a sélectionné ces activités favorites:
-${favDetails}
+  const prompt = langInstr + dateInstr + constraintInstr + '\nTu es un expert en organisation de sorties. Activités favorites:\n' + favDetails + '\n\nAMBIANCE SOUHAITÉE: ' + ambianceDesc[ambiance] + '\n\n' + durInstr + '\n\nRègles:\n- Respecte STRICTEMENT les contraintes\n- Adapte l\'ordre et le rythme à l\'ambiance choisie\n- Inclus emoji pertinent par activité\n- Note pratique courte et utile (réservation, tenue, horaire à confirmer…)\n- Types possibles: activite, repas, pause, transport\n\nRéponds UNIQUEMENT en JSON valide, structure exacte:\n' + jsonStructure;
 
-${durInstr}
-
-Pour chaque activité inclue:
-- L'heure de début recommandée
-- La durée estimée
-- Le moyen de transport (voiture, à pied, transports en commun)
-- Le temps de trajet approximatif
-- Une note pratique courte (réservation, tenue, etc.)
-
-Réponds UNIQUEMENT en JSON valide, structure exacte:
-${jsonStructure}`;
+  body.innerHTML = '<div style="text-align:center;padding:40px 20px"><div style="font-size:36px;margin-bottom:12px">✨</div><div style="font-size:14px;font-weight:600;color:var(--text)">Génération en cours…</div><div style="font-size:12px;color:var(--muted);margin-top:6px">L\'IA organise ton programme ' + (ambianceDesc[ambiance]?.split(',')[0] || '') + '</div></div>';
 
   try {
     const res = await fetch(SUPABASE_URL + '/functions/v1/search', {
@@ -5794,85 +5885,135 @@ ${jsonStructure}`;
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
       body: JSON.stringify({ prompt, model: 'claude-sonnet-4-6' })
     });
-    if (!res.ok) {
-      const errText = await res.text().catch(() => 'unknown');
-      throw new Error('HTTP ' + res.status + ': ' + errText.substring(0, 200));
-    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-    const text = (data.content||[]).map(c=>c.text||'').join('');
+    const text = (data.content || []).map(c => c.text || '').join('');
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('Pas de JSON dans la réponse');
+    if (!match) throw new Error('Pas de JSON');
     const program = JSON.parse(match[0]);
-    renderWeekendProgram(program, dur);
+    renderWeekendProgram(program, dur, ambiance, dateLabel);
   } catch(e) {
-    body.innerHTML = `<p style="color:#C0392B;padding:20px;text-align:center">${apt().programError||'Erreur lors de la génération.'}</p>
-    <button onclick="generateWeekendProgram()" class="generate-program-btn">🔄 ${apt().programRegenerate||'Régénérer'}</button>`;
+    body.innerHTML = '<p style="color:#C0392B;padding:20px;text-align:center">Erreur lors de la génération. Réessaie !</p><button onclick="generateWeekendProgram()" class="wp-regen-btn">🔄 Réessayer</button>';
   }
 }
 
-function renderWeekendProgram(program, dur) {
+// Helpers région
+function extractFavCity(title) {
+  if (!title) return 'Autres';
+  var parts = title.split(',');
+  if (parts.length >= 2) return parts[parts.length - 1].trim();
+  var m = title.match(/(?:\bà|\bau|\ben|\bnear|\bin)\s+([A-ZÀ-Ü][a-zA-ZÀ-ÿ\s\-]+)/);
+  return m ? m[1].trim() : title.trim();
+}
+function normalizeCity(city) {
+  if (!city) return '';
+  return city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+}
+
+function selectWpAmbiance(btn) {
+  document.querySelectorAll('.wp-ambiance-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function populateWpRegions() {
+  const sel = document.getElementById('wp-region-select');
+  if (!sel) return;
+  const favs = localLoad('favorites') || [];
+  const cities = {};
+  favs.forEach(f => {
+    const city = extractFavCity(f.activity_title || '');
+    if (city && city !== 'Autres') cities[city] = (cities[city] || 0) + 1;
+  });
+  sel.innerHTML = '<option value="all">🌍 Tous mes favoris (' + favs.length + ')</option>';
+  Object.entries(cities).sort((a,b) => b[1]-a[1]).forEach(([city, count]) => {
+    const opt = document.createElement('option');
+    opt.value = city;
+    opt.textContent = '📍 ' + city + ' (' + count + ')';
+    sel.appendChild(opt);
+  });
+}
+
+
+function renderWeekendProgram(program, dur, ambiance, dateLabel) {
   const body = document.getElementById('weekend-program-body');
-  const dayNames = { fr: ['SAMEDI', 'DIMANCHE'], en: ['SATURDAY', 'SUNDAY'], es: ['SÁBADO', 'DOMINGO'], de: ['SAMSTAG', 'SONNTAG'], it: ['SABATO', 'DOMENICA'], pt: ['SÁBADO', 'DOMINGO'] };
+  const dayNames = { fr:['Samedi','Dimanche'], en:['Saturday','Sunday'], es:['Sábado','Domingo'], de:['Samstag','Sonntag'], it:['Sabato','Domenica'], pt:['Sábado','Domingo'] };
   const days = dayNames[lang] || dayNames.fr;
-  const typeIcons = { activite: '📍', repas: '🍽️', transport: '🚗', pause: '☕' };
-  const durMode = dur || _programDuration || 'soiree';
+  const durMode = dur || _programDuration || 'weekend';
+
+  const ambianceBadge = { equilibre:'⚖️ Équilibré', tranquille:'🌿 Tranquille', sportif:'⚡ Sportif', culturel:'🏛️ Culturel', festif:'🎉 Festif' };
+  const badge = ambianceBadge[ambiance] || '✨ Programme';
+
+  // Mettre à jour le sous-titre du header
+  const sub = document.getElementById('wp-subtitle');
+  if (sub) sub.textContent = (dateLabel || 'Ce week-end') + ' · ' + badge;
 
   function renderSteps(steps) {
-    if (!steps?.length) return '';
-    let h = '';
+    if (!steps || !steps.length) return '';
+    let h = '<div class="program-timeline">';
     steps.forEach((step, i) => {
-      h += `<div class="program-step">
-        <div class="program-time">${step.heure}</div>
-        <div class="program-step-content">
-          <div class="program-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
-          <div class="program-step-detail">⏱ ${step.duree}${step.note ? ' · ' + step.note : ''}</div>
-        </div>
-      </div>`;
+      const dotClass = step.type === 'repas' ? 'repas' : step.type === 'pause' ? 'pause' : '';
+      const photo = PEXELS_DIRECT[getPhotoTheme(step.type === 'repas' ? 'Gastronomie' : '', step.titre || step.title || '')] || '';
+
+      h += '<div class="program-step">';
+      h += '<div class="program-step-left">';
+      h += '<div class="program-time">' + (step.heure || '') + '</div>';
+      h += '<div class="program-dot ' + dotClass + '"></div>';
+      h += '</div>';
+      h += '<div class="program-step-content">';
+      if (photo) h += '<div class="program-step-photo" style="background-image:url(' + photo + ')"></div>';
+      h += '<div class="program-step-title">' + (step.emoji || (step.type === 'repas' ? '🍽️' : step.type === 'pause' ? '☕' : '📍')) + ' ' + (step.titre || step.title || '') + '</div>';
+      h += '<div class="program-step-detail">';
+      if (step.duree) h += '<span class="program-step-chip">⏱ ' + step.duree + '</span>';
+      if (step.note) h += '<span style="color:var(--muted)">' + step.note + '</span>';
+      h += '</div>';
+      h += '</div></div>';
+
       if (step.transport && i < steps.length - 1) {
-        h += `<div class="program-transport">↓ ${step.transport}${step.trajet ? ' · ' + step.trajet : ''}</div>`;
+        const tIcons = { voiture:'🚗', pied:'🚶', marche:'🚶', velo:'🚴', transports:'🚌', bus:'🚌', train:'🚂', metro:'🚇' };
+        const tKey = Object.keys(tIcons).find(k => (step.transport || '').toLowerCase().includes(k)) || 'voiture';
+        h += '<div class="program-transport"><div class="program-transport-pill">' + (tIcons[tKey] || '🚗') + ' ' + step.transport + (step.trajet ? ' · ' + step.trajet : '') + '</div></div>';
       }
     });
+    h += '</div>';
     return h;
   }
 
-  const sectionTitles = {
-    soiree:  { fr:'🌙 SOIRÉE', en:'🌙 EVENING', es:'🌙 TARDE-NOCHE', de:'🌙 ABEND', it:'🌙 SERATA', pt:'🌙 NOITE' },
-    journee: { fr:'☀️ JOURNÉE', en:'☀️ DAY', es:'☀️ DÍA', de:'☀️ TAG', it:'☀️ GIORNATA', pt:'☀️ DIA' },
-  };
-
   let html = '';
+  const keys = Object.keys(program);
 
-  if (durMode === 'soiree' && program.soiree?.length) {
-    const title = (sectionTitles.soiree[lang] || sectionTitles.soiree.fr);
-    html += `<div class="program-day"><div class="program-day-title">${title}</div>${renderSteps(program.soiree)}</div>`;
-  } else if (durMode === 'journee' && program.journee?.length) {
-    const title = (sectionTitles.journee[lang] || sectionTitles.journee.fr);
-    html += `<div class="program-day"><div class="program-day-title">${title}</div>${renderSteps(program.journee)}</div>`;
-  } else {
-    // Week-end (samedi + dimanche)
-    if (program.samedi?.length) {
-      html += `<div class="program-day"><div class="program-day-title">📅 ${days[0]}</div>${renderSteps(program.samedi)}</div>`;
-    }
-    if (program.dimanche?.length) {
-      html += `<div class="program-day"><div class="program-day-title">📅 ${days[1]}</div>${renderSteps(program.dimanche)}</div>`;
-    }
-    // Fallback si Claude a renvoyé soiree/journee en mode weekend
-    if (!program.samedi?.length && !program.dimanche?.length) {
-      const firstKey = Object.keys(program)[0];
-      if (firstKey && program[firstKey]?.length) {
-        html += `<div class="program-day"><div class="program-day-title">📋 Programme</div>${renderSteps(program[firstKey])}</div>`;
-      }
-    }
+  if (durMode === 'journee' && program.journee?.length) {
+    html += '<div class="program-day"><div class="program-day-header"><div class="program-day-title">☀️ ' + (dateLabel || 'Journée') + '</div></div>' + renderSteps(program.journee) + '</div>';
+  } else if (keys.includes('samedi') || keys.includes('dimanche')) {
+    if (program.samedi?.length) html += '<div class="program-day"><div class="program-day-header" style="background:linear-gradient(90deg,#3A5C38,transparent)"><div class="program-day-title">📅 ' + days[0] + '</div><div class="program-day-meta">' + program.samedi.length + ' étapes</div></div>' + renderSteps(program.samedi) + '</div>';
+    if (program.dimanche?.length) html += '<div class="program-day"><div class="program-day-header" style="background:linear-gradient(90deg,#5C4A38,transparent)"><div class="program-day-title">📅 ' + days[1] + '</div><div class="program-day-meta">' + program.dimanche.length + ' étapes</div></div>' + renderSteps(program.dimanche) + '</div>';
+  } else if (keys[0]) {
+    html += '<div class="program-day"><div class="program-day-header"><div class="program-day-title">📋 Programme</div></div>' + renderSteps(program[keys[0]]) + '</div>';
   }
 
   if (!html) {
-    html = `<p style="color:var(--muted);padding:20px;text-align:center">Impossible de générer le programme. Réessaie !</p>`;
+    html = '<p style="color:var(--muted);padding:20px;text-align:center">Programme vide. Réessaie !</p>';
   }
 
-  html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">${apt().programRegenerate||'🔄 Régénérer'}</button>`;
+  // Actions
+  html += '<div class="program-actions">';
+  html += '<button onclick="generateWeekendProgram()" class="wp-regen-btn">🔄 Régénérer</button>';
+  html += '<button onclick="shareWeekendProgram()" class="wp-share-btn">📤 Partager</button>';
+  html += '</div>';
+
   body.innerHTML = html;
 }
+
+function shareWeekendProgram() {
+  const body = document.getElementById('weekend-program-body');
+  if (!body) return;
+  const text = Array.from(body.querySelectorAll('.program-step-title, .program-time'))
+    .map(el => el.textContent.trim()).filter(Boolean).join(' · ');
+  const msg = 'Mon programme Weekio 🟢\n' + text + '\n\nhttps://weekio.app';
+  if (navigator.share) { navigator.share({ text: msg }); }
+  else { navigator.clipboard?.writeText(msg); }
+}
+
 
 // ══════════════════════════════════════════════════════════════
 // PANNEAU MÉMOIRES — grille + stories style Snapchat
