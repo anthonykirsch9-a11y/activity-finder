@@ -2917,6 +2917,7 @@ const PEXELS_DIRECT = {
   'fete_foraine':  'https://images.pexels.com/photos/671933/pexels-photo-671933.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'bourse':        'https://images.pexels.com/photos/15068406/pexels-photo-15068406.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'artisanat':     'https://images.pexels.com/photos/3965545/pexels-photo-3965545.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'vetement':      'https://images.pexels.com/photos/3812433/pexels-photo-3812433.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'moto':          'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'voiture':       'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   // Activités fixes
@@ -3002,6 +3003,7 @@ function getPhotoTheme(type, titre) {
     if (t.includes('bd') || t.includes('comics') || t.includes('manga')) return 'bd';
     if (t.includes('parade') || t.includes('carnaval') || t.includes('défilé')) return 'parade';
     if (t.includes('noël') || t.includes('noel') || t.includes('christmas')) return 'noel';
+    if (t.includes('vetement') || t.includes('vêtement') || t.includes('habit') || t.includes('fring') || t.includes('mode ') || t.includes('textile') || t.includes('dressing')) return 'vetement';
     if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie') || t.includes('vide dressing') || t.includes('vide-dressing')) return 'brocante';
     if (t.includes('bourse') || t.includes('collection') || t.includes('chineurs') || t.includes('antiquité') || t.includes('pokemon') || t.includes('kidsbazar') || t.includes('kids bazar') || t.includes('swap')) return 'bourse';
     if (t.includes('foraine') || t.includes('manège') || t.includes('barbe à papa') || t.includes('fête foraine') || t.includes('fair ')) return 'fete_foraine';
@@ -5974,7 +5976,7 @@ async function renderMemoriesPane() {
 
   // Grille 2 colonnes style Snap Souvenirs — TOUT EN HAUT
   if (items.length) {
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin:-20px -20px 0 -20px">';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;width:100%">';
     items.forEach(function(m) {
       var d = new Date(m.date);
       var dayLabel = d.toLocaleDateString('fr-FR', {day:'numeric', month:'long'});
