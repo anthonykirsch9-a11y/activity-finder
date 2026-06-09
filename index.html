@@ -6213,10 +6213,12 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
       const bookingCity = encodeURIComponent(regionVal3.toLowerCase().replace('è','e').replace('é','e'));
       const fromDateB = document.getElementById('wp-date-from')?.value || '';
       const toDateB = document.getElementById('wp-date-to')?.value || '';
-      const bookingUrl = 'https://www.booking.com/searchresults.fr.html?ss=' + bookingCity
+      // Lien affilié CJ Affiliate (CID: 7978492) → Booking.com
+      const bookingBase = 'https://www.booking.com/searchresults.fr.html?ss=' + bookingCity
         + (fromDateB ? '&checkin=' + fromDateB : '')
         + (toDateB ? '&checkout=' + toDateB : '')
-        + '&aid=7814439&lang=fr&no_rooms=1&group_adults=2';
+        + '&lang=fr&no_rooms=1&group_adults=2';
+      const bookingUrl = 'https://www.anrdoezrs.net/click-7978492-15309517?url=' + encodeURIComponent(bookingBase);
       html += '<a href="' + bookingUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;margin:0 20px 12px;padding:14px 16px;background:linear-gradient(135deg,#003580,#0056b3);border-radius:14px;text-decoration:none;color:#fff">'
         + '<span style="font-size:22px">🏨</span>'
         + '<div style="flex:1">'
@@ -6236,6 +6238,11 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   html += '</div>';
 
   body.innerHTML = html;
+}
+
+function openSavedProgram(actId) {
+  // Ouvre la mémoire ou affiche un toast avec le résumé
+  openMemory(actId);
 }
 
 async function saveWeekendProgram() {
@@ -6260,13 +6267,13 @@ async function saveWeekendProgram() {
       activity_id: actId,
       activity_title: title,
       note: stepsText.substring(0, 500),
-      stars: 5,
-      done: true,
+      stars: 0,
+      done: false,
       created_at: savedAt
     });
-    // Mettre à jour les stats locales
+    // Mettre à jour le localStorage (done:false = pas dans "Déjà fait")
     const existing = localLoad('notes') || [];
-    existing.unshift({ user_id: currentUser.id, activity_id: actId, activity_title: title, note: stepsText.substring(0,500), stars: 5, done: true, created_at: savedAt });
+    existing.unshift({ user_id: currentUser.id, activity_id: actId, activity_title: title, note: stepsText.substring(0,500), stars: 0, done: false, created_at: savedAt });
     localSave('notes', existing);
 
     const toast = document.createElement('div');
@@ -6619,7 +6626,26 @@ async function renderAccountActivities() {
     localSave('activity_photos', photos);
   }
 
+  // ── Charger les programmes sauvegardés (activity_id commence par 'program_') ──
+  const savedPrograms = notes.filter(n => (n.activity_id||'').startsWith('program_'));
+  const doneNotes = notes.filter(n => n.done && !(n.activity_id||'').startsWith('program_'));
+
   let html = '';
+
+  // ── Section Mes Programmes (si il y en a) ──
+  if (savedPrograms.length) {
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🗓 Mes programmes</div>';
+    savedPrograms.forEach(function(p) {
+      const dateStr = new Date(p.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric'});
+      const steps = (p.note||'').split(' → ').slice(0,3).join(' → ');
+      html += '<div class="activity-item" style="border-left:3px solid var(--primary);padding-left:10px;cursor:pointer" onclick="openSavedProgram(\'' + p.activity_id + '\')">'
+        + '<div class="activity-item-title">' + (p.activity_title||'Programme') + '</div>'
+        + '<div class="activity-item-meta" style="font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4">' + steps + (p.note && p.note.split(' → ').length > 3 ? '…' : '') + '</div>'
+        + '<div class="activity-item-meta">' + dateStr + '</div>'
+        + '</div>';
+    });
+    html += '<div style="height:8px"></div>';
+  }
 
   // Bouton Mémoires en haut si des activités faites existent
   const allNotes = localLoad('notes') || [];
@@ -6711,9 +6737,9 @@ async function renderAccountActivities() {
     });
   }
   // Activités faites
-  if (notes.length) {
+  if (doneNotes.length) {
     html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px">✓ ${ta.doneTitle||'Déjà fait'}</div>`;
-    html += notes.map(n => {
+    html += doneNotes.map(n => {
       const photo = photos[n.activity_id];
       const ago = getTimeAgoLabel(n.created_at);
       const isAnniversary = ago && ago.includes('an');
