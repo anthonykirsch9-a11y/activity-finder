@@ -4396,6 +4396,16 @@ async function runSearch(fromMap) {
               }
             });
             const all = [...normalActs, ...specialActs];
+            // ── FILTRE ANTI-DOUBLON CAS 2 ──
+            const _seenNow2 = new Set([..._sessionSeenTitles, ...getSeenTitles24h(location).map(t=>t.toLowerCase())]);
+            if (_seenNow2.size > 0) {
+              all = all.filter(a => {
+                if (!a.titre) return true;
+                const tLow = a.titre.toLowerCase().trim();
+                if (_seenNow2.has(tLow)) return false;
+                return true;
+              });
+            }
             window._lastActivities = all;
             all.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
             setTimeout(() => { if (map) placeActivityMarkers(all); else window._pendingMarkers = all; }, 500);
@@ -4524,7 +4534,25 @@ async function runSearch(fromMap) {
     await incrementSearchCount();
     await saveSearch(location, group, budget, activities);
 
-    // FIX doublon inter-recherches : sauvegarder en mémoire session immédiatement
+    // ── FILTRE ANTI-DOUBLON CÔTÉ CLIENT (garantie 100%) ──
+    // Récupérer tous les titres déjà vus (session + localStorage)
+    const _seenNow = new Set([..._sessionSeenTitles, ...getSeenTitles24h(location).map(t=>t.toLowerCase())]);
+    if (_seenNow.size > 0) {
+      const beforeCount = activities.length;
+      activities = activities.filter(a => {
+        if (!a.titre) return true;
+        const tLow = a.titre.toLowerCase().trim();
+        // Bloquer uniquement si titre EXACTEMENT identique
+        // "Brocante de Hayange" ≠ "Brocante de Metz" → deux événements différents, OK
+        if (_seenNow.has(tLow)) return false;
+        return true;
+      });
+      if (activities.length < beforeCount) {
+        console.log('🚫 Doublons exacts filtrés:', beforeCount - activities.length);
+      }
+    }
+
+    // Sauvegarder en mémoire session immédiatement
     activities.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
 
     window._lastActivities = activities;
@@ -6261,6 +6289,21 @@ async function renderMemoriesPane() {
 }
 
 
+// ── Fonctions géo globales (utilisées par clustering favoris + populateWpRegions) ──
+function haversineKm(c1, c2) {
+  var R = 6371;
+  var dLat = (c2[0] - c1[0]) * Math.PI / 180;
+  var dLon = (c2[1] - c1[1]) * Math.PI / 180;
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2)
+    + Math.cos(c1[0]*Math.PI/180) * Math.cos(c2[0]*Math.PI/180)
+    * Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function normalizeKey(str) {
+  if (!str) return '';
+  return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
+}
+
 async function renderAccountActivities() {
   const ta = apt();
   const el = document.getElementById('ap-activities-list');
@@ -6398,26 +6441,7 @@ async function renderAccountActivities() {
       return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
     }
 
-    function getCityCoords(cityName) {
-      var key = normalizeKey(cityName);
-      // Cherche exactement
-      if (CITY_COORDS[key]) return CITY_COORDS[key];
-      // Cherche si la clé contient le nom ou vice versa
-      for (var k in CITY_COORDS) {
-        if (key.includes(k) || k.includes(key)) return CITY_COORDS[k];
-      }
-      return null;
-    }
-
-    function haversineKm(c1, c2) {
-      var R = 6371;
-      var dLat = (c2[0] - c1[0]) * Math.PI / 180;
-      var dLon = (c2[1] - c1[1]) * Math.PI / 180;
-      var a = Math.sin(dLat/2) * Math.sin(dLat/2)
-        + Math.cos(c1[0]*Math.PI/180) * Math.cos(c2[0]*Math.PI/180)
-        * Math.sin(dLon/2) * Math.sin(dLon/2);
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
+    // getCityCoords et haversineKm → voir fonctions globales ci-dessous
 
     // Table ville → coords + nom d'affichage
     var CITY_TABLE = [
@@ -6924,19 +6948,21 @@ async function saveSearch(location, group, budget, activities) {
 
   // ── Historique local CE navigateur (24h) — toutes villes ──
   const cutoff24 = Date.now() - 24 * 60 * 60 * 1000;
-  const seenData = localLoad('seen_activities') || { entries: [] };
+  // Clé par utilisateur pour éviter les interférences entre comptes
+  const _seenUid = currentUser?.id || 'guest';
+  const _seenKey = 'seen_activities_' + _seenUid;
+  const seenData = localLoad(_seenKey) || { entries: [] };
   // Purger les > 24h
   seenData.entries = (seenData.entries || []).filter(e => e.ts > cutoff24);
-  // Ajouter les nouveaux titres avec timestamp
   const now = Date.now();
   titles.forEach(t => {
-    if (!seenData.entries.find(e => e.title === t)) {
-      seenData.entries.push({ title: t, ts: now });
+    const tLow = t.toLowerCase();
+    if (!seenData.entries.find(e => e.title === tLow)) {
+      seenData.entries.push({ title: tLow, ts: now });
     }
   });
-  // Garder max 100 titres
-  seenData.entries = seenData.entries.slice(-100);
-  localSave('seen_activities', seenData);
+  seenData.entries = seenData.entries.slice(-150);
+  localSave(_seenKey, seenData);
 
   // ── Sauvegarder aussi dans l'historique global (pour panneau compte) ──
   const searchData = {
@@ -7133,16 +7159,14 @@ async function saveNote() {
 
 // ── Build already-done context for AI prompt ──
 function getSeenTitles24h(location) {
-  // Récupérer TOUS les titres déjà vus sur CE navigateur dans les 24h
-  // Peu importe la ville ou les critères — jamais revoir la même activité
   try {
-    const seenData = localLoad('seen_activities');
+    const uid = currentUser?.id || 'guest';
+    const key = 'seen_activities_' + uid;
+    const seenData = localLoad(key);
     if (!seenData) return [];
-    // Purger les entrées > 24h
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     const fresh = (seenData.entries || []).filter(e => e.ts > cutoff);
-    const titles = fresh.map(e => e.title);
-    return titles;
+    return fresh.map(e => e.title);
   } catch(e) { return []; }
 }
 
