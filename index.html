@@ -6246,6 +6246,22 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   body.innerHTML = html;
 }
 
+async function deleteSavedProgram(actId) {
+  if (!confirm('Supprimer ce programme ?')) return;
+  // Supprimer de Supabase
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    await _sb.from('notes').delete().eq('user_id', currentUser.id).eq('activity_id', actId);
+  }
+  // Supprimer du localStorage
+  const notes = (localLoad('notes') || []).filter(n => n.activity_id !== actId);
+  localSave('notes', notes);
+  const progs = localLoad('saved_programs') || {};
+  delete progs[actId];
+  localSave('saved_programs', progs);
+  // Rafraîchir l'onglet
+  renderAccountActivities();
+}
+
 function openSavedProgram(actId) {
   // Rouvrir le modal programme avec le vrai rendu
   const saved = (localLoad('saved_programs') || {})[actId];
@@ -6660,16 +6676,21 @@ async function renderAccountActivities() {
   if (savedPrograms.length) {
     html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🗓 Mes programmes</div>';
     savedPrograms.forEach(function(p) {
-      const dateStr = new Date(p.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric'});
-      const steps = (p.note||'').split(' → ').slice(0,3).join(' → ');
-      html += '<div class="activity-item" style="border-left:3px solid var(--primary);padding-left:10px;cursor:pointer" onclick="openSavedProgram(\'' + p.activity_id + '\')">'
-        + '<div class="activity-item-title">' + (p.activity_title||'Programme') + '</div>'
-        + '<div class="activity-item-meta" style="font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4">' + steps + (p.note && p.note.split(' → ').length > 3 ? '…' : '') + '</div>'
-        + '<div class="activity-item-meta">' + dateStr + '</div>'
-        + '</div>';
+      var dateStr = new Date(p.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric'});
+      var stepsList = (p.note||'').split(' → ');
+      var preview = stepsList.slice(0,3).join(' → ') + (stepsList.length > 3 ? '…' : '');
+      var aid = p.activity_id;
+      html += '<div class="activity-item" style="border-left:3px solid var(--primary);padding-left:10px">';
+      html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">';
+      html += '<div style="flex:1;cursor:pointer" onclick="openSavedProgram(\'' + aid + '\')">';
+      html += '<div class="activity-item-title">' + (p.activity_title||'Programme') + '</div>';
+      html += '<div class="activity-item-meta" style="font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4">' + preview + '</div>';
+      html += '<div class="activity-item-meta">' + dateStr + '</div>';
+      html += '</div>';
+      html += '<button onclick="deleteSavedProgram(\'' + aid + '\')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:4px;flex-shrink:0" title="Supprimer">🗑️</button>';
+      html += '</div></div>';
     });
     html += '<div style="height:8px"></div>';
-  }
 
   // Bouton Mémoires en haut si des activités faites existent
   const allNotes = localLoad('notes') || [];
