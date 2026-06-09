@@ -5916,7 +5916,19 @@ async function generateWeekendProgram() {
   const dateLabel = getWpDateLabel();
   const dateInstr = dateLabel ? '\nDATE: ' + dateLabel + '.' : '';
   const dur = _programDuration || 'weekend';
-  const constraintInstr = constraints ? '\nCONTRAINTES ABSOLUES à respecter: ' + constraints : '';
+  // Calculer _programDuration ici (au moment de la génération, pas avant)
+  const fromValNow = document.getElementById('wp-date-from')?.value || '';
+  const toValNow = document.getElementById('wp-date-to')?.value || '';
+  if (fromValNow && toValNow && fromValNow !== toValNow) {
+    const diffDays = Math.round((new Date(toValNow) - new Date(fromValNow)) / 86400000);
+    _programDuration = diffDays >= 1 ? 'weekend' : 'journee';
+  } else if (fromValNow) {
+    _programDuration = 'journee';
+  }
+
+  const constraintInstr = constraints
+    ? '\n\nCONTRAINTES ABSOLUES — RÈGLE PRIORITAIRE N°1 — RESPECTER À LA LETTRE:\n' + constraints + '\nSi une contrainte dit "rien le dimanche", le dimanche doit être VIDE ou marqué "Journée libre". AUCUNE exception.'
+    : '';
 
   let durInstr = '';
   let jsonStructure = '';
@@ -6191,7 +6203,7 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
 
   // ── Booking si programme multi-jours loin de chez soi ──
   const regionVal3 = document.getElementById('wp-region-select')?.value || 'all';
-  if (regionVal3 !== 'all' && durMode !== 'journee') {
+  if (regionVal3 !== 'all') {
     const cityEntry3 = GEO_CITIES.find(e => e.d === regionVal3);
     const userLat = _lastSearchLat || 49.6;
     const userLng = _lastSearchLng || 6.1;
@@ -6231,30 +6243,40 @@ async function saveWeekendProgram() {
     alert('Connecte-toi pour sauvegarder ton programme !');
     return;
   }
-  const body = document.getElementById('weekend-program-body');
-  if (!body) return;
   const regionVal = document.getElementById('wp-region-select')?.value || 'all';
-  const dateLabel = document.getElementById('wp-subtitle')?.textContent || '';
-  const programHtml = body.innerHTML;
+  const subtitle = document.getElementById('wp-subtitle')?.textContent || '';
+  const fromVal = document.getElementById('wp-date-from')?.value || '';
   const savedAt = new Date().toISOString();
-  // Sauvegarder dans la table notes comme entrée spéciale
+  const actId = 'program_' + savedAt.replace(/[^0-9]/g,'').slice(0,14);
+  const title = '🗓 Programme ' + (regionVal !== 'all' ? regionVal : '') + (fromVal ? ' · ' + new Date(fromVal+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'}) : '');
+
+  // Extraire le texte du programme pour la note
+  const body = document.getElementById('weekend-program-body');
+  const stepsText = body ? Array.from(body.querySelectorAll('.program-step-title')).map(e => e.textContent.trim()).join(' → ') : '';
+
   try {
-    await _sb.from('notes').upsert({
+    await _sb.from('notes').insert({
       user_id: currentUser.id,
-      activity_id: 'program_' + savedAt.replace(/[^0-9]/g,'').slice(0,14),
-      activity_title: '🗓 Programme ' + (regionVal !== 'all' ? regionVal + ' · ' : '') + dateLabel.split('·')[0].trim(),
-      note: programHtml.substring(0, 3000),
-      stars: 0,
-      done: false,
+      activity_id: actId,
+      activity_title: title,
+      note: stepsText.substring(0, 500),
+      stars: 5,
+      done: true,
       created_at: savedAt
     });
+    // Mettre à jour les stats locales
+    const existing = localLoad('notes') || [];
+    existing.unshift({ user_id: currentUser.id, activity_id: actId, activity_title: title, note: stepsText.substring(0,500), stars: 5, done: true, created_at: savedAt });
+    localSave('notes', existing);
+
     const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A3A18;color:white;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif';
-    toast.textContent = '✅ Programme sauvegardé dans tes activités';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A3A18;color:white;padding:12px 24px;border-radius:99px;font-size:13px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+    toast.textContent = '✅ Programme sauvegardé !';
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
   } catch(e) {
-    alert('Erreur lors de la sauvegarde. Réessaie !');
+    console.error('Save program:', e);
+    alert('Erreur lors de la sauvegarde.');
   }
 }
 
