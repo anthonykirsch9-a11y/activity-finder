@@ -5953,7 +5953,7 @@ async function generateWeekendProgram() {
       jours = ['samedi', 'dimanche'];
     }
     const joursStr = jours.join(', ');
-    durInstr = 'Crée un programme sur ' + (dateLabel || joursStr) + ', répartis sur ces jours dans l\'ordre : ' + joursStr.toUpperCase() + '. Une clé JSON par jour. Inclus repas logiques.';
+    durInstr = 'Crée un programme sur ' + (dateLabel || joursStr) + '. UTILISE EXACTEMENT ces clés JSON dans cet ordre : ' + jours.map(j => '"' + j + '"').join(', ') + '. NE JAMAIS utiliser d\'autres clés. Inclus repas logiques.';
     // JSON structure dynamique avec les vrais noms de jours
     const exStep = '{"heure":"09h00","titre":"...","duree":"2h","transport":"à pied","trajet":"5 min","note":"...","type":"activite","emoji":"🏰","budget":15,"lat":51.507,"lng":-0.128}';
     jsonStructure = '{' + jours.map(j => '"' + j + '":[' + exStep + ']').join(',') + '}';
@@ -6628,9 +6628,17 @@ async function renderAccountActivities() {
   if (!el) return;
 
   // Toujours recharger depuis localStorage pour beta
-  const notes = (_sb && currentUser?.id !== 'beta-user')
-    ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false})).data || [])
-    : (localLoad('notes') || []);
+  // Charger done:true ET les programmes (activity_id starts with 'program_')
+  let notes = [];
+  if (_sb && currentUser?.id !== 'beta-user') {
+    const [resDone, resProgs] = await Promise.all([
+      _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false}),
+      _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', false).like('activity_id', 'program_%').order('created_at',{ascending:false})
+    ]);
+    notes = [...(resDone.data || []), ...(resProgs.data || [])];
+  } else {
+    notes = localLoad('notes') || [];
+  }
 
   // FIX multi-appareils : toujours lire les favoris depuis Supabase
   let favsRaw = [];
