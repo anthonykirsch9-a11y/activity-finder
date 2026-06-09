@@ -6006,6 +6006,12 @@ async function generateWeekendProgram() {
     if (!match) throw new Error('Pas de JSON');
     const program = JSON.parse(match[0]);
     clearInterval(_loaderInterval);
+    // Sauvegarder pour ré-affichage depuis "Mes programmes"
+    window._lastSavedProgram = program;
+    window._lastSavedDur = dur;
+    window._lastSavedAmbiance = ambiance;
+    window._lastSavedDateLabel = dateLabel;
+    window._lastSavedWeather = weatherInfo;
     renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo);
   } catch(e) {
     clearInterval(_loaderInterval);
@@ -6218,7 +6224,7 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
         + (fromDateB ? '&checkin=' + fromDateB : '')
         + (toDateB ? '&checkout=' + toDateB : '')
         + '&lang=fr&no_rooms=1&group_adults=2';
-      const bookingUrl = 'https://www.anrdoezrs.net/click-7978492-15309517?url=' + encodeURIComponent(bookingBase);
+      const bookingUrl = 'https://www.anrdoezrs.net/click-7978492-15734897?url=' + encodeURIComponent(bookingBase);
       html += '<a href="' + bookingUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;margin:0 20px 12px;padding:14px 16px;background:linear-gradient(135deg,#003580,#0056b3);border-radius:14px;text-decoration:none;color:#fff">'
         + '<span style="font-size:22px">🏨</span>'
         + '<div style="flex:1">'
@@ -6241,8 +6247,19 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
 }
 
 function openSavedProgram(actId) {
-  // Ouvre la mémoire ou affiche un toast avec le résumé
-  openMemory(actId);
+  // Rouvrir le modal programme avec le vrai rendu
+  const saved = (localLoad('saved_programs') || {})[actId];
+  if (saved && saved.program) {
+    // Ouvrir le modal
+    populateWpRegions();
+    const modal = document.getElementById('weekend-program-modal');
+    modal.classList.add('open');
+    // Ré-afficher directement le programme
+    renderWeekendProgram(saved.program, saved.dur, saved.ambiance, saved.dateLabel, saved.weatherInfo);
+  } else {
+    // Fallback : ouvrir la mémoire texte
+    openMemory(actId);
+  }
 }
 
 async function saveWeekendProgram() {
@@ -6251,15 +6268,18 @@ async function saveWeekendProgram() {
     return;
   }
   const regionVal = document.getElementById('wp-region-select')?.value || 'all';
-  const subtitle = document.getElementById('wp-subtitle')?.textContent || '';
   const fromVal = document.getElementById('wp-date-from')?.value || '';
   const savedAt = new Date().toISOString();
   const actId = 'program_' + savedAt.replace(/[^0-9]/g,'').slice(0,14);
   const title = '🗓 Programme ' + (regionVal !== 'all' ? regionVal : '') + (fromVal ? ' · ' + new Date(fromVal+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'}) : '');
 
-  // Extraire le texte du programme pour la note
-  const body = document.getElementById('weekend-program-body');
-  const stepsText = body ? Array.from(body.querySelectorAll('.program-step-title')).map(e => e.textContent.trim()).join(' → ') : '';
+  // Sauvegarder le JSON du programme pour pouvoir le ré-afficher
+  const programJson = JSON.stringify(window._lastSavedProgram || {});
+  const programMeta = JSON.stringify({ dur: window._lastSavedDur, ambiance: window._lastSavedAmbiance, dateLabel: window._lastSavedDateLabel });
+
+  // Extraire le texte pour aperçu
+  const bodyEl = document.getElementById('weekend-program-body');
+  const stepsText = bodyEl ? Array.from(bodyEl.querySelectorAll('.program-step-title')).map(e => e.textContent.trim()).join(' → ') : '';
 
   try {
     await _sb.from('notes').insert({
@@ -6271,7 +6291,11 @@ async function saveWeekendProgram() {
       done: false,
       created_at: savedAt
     });
-    // Mettre à jour le localStorage (done:false = pas dans "Déjà fait")
+    // Stocker le JSON complet en localStorage pour ré-affichage
+    const savedProgs = localLoad('saved_programs') || {};
+    savedProgs[actId] = { program: window._lastSavedProgram, dur: window._lastSavedDur, ambiance: window._lastSavedAmbiance, dateLabel: window._lastSavedDateLabel, weatherInfo: window._lastSavedWeather };
+    localSave('saved_programs', savedProgs);
+
     const existing = localLoad('notes') || [];
     existing.unshift({ user_id: currentUser.id, activity_id: actId, activity_title: title, note: stepsText.substring(0,500), stars: 0, done: false, created_at: savedAt });
     localSave('notes', existing);
