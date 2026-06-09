@@ -4204,6 +4204,10 @@ async function runSearch(fromMap) {
     let _ck = '';
     let searchLat = (fromMap && mapSearchCoords) ? mapSearchCoords.lat : null;
     let searchLng = (fromMap && mapSearchCoords) ? mapSearchCoords.lng : null;
+    // Sauvegarder immédiatement si coords déjà connues (fromMap)
+    if (searchLat && searchLng && Math.abs(searchLat) > 0.01) { _lastSearchLat = searchLat; _lastSearchLng = searchLng; _lastSearchCity = location; }
+    // Aussi réinitialiser si nouvelle ville
+    else { _lastSearchLat = null; _lastSearchLng = null; _lastSearchCity = location; }
     console.log('🚀 runSearch started, location:', location);
     try {
 
@@ -4220,7 +4224,7 @@ async function runSearch(fromMap) {
             searchLat = geoData.features[0].geometry.coordinates[1];
             _selectedCityCoords = { lat: searchLat, lng: searchLng };
             // Sauvegarder pour les boutons favoris
-            _lastSearchLat = searchLat; _lastSearchLng = searchLng; _lastSearchCity = location;
+            if (Math.abs(searchLat) > 0.01) { _lastSearchLat = searchLat; _lastSearchLng = searchLng; _lastSearchCity = location; }
             console.log('✅ Geocoded:', searchLat, searchLng);
           }
         } catch(e) { console.error('❌ Geocoding error:', e.message); }
@@ -6481,8 +6485,9 @@ async function renderAccountActivities() {
       var clusterName = 'Autres';
 
       // 1. Coords GPS stockées au moment du cœur
-      if (f.lat && f.lng && !isNaN(parseFloat(f.lat)) && !isNaN(parseFloat(f.lng)) && parseFloat(f.lat) !== 0) {
-        coords = [parseFloat(f.lat), parseFloat(f.lng)];
+      var _fLat = parseFloat(f.lat), _fLng = parseFloat(f.lng);
+      if (!isNaN(_fLat) && !isNaN(_fLng) && _fLat !== 0 && _fLng !== 0 && Math.abs(_fLat) > 0.01 && Math.abs(_fLng) > 0.01) {
+        coords = [_fLat, _fLng];
         // Trouver la ville la plus proche dans CITY_TABLE
         var bestDist = 999, bestEntry = null;
         CITY_TABLE.forEach(function(e) {
@@ -7063,8 +7068,8 @@ async function toggleFavorite(titleEncoded, activityId, website, photoUrl, lat, 
       titre: decodeURIComponent(titleEncoded||''),
       website: website || null,
       photo_url: photoUrl || null,
-      lat: (lat !== null && !isNaN(lat) && lat !== 0) ? lat : null,
-      lng: (lng !== null && !isNaN(lng) && lng !== 0) ? lng : null,
+      lat: (lat !== null && !isNaN(lat) && Math.abs(lat) > 0.01) ? lat : null,
+      lng: (lng !== null && !isNaN(lng) && Math.abs(lng) > 0.01) ? lng : null,
       city: city || null,
       created_at: new Date().toISOString()
     };
