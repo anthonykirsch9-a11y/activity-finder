@@ -673,7 +673,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 
 /* Header hero */
 .weekend-program-header { background:linear-gradient(160deg,#1e3a1c 0%,#3A5C38 60%,#5C7A5A 100%); padding:22px 20px 18px; position:relative; overflow:hidden; transition:background 0.4s; }
-.weekend-program-header::before { content:''; position:absolute; inset:0; background:rgba(0,0,0,0.45); pointer-events:none; z-index:0; }
+.weekend-program-header::before { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.55) 100%); pointer-events:none; z-index:0; }
 .weekend-program-header > * { position:relative; z-index:1; }
 .wp-cover-photo { position:absolute; inset:0; background-size:cover; background-position:center; z-index:0; opacity:0; transition:opacity 0.5s; }
 .wp-cover-photo.loaded { opacity:1; }
@@ -1525,7 +1525,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
       </div>
 
       <!-- Ambiance -->
-      <div style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ambiance</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Ambiance</div>
       <div class="wp-ambiance-row" id="wp-ambiance-row">
         <button class="wp-ambiance-btn active" data-ambiance="equilibre" onclick="selectWpAmbiance(this)">⚖️ Équilibré</button>
         <button class="wp-ambiance-btn" data-ambiance="tranquille" onclick="selectWpAmbiance(this)">🌿 Tranquille</button>
@@ -1535,13 +1535,13 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
       </div>
 
       <!-- Région des favoris -->
-      <div style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">Favoris de quelle zone ?</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Favoris de quelle zone ?</div>
       <select class="wp-region-select" id="wp-region-select">
         <option value="all">🌍 Tous mes favoris</option>
       </select>
 
       <!-- Dates -->
-      <div style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">Dates</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Dates</div>
       <div class="wp-date-row">
         <div style="display:flex;flex-direction:column;gap:3px">
           <label style="font-size:10px;color:rgba(255,255,255,0.5)">Du</label>
