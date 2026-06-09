@@ -4395,7 +4395,7 @@ async function runSearch(fromMap) {
                 setTimeout(() => loadPhotosForResults([a]), 400);
               }
             });
-            const all = [...normalActs, ...specialActs];
+            let all = [...normalActs, ...specialActs];
             // ── FILTRE ANTI-DOUBLON CAS 2 ──
             const _seenNow2 = new Set([..._sessionSeenTitles, ...getSeenTitles24h(location).map(t=>t.toLowerCase())]);
             if (_seenNow2.size > 0) {
@@ -4526,7 +4526,7 @@ async function runSearch(fromMap) {
     }
     if (!jsonMatch) throw new Error('Pas de JSON dans la reponse');
 
-    const activities = JSON.parse(jsonMatch[0]).slice(0, 6);
+    let activities = JSON.parse(jsonMatch[0]).slice(0, 6);
     if (!Array.isArray(activities) || !activities.length) throw new Error('Tableau vide');
 
     // Stocker dans le cache Claude (2h)
@@ -5865,7 +5865,15 @@ async function generateWeekendProgram() {
       .select('activity_id, titre, website, photo_url, lat, lng, city, created_at')
       .eq('user_id', currentUser.id);
     if (data && data.length) {
-      favs = data.map(f => ({ activity_id: f.activity_id, activity_title: f.titre, photo_url: f.photo_url, saved_at: f.created_at }));
+      favs = data.map(f => ({
+        activity_id: f.activity_id,
+        activity_title: f.titre,
+        photo_url: f.photo_url,
+        lat: f.lat || null,
+        lng: f.lng || null,
+        city: f.city || null,
+        saved_at: f.created_at
+      }));
       localSave('favorites', favs);
     }
   }
@@ -5883,11 +5891,30 @@ async function generateWeekendProgram() {
   const regionVal = document.getElementById('wp-region-select')?.value || 'all';
   let filteredFavs = favs;
   if (regionVal !== 'all') {
-    filteredFavs = favs.filter(f => {
-      const city = extractFavCity(f.activity_title || '');
-      return normalizeCity(city) === normalizeCity(regionVal) || 
-             haversineKm(getCityCoords(city) || [0,0], getCityCoords(regionVal) || [0,0]) <= 80;
+    // Trouver les coords du cluster sélectionné depuis les favoris eux-mêmes
+    // On cherche un favori de cette région pour avoir ses coords de référence
+    const refFav = favs.find(f => {
+      const fLat = parseFloat(f.lat), fLng = parseFloat(f.lng);
+      if (!isNaN(fLat) && Math.abs(fLat) > 0.01) return true;
+      // Ou par nom de ville dans le titre
+      const tNorm = (f.activity_title||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      const rNorm = regionVal.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      return tNorm.includes(rNorm) || rNorm.split(' ').some(w => w.length > 3 && tNorm.includes(w));
     });
+
+    filteredFavs = favs.filter(f => {
+      // 1. Utiliser les coords GPS si disponibles
+      const fLat = parseFloat(f.lat), fLng = parseFloat(f.lng);
+      const rLat = parseFloat(refFav?.lat), rLng = parseFloat(refFav?.lng);
+      if (!isNaN(fLat) && Math.abs(fLat) > 0.01 && !isNaN(rLat) && Math.abs(rLat) > 0.01) {
+        return haversineKm([fLat, fLng], [rLat, rLng]) <= 80;
+      }
+      // 2. Fallback : correspondance nom de ville dans le titre
+      const tNorm = (f.activity_title||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      const rNorm = regionVal.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      return tNorm.includes(rNorm) || rNorm.split(/\s+/).some(w => w.length > 3 && tNorm.includes(w));
+    });
+
     if (filteredFavs.length < 2) filteredFavs = favs; // fallback tous si pas assez
   }
 
