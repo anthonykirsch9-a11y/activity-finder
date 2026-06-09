@@ -5937,8 +5937,26 @@ async function generateWeekendProgram() {
     durInstr = 'Crée un programme pour UNE JOURNÉE (9h-20h), 3-4 activités. Inclus déjeuner.';
     jsonStructure = '{"journee":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰","budget":15,"lat":48.856,"lng":2.352}]}';
   } else {
-    durInstr = 'Crée un programme sur ' + (dateLabel || 'le week-end') + ', répartis sur SAMEDI et DIMANCHE. Inclus repas logiques.';
-    jsonStructure = '{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰","budget":15,"lat":51.507,"lng":-0.128}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite","emoji":"🌿","budget":0,"lat":51.510,"lng":-0.120}]}';
+    // Calculer les vrais jours entre fromDate et toDate
+    const fromD = document.getElementById('wp-date-from')?.value;
+    const toD = document.getElementById('wp-date-to')?.value;
+    const dayNames_fr = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+    let jours = [];
+    if (fromD && toD) {
+      let cur = new Date(fromD + 'T12:00:00');
+      const end = new Date(toD + 'T12:00:00');
+      while (cur <= end) {
+        jours.push(dayNames_fr[cur.getDay()]);
+        cur.setDate(cur.getDate() + 1);
+      }
+    } else {
+      jours = ['samedi', 'dimanche'];
+    }
+    const joursStr = jours.join(', ');
+    durInstr = 'Crée un programme sur ' + (dateLabel || joursStr) + ', répartis sur ces jours dans l\'ordre : ' + joursStr.toUpperCase() + '. Une clé JSON par jour. Inclus repas logiques.';
+    // JSON structure dynamique avec les vrais noms de jours
+    const exStep = '{"heure":"09h00","titre":"...","duree":"2h","transport":"à pied","trajet":"5 min","note":"...","type":"activite","emoji":"🏰","budget":15,"lat":51.507,"lng":-0.128}';
+    jsonStructure = '{' + jours.map(j => '"' + j + '":[' + exStep + ']').join(',') + '}';
   }
 
   const prompt = langInstr + dateInstr + constraintInstr + '\nTu es un expert en organisation de sorties. Activités favorites:\n' + favDetails + '\n\nAMBIANCE SOUHAITÉE: ' + ambianceDesc[ambiance] + '\n\n' + durInstr + '\n\nRègles:\n- Respecte STRICTEMENT les contraintes\n- Adapte l\'ordre et le rythme à l\'ambiance choisie\n- Inclus emoji pertinent par activité\n- Note pratique courte et utile (réservation, tenue, horaire à confirmer…)\n- Types possibles: activite, repas, pause, transport\n\nRéponds UNIQUEMENT en JSON valide, structure exacte:\n' + jsonStructure;
@@ -6153,13 +6171,17 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   let html = '';
   const keys = Object.keys(program);
 
+  const dayColors = ['#3A5C38','#5C4A38','#3A4A5C','#5C3A5C','#5C5A3A'];
+  const dayFr = {lundi:'Lundi',mardi:'Mardi',mercredi:'Mercredi',jeudi:'Jeudi',vendredi:'Vendredi',samedi:'Samedi',dimanche:'Dimanche',journee:'Journée'};
   if (durMode === 'journee' && program.journee?.length) {
     html += '<div class="program-day"><div class="program-day-header"><div class="program-day-title">☀️ ' + (dateLabel || 'Journée') + '</div></div>' + renderSteps(program.journee) + '</div>';
-  } else if (keys.includes('samedi') || keys.includes('dimanche')) {
-    if (program.samedi?.length) html += '<div class="program-day"><div class="program-day-header" style="background:linear-gradient(90deg,#3A5C38,transparent)"><div class="program-day-title">📅 ' + days[0] + '</div><div class="program-day-meta">' + program.samedi.length + ' étapes</div></div>' + renderSteps(program.samedi) + '</div>';
-    if (program.dimanche?.length) html += '<div class="program-day"><div class="program-day-header" style="background:linear-gradient(90deg,#5C4A38,transparent)"><div class="program-day-title">📅 ' + days[1] + '</div><div class="program-day-meta">' + program.dimanche.length + ' étapes</div></div>' + renderSteps(program.dimanche) + '</div>';
-  } else if (keys[0]) {
-    html += '<div class="program-day"><div class="program-day-header"><div class="program-day-title">📋 Programme</div></div>' + renderSteps(program[keys[0]]) + '</div>';
+  } else {
+    keys.forEach(function(key, idx) {
+      if (!program[key] || !program[key].length) return;
+      var dayLabel = dayFr[key] || key.charAt(0).toUpperCase() + key.slice(1);
+      var col = dayColors[idx % dayColors.length];
+      html += '<div class="program-day"><div class="program-day-header" style="background:linear-gradient(90deg,' + col + ',transparent)"><div class="program-day-title">📅 ' + dayLabel + '</div><div class="program-day-meta">' + program[key].length + ' étapes</div></div>' + renderSteps(program[key]) + '</div>';
+    });
   }
 
   if (!html) {
@@ -6321,9 +6343,13 @@ async function saveWeekendProgram() {
     toast.textContent = '✅ Programme sauvegardé !';
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
+    // Rafraîchir l'onglet Activités si ouvert
+    if (document.getElementById('ap-pane-activities')?.classList.contains('active')) {
+      renderAccountActivities();
+    }
   } catch(e) {
     console.error('Save program:', e);
-    alert('Erreur lors de la sauvegarde.');
+    alert('Erreur lors de la sauvegarde. Réessaie !');
   }
 }
 
