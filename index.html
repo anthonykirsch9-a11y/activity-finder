@@ -5931,7 +5931,54 @@ async function generateWeekendProgram() {
 
   const prompt = langInstr + dateInstr + constraintInstr + '\nTu es un expert en organisation de sorties. Activités favorites:\n' + favDetails + '\n\nAMBIANCE SOUHAITÉE: ' + ambianceDesc[ambiance] + '\n\n' + durInstr + '\n\nRègles:\n- Respecte STRICTEMENT les contraintes\n- Adapte l\'ordre et le rythme à l\'ambiance choisie\n- Inclus emoji pertinent par activité\n- Note pratique courte et utile (réservation, tenue, horaire à confirmer…)\n- Types possibles: activite, repas, pause, transport\n\nRéponds UNIQUEMENT en JSON valide, structure exacte:\n' + jsonStructure;
 
-  body.innerHTML = '<div style="text-align:center;padding:40px 20px"><div style="font-size:36px;margin-bottom:12px">✨</div><div style="font-size:14px;font-weight:600;color:var(--text)">Génération en cours…</div><div style="font-size:12px;color:var(--muted);margin-top:6px">L\'IA organise ton programme ' + (ambianceDesc[ambiance]?.split(',')[0] || '') + '</div></div>';
+  // ── Loader animé avec messages changeants ──
+  const loaderMsgs = [
+    '🗺️ Analyse de tes favoris…',
+    '🌤️ Récupération de la météo…',
+    '🧠 L\'IA compose ton itinéraire…',
+    '📍 Optimisation des trajets…',
+    '✨ Finalisation du programme…'
+  ];
+  let _loaderIdx = 0;
+  body.innerHTML = '<div style="text-align:center;padding:40px 20px" id="wp-loader">'
+    + '<div style="font-size:36px;margin-bottom:12px">✨</div>'
+    + '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Génération en cours…</div>'
+    + '<div id="wp-loader-msg" style="font-size:12px;color:var(--muted);min-height:18px;transition:opacity 0.3s">' + loaderMsgs[0] + '</div>'
+    + '</div>';
+  const _loaderInterval = setInterval(() => {
+    _loaderIdx = (_loaderIdx + 1) % loaderMsgs.length;
+    const el = document.getElementById('wp-loader-msg');
+    if (el) { el.style.opacity = '0'; setTimeout(() => { if(el) { el.textContent = loaderMsgs[_loaderIdx]; el.style.opacity = '1'; }}, 300); }
+  }, 2000);
+
+  // ── Météo en parallèle ──
+  let weatherInfo = null;
+  try {
+    const cityEntry = detectCity(filteredFavs[0]?.activity_title || '');
+    const fLat0 = parseFloat(filteredFavs[0]?.lat), fLng0 = parseFloat(filteredFavs[0]?.lng);
+    const wLat = (!isNaN(fLat0) && Math.abs(fLat0) > 0.01) ? fLat0 : (cityEntry?.c?.[0] || _lastSearchLat);
+    const wLng = (!isNaN(fLng0) && Math.abs(fLng0) > 0.01) ? fLng0 : (cityEntry?.c?.[1] || _lastSearchLng);
+    const fromDate = document.getElementById('wp-date-from')?.value;
+    // Vérifier que la date est dans les 14 prochains jours
+    const _daysDiff = fromDate ? Math.round((new Date(fromDate) - new Date()) / 86400000) : 0;
+    if (wLat && wLng && Math.abs(wLat) > 0.01 && _daysDiff <= 13) {
+      const wUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + wLat + '&longitude=' + wLng + '&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=14';
+      const wRes = await fetch(wUrl);
+      if (wRes.ok) {
+        const wData = await wRes.json();
+        const wCodes = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',53:'🌦️',61:'🌧️',63:'🌧️',80:'🌦️',81:'🌧️',95:'⛈️'};
+        const targetDate = fromDate || new Date().toISOString().split('T')[0]; // fromDate du scope parent
+        const idx2 = (wData.daily?.time || []).indexOf(targetDate);
+        if (idx2 >= 0) {
+          weatherInfo = {
+            icon: wCodes[wData.daily.weathercode[idx2]] || '🌡️',
+            tMax: Math.round(wData.daily.temperature_2m_max[idx2]),
+            tMin: Math.round(wData.daily.temperature_2m_min[idx2])
+          };
+        }
+      }
+    }
+  } catch(we) { /* météo optionnelle */ }
 
   try {
     const res = await fetch(SUPABASE_URL + '/functions/v1/search', {
@@ -5946,8 +5993,11 @@ async function generateWeekendProgram() {
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('Pas de JSON');
     const program = JSON.parse(match[0]);
+    clearInterval(_loaderInterval);
     renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo);
   } catch(e) {
+    clearInterval(_loaderInterval);
+    console.error('Programme erreur:', e);
     body.innerHTML = '<p style="color:#C0392B;padding:20px;text-align:center">Erreur lors de la génération. Réessaie !</p><button onclick="generateWeekendProgram()" class="wp-regen-btn">🔄 Réessayer</button>';
   }
 }
