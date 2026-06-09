@@ -6691,6 +6691,7 @@ async function renderAccountActivities() {
       html += '</div></div>';
     });
     html += '<div style="height:8px"></div>';
+  } // fin if savedPrograms.length
 
   // Bouton Mémoires en haut si des activités faites existent
   const allNotes = localLoad('notes') || [];
@@ -7745,23 +7746,21 @@ window.addEventListener('load', () => {
 
 function checkOnThisDayNotification() {
   try {
-    const notes = localLoad('notes') || [];
+    const allNotes = localLoad('notes') || [];
     const now = new Date();
-    const match = notes.find(n => {
-      if (!n.done || !n.created_at) return false;
+    const match = allNotes.find(n => {
+      if (!n.done || !n.created_at || (n.activity_id||'').startsWith('program_')) return false;
       const d = new Date(n.created_at);
       return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() !== now.getFullYear();
     });
     if (!match) return;
     const years = now.getFullYear() - new Date(match.created_at).getFullYear();
-    // Afficher une bannière discrète en haut
     const banner = document.createElement('div');
     banner.id = 'on-this-day-banner';
-    banner.onclick = () => { banner.remove(); openAccountPanel(); setTimeout(() => switchAccountTab('memories'), 300); };
-    banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:linear-gradient(135deg,#C4714A,#D4855C);color:#fff;border-radius:14px;padding:12px 20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(196,113,74,0.4);display:flex;align-items:center;gap:10px;white-space:nowrap;max-width:90vw;animation:slideUp 0.4s ease';
-    banner.innerHTML = `<span style="font-size:20px">🎉</span><div><div style="font-weight:700">Ce jour il y a ${years} an${years>1?'s':''}</div><div style="font-size:11px;opacity:0.9">${(match.activity_title||'').substring(0,35)}</div></div><span style="margin-left:8px;opacity:0.7">→</span>`;
+    banner.onclick = () => { banner.remove(); const ap = document.getElementById('account-panel'); if(ap) ap.classList.add('open'); setTimeout(() => switchAccountTab('memories'), 300); };
+    banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:linear-gradient(135deg,#C4714A,#D4855C);color:#fff;border-radius:14px;padding:12px 20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(196,113,74,0.4);display:flex;align-items:center;gap:10px;white-space:nowrap;max-width:90vw';
+    banner.innerHTML = '<span style="font-size:20px">🎉</span><div><div style="font-weight:700">Ce jour il y a ' + years + ' an' + (years>1?'s':'') + '</div><div style="font-size:11px;opacity:0.9">' + (match.activity_title||'').substring(0,35) + '</div></div><span style="margin-left:8px;opacity:0.7">→</span>';
     document.body.appendChild(banner);
-    // Auto-disparaît après 6s
     setTimeout(() => { if (banner.parentNode) { banner.style.opacity='0'; banner.style.transition='opacity 0.4s'; setTimeout(() => banner.remove(), 400); }}, 6000);
   } catch(e) {}
 }
