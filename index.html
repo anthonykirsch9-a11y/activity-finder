@@ -672,8 +672,11 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 .weekend-program-card { background:var(--card); border-radius:24px; max-width:520px; width:100%; box-shadow:0 32px 100px rgba(0,0,0,0.5); overflow:hidden; margin:auto; }
 
 /* Header hero */
-.weekend-program-header { background:linear-gradient(160deg,#1e3a1c 0%,#3A5C38 60%,#5C7A5A 100%); padding:22px 20px 18px; position:relative; overflow:hidden; }
-.weekend-program-header::before { content:''; position:absolute; inset:0; background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="80" cy="20" r="40" fill="rgba(255,255,255,0.03)"/><circle cx="20" cy="80" r="30" fill="rgba(255,255,255,0.03)"/></svg>'); background-size:cover; pointer-events:none; }
+.weekend-program-header { background:linear-gradient(160deg,#1e3a1c 0%,#3A5C38 60%,#5C7A5A 100%); padding:22px 20px 18px; position:relative; overflow:hidden; transition:background 0.4s; }
+.weekend-program-header::before { content:''; position:absolute; inset:0; background:rgba(0,0,0,0.45); pointer-events:none; z-index:0; }
+.weekend-program-header > * { position:relative; z-index:1; }
+.wp-cover-photo { position:absolute; inset:0; background-size:cover; background-position:center; z-index:0; opacity:0; transition:opacity 0.5s; }
+.wp-cover-photo.loaded { opacity:1; }
 .wp-hero-title { font-family:'Fraunces',serif; font-size:1.35rem; font-weight:800; color:#fff; margin-bottom:4px; }
 .wp-hero-sub { font-size:12px; color:rgba(255,255,255,0.65); margin-bottom:14px; }
 .wp-hero-badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
@@ -1511,7 +1514,8 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 <!-- ── PROGRAMME WEEK-END MODAL ── -->
 <div class="weekend-program-modal" id="weekend-program-modal">
   <div class="weekend-program-card">
-    <div class="weekend-program-header">
+    <div class="weekend-program-header" id="wp-header">
+      <div class="wp-cover-photo" id="wp-cover-photo"></div>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
         <div>
           <div class="wp-hero-title">🗓 Mon programme</div>
@@ -1541,18 +1545,18 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
       <div class="wp-date-row">
         <div style="display:flex;flex-direction:column;gap:3px">
           <label style="font-size:10px;color:rgba(255,255,255,0.5)">Du</label>
-          <input type="text" id="wp-date-from" placeholder="jj/mm" maxlength="5" class="wp-date-input" oninput="formatDateInput(this)">
+          <input type="date" id="wp-date-from" class="wp-date-input" style="width:130px;color-scheme:dark">
         </div>
         <div style="color:rgba(255,255,255,0.4);font-size:14px;margin-top:16px">→</div>
         <div style="display:flex;flex-direction:column;gap:3px">
           <label style="font-size:10px;color:rgba(255,255,255,0.5)">Au</label>
-          <input type="text" id="wp-date-to" placeholder="jj/mm" maxlength="5" class="wp-date-input" oninput="formatDateInput(this)">
+          <input type="date" id="wp-date-to" class="wp-date-input" style="width:130px;color-scheme:dark">
         </div>
-        <div style="margin-top:16px;display:flex;gap:5px;flex-wrap:wrap">
-          <button class="wp-dur-btn" onclick="setWpDateShortcut('today')">Auj.</button>
-          <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')">Demain</button>
-          <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Week-end</button>
-        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('today')">Auj.</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')">Demain</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Ce week-end</button>
       </div>
 
       <!-- Contraintes -->
@@ -5795,41 +5799,35 @@ function formatDateInput(input) {
 
 function setWpDateShortcut(mode) {
   const today = new Date();
-  const fmt = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+  const iso = d => d.toISOString().split('T')[0];
   const fromEl = document.getElementById('wp-date-from');
   const toEl = document.getElementById('wp-date-to');
   if (!fromEl) return;
   if (mode === 'today') {
-    fromEl.value = fmt(today); toEl.value = '';
+    fromEl.value = iso(today); toEl.value = iso(today);
   } else if (mode === 'tomorrow') {
     const tom = new Date(today); tom.setDate(today.getDate() + 1);
-    fromEl.value = fmt(tom); toEl.value = '';
+    fromEl.value = iso(tom); toEl.value = iso(tom);
   } else if (mode === 'weekend') {
     const day = today.getDay();
     const sat = new Date(today); sat.setDate(today.getDate() + ((6 - day + 7) % 7 || 7));
     const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
-    fromEl.value = fmt(sat); toEl.value = fmt(sun);
+    fromEl.value = iso(sat); toEl.value = iso(sun);
   }
 }
 
 function getWpDateLabel() {
   const fromVal = document.getElementById('wp-date-from')?.value || '';
   const toVal = document.getElementById('wp-date-to')?.value || '';
-  const year = new Date().getFullYear();
-  if (!fromVal || fromVal.length < 5) return '';
-  const [fd, fm] = fromVal.split('/');
-  const fromDate = new Date(year, parseInt(fm)-1, parseInt(fd));
-  const fmt = d => d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
-  if (toVal && toVal.length === 5) {
-    const [td, tm] = toVal.split('/');
-    const toDate = new Date(year, parseInt(tm)-1, parseInt(td));
-    // Si 2 jours = week-end → programme sur 2 jours
-    const diff = Math.round((toDate - fromDate) / 86400000);
+  if (!fromVal) return '';
+  const fmt = s => new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  if (toVal && toVal !== fromVal) {
+    const diff = Math.round((new Date(toVal) - new Date(fromVal)) / 86400000);
     _programDuration = diff >= 1 ? 'weekend' : 'journee';
-    return `Du ${fmt(fromDate)} au ${fmt(toDate)}`;
+    return 'Du ' + fmt(fromVal) + ' au ' + fmt(toVal);
   }
   _programDuration = 'journee';
-  return `Le ${fmt(fromDate)}`;
+  return 'Le ' + fmt(fromVal);
 }
 
 function openWeekendProgram() {
@@ -5925,10 +5923,10 @@ async function generateWeekendProgram() {
 
   if (dur === 'journee') {
     durInstr = 'Crée un programme pour UNE JOURNÉE (9h-20h), 3-4 activités. Inclus déjeuner.';
-    jsonStructure = '{"journee":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰"}]}';
+    jsonStructure = '{"journee":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰","budget":15,"lat":48.856,"lng":2.352}]}';
   } else {
     durInstr = 'Crée un programme sur ' + (dateLabel || 'le week-end') + ', répartis sur SAMEDI et DIMANCHE. Inclus repas logiques.';
-    jsonStructure = '{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰"}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite","emoji":"🌿"}]}';
+    jsonStructure = '{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰","budget":15,"lat":51.507,"lng":-0.128}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite","emoji":"🌿","budget":0,"lat":51.510,"lng":-0.120}]}';
   }
 
   const prompt = langInstr + dateInstr + constraintInstr + '\nTu es un expert en organisation de sorties. Activités favorites:\n' + favDetails + '\n\nAMBIANCE SOUHAITÉE: ' + ambianceDesc[ambiance] + '\n\n' + durInstr + '\n\nRègles:\n- Respecte STRICTEMENT les contraintes\n- Adapte l\'ordre et le rythme à l\'ambiance choisie\n- Inclus emoji pertinent par activité\n- Note pratique courte et utile (réservation, tenue, horaire à confirmer…)\n- Types possibles: activite, repas, pause, transport\n\nRéponds UNIQUEMENT en JSON valide, structure exacte:\n' + jsonStructure;
@@ -5948,7 +5946,7 @@ async function generateWeekendProgram() {
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('Pas de JSON');
     const program = JSON.parse(match[0]);
-    renderWeekendProgram(program, dur, ambiance, dateLabel);
+    renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo);
   } catch(e) {
     body.innerHTML = '<p style="color:#C0392B;padding:20px;text-align:center">Erreur lors de la génération. Réessaie !</p><button onclick="generateWeekendProgram()" class="wp-regen-btn">🔄 Réessayer</button>';
   }
@@ -5997,7 +5995,34 @@ function populateWpRegions() {
 }
 
 
-function renderWeekendProgram(program, dur, ambiance, dateLabel) {
+
+// Photo de couverture par ville pour le programme
+var CITY_COVER_PHOTOS = {
+  'Londres':    'https://images.pexels.com/photos/220769/pexels-photo-220769.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Paris':      'https://images.pexels.com/photos/699466/pexels-photo-699466.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Luxembourg': 'https://images.pexels.com/photos/2070485/pexels-photo-2070485.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Bruxelles':  'https://images.pexels.com/photos/3632682/pexels-photo-3632682.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Amsterdam':  'https://images.pexels.com/photos/967292/pexels-photo-967292.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Berlin':     'https://images.pexels.com/photos/2736139/pexels-photo-2736139.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Rome':       'https://images.pexels.com/photos/532263/pexels-photo-532263.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Barcelone':  'https://images.pexels.com/photos/1388030/pexels-photo-1388030.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Madrid':     'https://images.pexels.com/photos/3882895/pexels-photo-3882895.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Strasbourg': 'https://images.pexels.com/photos/2100587/pexels-photo-2100587.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Lyon':       'https://images.pexels.com/photos/2929234/pexels-photo-2929234.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Marseille':  'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Lille':      'https://images.pexels.com/photos/3224730/pexels-photo-3224730.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+};
+function getCityPhoto(regionName) {
+  if (!regionName) return null;
+  for (var k in CITY_COVER_PHOTOS) {
+    if (regionName.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(regionName.toLowerCase())) {
+      return CITY_COVER_PHOTOS[k];
+    }
+  }
+  return null;
+}
+
+function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   const body = document.getElementById('weekend-program-body');
   const dayNames = { fr:['Samedi','Dimanche'], en:['Saturday','Sunday'], es:['Sábado','Domingo'], de:['Samstag','Sonntag'], it:['Sabato','Domenica'], pt:['Sábado','Domingo'] };
   const days = dayNames[lang] || dayNames.fr;
@@ -6006,9 +6031,22 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel) {
   const ambianceBadge = { equilibre:'⚖️ Équilibré', tranquille:'🌿 Tranquille', sportif:'⚡ Sportif', culturel:'🏛️ Culturel', festif:'🎉 Festif' };
   const badge = ambianceBadge[ambiance] || '✨ Programme';
 
-  // Mettre à jour le sous-titre du header
+  // Mettre à jour la photo de couverture
+  const regionVal2 = document.getElementById('wp-region-select')?.value || 'all';
+  const coverPhoto = getCityPhoto(regionVal2 !== 'all' ? regionVal2 : '');
+  const coverEl = document.getElementById('wp-cover-photo');
+  if (coverEl && coverPhoto) {
+    coverEl.style.backgroundImage = 'url(' + coverPhoto + ')';
+    const img = new Image();
+    img.onload = () => coverEl.classList.add('loaded');
+    img.src = coverPhoto;
+  }
+
+  // Mettre à jour le sous-titre avec météo
   const sub = document.getElementById('wp-subtitle');
-  if (sub) sub.textContent = (dateLabel || 'Ce week-end') + ' · ' + badge;
+  let subText = (dateLabel || 'Ce week-end') + ' · ' + badge;
+  if (weatherInfo) subText += ' · ' + weatherInfo.icon + ' ' + weatherInfo.tMax + '°/' + weatherInfo.tMin + '°';
+  if (sub) sub.textContent = subText;
 
   function renderSteps(steps) {
     if (!steps || !steps.length) return '';
@@ -6027,7 +6065,10 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel) {
       h += '<div class="program-step-title">' + (step.emoji || (step.type === 'repas' ? '🍽️' : step.type === 'pause' ? '☕' : '📍')) + ' ' + (step.titre || step.title || '') + '</div>';
       h += '<div class="program-step-detail">';
       if (step.duree) h += '<span class="program-step-chip">⏱ ' + step.duree + '</span>';
-      if (step.note) h += '<span style="color:var(--muted)">' + step.note + '</span>';
+      if (typeof step.budget === 'number') {
+        h += '<span class="program-step-chip' + (step.budget === 0 ? '' : ' orange') + '">' + (step.budget === 0 ? '🆓 Gratuit' : '💶 ~' + step.budget + '€') + '</span>';
+      }
+      if (step.note) h += '<span style="color:var(--muted);font-size:11px">' + step.note + '</span>';
       h += '</div>';
       h += '</div></div>';
 
@@ -6055,6 +6096,28 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel) {
 
   if (!html) {
     html = '<p style="color:var(--muted);padding:20px;text-align:center">Programme vide. Réessaie !</p>';
+  }
+
+  // ── Budget total ──
+  const allSteps = [...(program.journee||[]), ...(program.samedi||[]), ...(program.dimanche||[])];
+  const totalBudget = allSteps.reduce((s, step) => s + (typeof step.budget === 'number' ? step.budget : 0), 0);
+  if (totalBudget >= 0 && allSteps.length) {
+    html += '<div style="margin:0 20px 4px;padding:12px 16px;background:linear-gradient(135deg,var(--primary-light),var(--bg2));border-radius:14px;display:flex;align-items:center;justify-content:space-between">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--text)">💰 Budget estimé / personne</div>'
+      + '<div style="font-size:18px;font-weight:800;color:var(--primary)">' + (totalBudget === 0 ? 'Gratuit 🆓' : '~' + totalBudget + ' €') + '</div>'
+      + '</div>';
+  }
+
+  // ── Carte miniature avec Google Maps Static ──
+  const stepsWithGPS = allSteps.filter(s => s.lat && s.lng && Math.abs(parseFloat(s.lat)) > 0.01);
+  if (stepsWithGPS.length >= 2) {
+    const markers = stepsWithGPS.map((s, i) => 'markers=color:0x3A5C38%7Clabel:' + (i+1) + '%7C' + s.lat + ',' + s.lng).join('&');
+    const center = stepsWithGPS[0].lat + ',' + stepsWithGPS[0].lng;
+    const mapsUrl = 'https://maps.googleapis.com/maps/api/staticmap?center=' + center + '&zoom=13&size=480x160&scale=2&maptype=roadmap&' + markers + '&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+    html += '<div style="margin:12px 20px;border-radius:14px;overflow:hidden;position:relative">'
+      + '<img src="' + mapsUrl + '" style="width:100%;display:block;border-radius:14px" loading="lazy" onerror="this.parentElement.remove()">'
+      + '<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px">' + stepsWithGPS.length + ' lieux</div>'
+      + '</div>';
   }
 
   // Actions
