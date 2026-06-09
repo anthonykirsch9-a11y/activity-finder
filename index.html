@@ -6158,25 +6158,104 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
       + '</div>';
   }
 
-  // ── Carte miniature avec Google Maps Static ──
+  // ── Carte Leaflet/OpenStreetMap (sans clé API) ──
   const stepsWithGPS = allSteps.filter(s => s.lat && s.lng && Math.abs(parseFloat(s.lat)) > 0.01);
   if (stepsWithGPS.length >= 2) {
-    const markers = stepsWithGPS.map((s, i) => 'markers=color:0x3A5C38%7Clabel:' + (i+1) + '%7C' + s.lat + ',' + s.lng).join('&');
-    const center = stepsWithGPS[0].lat + ',' + stepsWithGPS[0].lng;
-    const mapsUrl = 'https://maps.googleapis.com/maps/api/staticmap?center=' + center + '&zoom=13&size=480x160&scale=2&maptype=roadmap&' + markers + '&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+    const mapId = 'wp-map-' + Date.now();
     html += '<div style="margin:12px 20px;border-radius:14px;overflow:hidden;position:relative">'
-      + '<img src="' + mapsUrl + '" style="width:100%;display:block;border-radius:14px" loading="lazy" onerror="this.parentElement.remove()">'
-      + '<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px">' + stepsWithGPS.length + ' lieux</div>'
+      + '<div id="' + mapId + '" style="height:180px;width:100%;border-radius:14px;background:#e8e8e8"></div>'
+      + '<div style="position:absolute;bottom:8px;right:8px;background:rgba(26,58,24,0.85);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px;z-index:999">' + stepsWithGPS.length + ' lieux</div>'
       + '</div>';
+    // Initialiser Leaflet après rendu du HTML
+    setTimeout(function() {
+      if (typeof L === 'undefined') return;
+      const mapEl = document.getElementById(mapId);
+      if (!mapEl) return;
+      try {
+        const lmap = L.map(mapId, { zoomControl:false, attributionControl:false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(lmap);
+        const bounds = [];
+        stepsWithGPS.forEach(function(s, i) {
+          const lat = parseFloat(s.lat), lng = parseFloat(s.lng);
+          const icon = L.divIcon({
+            html: '<div style="background:#3A5C38;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3)">' + (i+1) + '</div>',
+            className: '', iconSize:[22,22], iconAnchor:[11,11]
+          });
+          L.marker([lat,lng], {icon}).addTo(lmap).bindPopup('<b>' + (s.titre||s.title||'') + '</b>');
+          bounds.push([lat,lng]);
+        });
+        lmap.fitBounds(bounds, {padding:[20,20]});
+      } catch(e) { console.warn('Carte:', e); }
+    }, 200);
+  }
+
+  // ── Booking si programme multi-jours loin de chez soi ──
+  const regionVal3 = document.getElementById('wp-region-select')?.value || 'all';
+  if (regionVal3 !== 'all' && durMode !== 'journee') {
+    const cityEntry3 = GEO_CITIES.find(e => e.d === regionVal3);
+    const userLat = _lastSearchLat || 49.6;
+    const userLng = _lastSearchLng || 6.1;
+    const destCoords = cityEntry3 ? cityEntry3.c : null;
+    const distToCity = destCoords ? haversineKm([userLat, userLng], destCoords) : 0;
+    if (distToCity > 80 || ['Londres','Paris','Amsterdam','Berlin','Rome','Barcelone','Bruxelles'].includes(regionVal3)) {
+      const bookingCity = encodeURIComponent(regionVal3.toLowerCase().replace('è','e').replace('é','e'));
+      const fromDateB = document.getElementById('wp-date-from')?.value || '';
+      const toDateB = document.getElementById('wp-date-to')?.value || '';
+      const bookingUrl = 'https://www.booking.com/searchresults.fr.html?ss=' + bookingCity
+        + (fromDateB ? '&checkin=' + fromDateB : '')
+        + (toDateB ? '&checkout=' + toDateB : '')
+        + '&aid=7814439&lang=fr&no_rooms=1&group_adults=2';
+      html += '<a href="' + bookingUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;margin:0 20px 12px;padding:14px 16px;background:linear-gradient(135deg,#003580,#0056b3);border-radius:14px;text-decoration:none;color:#fff">'
+        + '<span style="font-size:22px">🏨</span>'
+        + '<div style="flex:1">'
+        + '<div style="font-size:13px;font-weight:700">Où dormir à ' + regionVal3 + ' ?</div>'
+        + '<div style="font-size:11px;opacity:0.8">Comparer les hôtels sur Booking.com</div>'
+        + '</div>'
+        + '<span style="font-size:18px">→</span>'
+        + '</a>';
+    }
   }
 
   // Actions
   html += '<div class="program-actions">';
   html += '<button onclick="generateWeekendProgram()" class="wp-regen-btn">🔄 Régénérer</button>';
+  html += '<button onclick="saveWeekendProgram()" class="wp-share-btn">💾 Sauvegarder</button>';
   html += '<button onclick="shareWeekendProgram()" class="wp-share-btn">📤 Partager</button>';
   html += '</div>';
 
   body.innerHTML = html;
+}
+
+async function saveWeekendProgram() {
+  if (!_sb || !currentUser || currentUser.id === 'beta-user') {
+    alert('Connecte-toi pour sauvegarder ton programme !');
+    return;
+  }
+  const body = document.getElementById('weekend-program-body');
+  if (!body) return;
+  const regionVal = document.getElementById('wp-region-select')?.value || 'all';
+  const dateLabel = document.getElementById('wp-subtitle')?.textContent || '';
+  const programHtml = body.innerHTML;
+  const savedAt = new Date().toISOString();
+  // Sauvegarder dans la table notes comme entrée spéciale
+  try {
+    await _sb.from('notes').upsert({
+      user_id: currentUser.id,
+      activity_id: 'program_' + savedAt.replace(/[^0-9]/g,'').slice(0,14),
+      activity_title: '🗓 Programme ' + (regionVal !== 'all' ? regionVal + ' · ' : '') + dateLabel.split('·')[0].trim(),
+      note: programHtml.substring(0, 3000),
+      stars: 0,
+      done: false,
+      created_at: savedAt
+    });
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A3A18;color:white;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif';
+    toast.textContent = '✅ Programme sauvegardé dans tes activités';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  } catch(e) {
+    alert('Erreur lors de la sauvegarde. Réessaie !');
+  }
 }
 
 function shareWeekendProgram() {
