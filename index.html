@@ -5887,35 +5887,14 @@ async function generateWeekendProgram() {
     return;
   }
 
-  // Filtrer par région si sélectionnée
+  // Filtrer par région via clusterFavs
   const regionVal = document.getElementById('wp-region-select')?.value || 'all';
   let filteredFavs = favs;
   if (regionVal !== 'all') {
-    // Trouver les coords du cluster sélectionné depuis les favoris eux-mêmes
-    // On cherche un favori de cette région pour avoir ses coords de référence
-    const refFav = favs.find(f => {
-      const fLat = parseFloat(f.lat), fLng = parseFloat(f.lng);
-      if (!isNaN(fLat) && Math.abs(fLat) > 0.01) return true;
-      // Ou par nom de ville dans le titre
-      const tNorm = (f.activity_title||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      const rNorm = regionVal.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      return tNorm.includes(rNorm) || rNorm.split(' ').some(w => w.length > 3 && tNorm.includes(w));
-    });
-
-    filteredFavs = favs.filter(f => {
-      // 1. Utiliser les coords GPS si disponibles
-      const fLat = parseFloat(f.lat), fLng = parseFloat(f.lng);
-      const rLat = parseFloat(refFav?.lat), rLng = parseFloat(refFav?.lng);
-      if (!isNaN(fLat) && Math.abs(fLat) > 0.01 && !isNaN(rLat) && Math.abs(rLat) > 0.01) {
-        return haversineKm([fLat, fLng], [rLat, rLng]) <= 80;
-      }
-      // 2. Fallback : correspondance nom de ville dans le titre
-      const tNorm = (f.activity_title||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      const rNorm = regionVal.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      return tNorm.includes(rNorm) || rNorm.split(/\s+/).some(w => w.length > 3 && tNorm.includes(w));
-    });
-
-    if (filteredFavs.length < 2) filteredFavs = favs; // fallback tous si pas assez
+    const clusters = clusterFavs(favs);
+    const cluster = clusters.find(c => c.name === regionVal);
+    filteredFavs = cluster ? cluster.items : favs;
+    if (filteredFavs.length < 2) filteredFavs = favs;
   }
 
   const ambiance = document.querySelector('.wp-ambiance-btn.active')?.dataset?.ambiance || 'equilibre';
@@ -5997,81 +5976,22 @@ function populateWpRegions() {
   var sel = document.getElementById('wp-region-select');
   if (!sel) return;
   var favs = localLoad('favorites') || [];
-
-  // Même CITY_TABLE que dans le clustering favoris
-  var CITY_TABLE_WP = [
-    { keys:['london','londre','londres'], display:'Londres',           coords:[51.507, -0.128] },
-    { keys:['paris'],                     display:'Paris',             coords:[48.856,  2.352] },
-    { keys:['luxembourg'],                display:'Luxembourg',        coords:[49.611,  6.132] },
-    { keys:['esch','eschsuralzette'],     display:'Esch-sur-Alzette', coords:[49.496,  5.986] },
-    { keys:['thionville'],                display:'Thionville',        coords:[49.358,  6.169] },
-    { keys:['metz'],                      display:'Metz',              coords:[49.119,  6.176] },
-    { keys:['nancy'],                     display:'Nancy',             coords:[48.692,  6.184] },
-    { keys:['hayange','feralia'],         display:'Hayange',           coords:[49.330,  6.065] },
-    { keys:['hackenberg'],                display:'Hackenberg',        coords:[49.370,  6.380] },
-    { keys:['longwy'],                    display:'Longwy',            coords:[49.521,  5.760] },
-    { keys:['arlon'],                     display:'Arlon',             coords:[49.685,  5.812] },
-    { keys:['bruxelles','brussels','brux'], display:'Bruxelles',      coords:[50.846,  4.352] },
-    { keys:['liege'],                     display:'Liège',             coords:[50.632,  5.569] },
-    { keys:['namur'],                     display:'Namur',             coords:[50.467,  4.867] },
-    { keys:['strasbourg'],                display:'Strasbourg',        coords:[48.573,  7.752] },
-    { keys:['lyon'],                      display:'Lyon',              coords:[45.764,  4.834] },
-    { keys:['marseille'],                 display:'Marseille',         coords:[43.296,  5.381] },
-    { keys:['lille'],                     display:'Lille',             coords:[50.629,  3.057] },
-    { keys:['barcelone','barcelona'],     display:'Barcelone',         coords:[41.385,  2.173] },
-    { keys:['amsterdam'],                 display:'Amsterdam',         coords:[52.370,  4.895] },
-    { keys:['berlin'],                    display:'Berlin',            coords:[52.520, 13.405] },
-    { keys:['rome','roma'],               display:'Rome',              coords:[41.902, 12.496] },
-    { keys:['cologne','koln'],            display:'Cologne',           coords:[50.938,  6.960] },
-    { keys:['dudelange'],                 display:'Dudelange',         coords:[49.481,  6.087] },
-    { keys:['differdange'],               display:'Differdange',       coords:[49.524,  5.891] },
-  ];
-
-  function detectCityWP(title) {
-    if (!title) return null;
-    var norm = title.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    var parts = title.split(',');
-    if (parts.length >= 2) {
-      var after = parts[parts.length-1].trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
-      for (var i=0; i<CITY_TABLE_WP.length; i++) {
-        if (CITY_TABLE_WP[i].keys.some(function(k){return after===k||after.includes(k);})) return CITY_TABLE_WP[i];
-      }
-    }
-    for (var i=0; i<CITY_TABLE_WP.length; i++) {
-      if (CITY_TABLE_WP[i].keys.some(function(k){return norm.includes(k);})) return CITY_TABLE_WP[i];
-    }
-    return null;
-  }
-
-  var clusters = [];
-  favs.forEach(function(f) {
-    var entry = detectCityWP(f.activity_title || '');
-    var coords = entry ? entry.coords : null;
-    var name = entry ? entry.display : 'Autres';
-    var placed = false;
-    for (var i=0; i<clusters.length; i++) {
-      var c = clusters[i];
-      if (!c.center && !coords) { c.items.push(f); placed=true; break; }
-      var dist = (c.center && coords) ? haversineKm(c.center, coords) : 999;
-      if (dist <= 80) { c.items.push(f); placed=true; break; }
-    }
-    if (!placed) clusters.push({ name:name, center:coords, items:[f] });
-  });
-
+  var clusters = clusterFavs(favs);
   sel.innerHTML = '<option value="all">🌍 Tous mes favoris (' + favs.length + ')</option>';
-  clusters.filter(function(c){return c.name!=='Autres';})
-    .sort(function(a,b){return b.items.length-a.items.length;})
+  clusters
+    .filter(function(c){ return c.name !== 'Autres'; })
+    .sort(function(a,b){ return b.items.length - a.items.length; })
     .forEach(function(c) {
       var opt = document.createElement('option');
       opt.value = c.name;
       opt.textContent = '📍 ' + c.name + ' (' + c.items.length + ')';
       sel.appendChild(opt);
     });
-  // Ajouter "Autres" à la fin si existe
-  var autres = clusters.find(function(c){return c.name==='Autres';});
+  var autres = clusters.find(function(c){ return c.name === 'Autres'; });
   if (autres && autres.items.length) {
     var opt = document.createElement('option');
-    opt.value = 'Autres'; opt.textContent = '📍 Autres (' + autres.items.length + ')';
+    opt.value = 'Autres';
+    opt.textContent = '📍 Autres (' + autres.items.length + ')';
     sel.appendChild(opt);
   }
 }
@@ -6316,19 +6236,103 @@ async function renderMemoriesPane() {
 }
 
 
-// ── Fonctions géo globales (utilisées par clustering favoris + populateWpRegions) ──
+// ── Fonctions géo globales ──
 function haversineKm(c1, c2) {
+  if (!c1 || !c2) return 9999;
   var R = 6371;
-  var dLat = (c2[0] - c1[0]) * Math.PI / 180;
-  var dLon = (c2[1] - c1[1]) * Math.PI / 180;
-  var a = Math.sin(dLat/2) * Math.sin(dLat/2)
-    + Math.cos(c1[0]*Math.PI/180) * Math.cos(c2[0]*Math.PI/180)
-    * Math.sin(dLon/2) * Math.sin(dLon/2);
+  var dLat = (c2[0]-c1[0]) * Math.PI/180;
+  var dLon = (c2[1]-c1[1]) * Math.PI/180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(c1[0]*Math.PI/180)*Math.cos(c2[0]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 function normalizeKey(str) {
   if (!str) return '';
   return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
+}
+
+// Table de référence mondiale
+var GEO_CITIES = [
+  { k:['london','londre','londres','southbank','southwark','camden','soho','westminster','hackney','brixton','shoreditch','notting','chelsea','kensington','hyde park','tower bridge','tower of london','buckingham','covent','greenwich'], d:'Londres', c:[51.507,-0.128] },
+  { k:['paris','montmartre','marais','bastille','belleville','pigalle','eiffel','louvre','versailles','invalides','chatelet','nation','vincennes'], d:'Paris', c:[48.856,2.352] },
+  { k:['luxembourg','lux city','ville de luxembourg','kirchberg','clausen','grund','bonnevoie','limpertsberg'], d:'Luxembourg', c:[49.611,6.132] },
+  { k:['esch','esch-sur-alzette','belval','differdange','dudelange','schifflange','rumelange','kayl','tetange','oberkorn'], d:'Région Sud Luxembourg', c:[49.496,5.986] },
+  { k:['thionville','yutz','manom','cattenom','knutange','nilvange','fontoy','audun'], d:'Thionville', c:[49.358,6.169] },
+  { k:['metz','woippy','montigny','borny','sablon','queuleu','vallières'], d:'Metz', c:[49.119,6.176] },
+  { k:['nancy','vandœuvre','essey','jarville','laxou','villers'], d:'Nancy', c:[48.692,6.184] },
+  { k:['hayange','hayange','feralia','knutange','nilvange','fontoy','rombas','amnéville','clouange'], d:'Hayange', c:[49.330,6.065] },
+  { k:['hackenberg','veckring','illange','apach','sierck','montenach','manderen','waldwisse'], d:'Pays des Trois Frontières', c:[49.370,6.380] },
+  { k:['longwy','longuyon','mont-saint-martin','herserange'], d:'Longwy', c:[49.521,5.760] },
+  { k:['arlon','virton','etalle','florenville'], d:'Arlon', c:[49.685,5.812] },
+  { k:['bruxelles','brussels','ixelles','uccle','molenbeek','schaerbeek','anderlecht','laeken','atomium','midi'], d:'Bruxelles', c:[50.846,4.352] },
+  { k:['liege','liège','seraing','herstal','ans','bressoux'], d:'Liège', c:[50.632,5.569] },
+  { k:['namur','jambes','champion'], d:'Namur', c:[50.467,4.867] },
+  { k:['strasbourg','kehl','illkirch','schiltigheim','oberhausbergen'], d:'Strasbourg', c:[48.573,7.752] },
+  { k:['lyon','villeurbanne','caluire','vénissieux','bron'], d:'Lyon', c:[45.764,4.834] },
+  { k:['marseille','aix-en-provence','cassis','aubagne'], d:'Marseille', c:[43.296,5.381] },
+  { k:["lille","roubaix","tourcoing","villeneuve-d'ascq","villeneuvescq"], d:"Lille", c:[50.629,3.057] },
+  { k:['barcelone','barcelona','badalona','sitges'], d:'Barcelone', c:[41.385,2.173] },
+  { k:['amsterdam','rotterdam','la haye','den haag','utrecht','haarlem'], d:'Amsterdam', c:[52.370,4.895] },
+  { k:['berlin','potsdam','charlottenburg','mitte','kreuzberg','prenzlauer'], d:'Berlin', c:[52.520,13.405] },
+  { k:['rome','roma','trastevere','vatican','colosseum','colisée','pantheon','trevi'], d:'Rome', c:[41.902,12.496] },
+  { k:['madrid','toledo','salamanque','ségovie'], d:'Madrid', c:[40.416,-3.703] },
+  { k:['cologne','köln','bonn','aachen','aix-la-chapelle','düsseldorf'], d:'Cologne', c:[50.938,6.960] },
+  { k:['sarrebruck','saarbrücken','forbach','freyming','merlebach','stiring'], d:'Sarrebruck', c:[49.234,6.996] },
+  { k:['trèves','trier','wittlich','bernkastel'], d:'Trèves', c:[49.749,6.637] },
+  { k:['reims','épernay','chalons','troyes'], d:'Reims', c:[49.258,4.031] },
+  { k:['sanem','differdange','petange','rodange','bascharage'], d:'Région Ouest Luxembourg', c:[49.524,5.891] },
+];
+
+// Détecter la ville dans un titre — scan exhaustif
+function detectCity(title) {
+  if (!title) return null;
+  var norm = title.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  // Priorité 1 : après virgule
+  var parts = title.split(',');
+  if (parts.length >= 2) {
+    var after = parts[parts.length-1].trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z ]/g,'').trim();
+    for (var i=0; i<GEO_CITIES.length; i++) {
+      if (GEO_CITIES[i].k.some(function(k){ return after===k||after.includes(k)||k.includes(after.replace(/ /g,'')); }))
+        return GEO_CITIES[i];
+    }
+  }
+  // Priorité 2 : scan mots dans titre complet
+  for (var i=0; i<GEO_CITIES.length; i++) {
+    if (GEO_CITIES[i].k.some(function(k){ return norm.includes(k); }))
+      return GEO_CITIES[i];
+  }
+  return null;
+}
+
+// Clusteriser une liste de favoris par rayon 80km
+function clusterFavs(favs) {
+  var clusters = [];
+  favs.forEach(function(f) {
+    var coords = null, name = 'Autres';
+    // 1. Coords GPS stockées
+    var fLat = parseFloat(f.lat), fLng = parseFloat(f.lng);
+    if (!isNaN(fLat) && Math.abs(fLat) > 0.01 && !isNaN(fLng) && Math.abs(fLng) > 0.01) {
+      coords = [fLat, fLng];
+      // Trouver le nom le plus proche
+      var best = null, bestD = 9999;
+      GEO_CITIES.forEach(function(e) { var d=haversineKm(coords,e.c); if(d<bestD){bestD=d;best=e;} });
+      name = (best && bestD < 100) ? best.d : (f.city || 'Autres');
+    }
+    // 2. Parsing titre
+    if (!coords) {
+      var entry = detectCity(f.activity_title);
+      if (entry) { coords = entry.c; name = entry.d; }
+      else if (f.city) { name = f.city; }
+    }
+    // Placer dans cluster existant si dans rayon 80km
+    var placed = false;
+    for (var i=0; i<clusters.length; i++) {
+      var c = clusters[i];
+      if (!c.center && !coords) { c.items.push(f); placed=true; break; }
+      if (c.center && coords && haversineKm(c.center, coords) <= 80) { c.items.push(f); placed=true; break; }
+    }
+    if (!placed) clusters.push({ name:name, center:coords, items:[f] });
+  });
+  return clusters;
 }
 
 async function renderAccountActivities() {
@@ -6470,99 +6474,8 @@ async function renderAccountActivities() {
 
     // getCityCoords et haversineKm → voir fonctions globales ci-dessous
 
-    // Table ville → coords + nom d'affichage
-    var CITY_TABLE = [
-      { keys:['london','londre','londres'], display:'Londres',           coords:[51.507, -0.128] },
-      { keys:['paris'],                     display:'Paris',             coords:[48.856,  2.352] },
-      { keys:['luxembourg'],                display:'Luxembourg',        coords:[49.611,  6.132] },
-      { keys:['esch','eschsuralzette'],     display:'Esch-sur-Alzette', coords:[49.496,  5.986] },
-      { keys:['thionville'],                display:'Thionville',        coords:[49.358,  6.169] },
-      { keys:['metz'],                      display:'Metz',              coords:[49.119,  6.176] },
-      { keys:['nancy'],                     display:'Nancy',             coords:[48.692,  6.184] },
-      { keys:['hayange','feralia'],         display:'Hayange',           coords:[49.330,  6.065] },
-      { keys:['hackenberg'],                display:'Hackenberg',        coords:[49.370,  6.380] },
-      { keys:['longwy'],                    display:'Longwy',            coords:[49.521,  5.760] },
-      { keys:['arlon'],                     display:'Arlon',             coords:[49.685,  5.812] },
-      { keys:['bruxelles','brussels','brux'], display:'Bruxelles',      coords:[50.846,  4.352] },
-      { keys:['liege'],                     display:'Liège',             coords:[50.632,  5.569] },
-      { keys:['namur'],                     display:'Namur',             coords:[50.467,  4.867] },
-      { keys:['strasbourg'],                display:'Strasbourg',        coords:[48.573,  7.752] },
-      { keys:['lyon'],                      display:'Lyon',              coords:[45.764,  4.834] },
-      { keys:['marseille'],                 display:'Marseille',         coords:[43.296,  5.381] },
-      { keys:['lille'],                     display:'Lille',             coords:[50.629,  3.057] },
-      { keys:['reims'],                     display:'Reims',             coords:[49.258,  4.031] },
-      { keys:['amsterdam'],                 display:'Amsterdam',         coords:[52.370,  4.895] },
-      { keys:['berlin'],                    display:'Berlin',            coords:[52.520, 13.405] },
-      { keys:['madrid'],                    display:'Madrid',            coords:[40.416, -3.703] },
-      { keys:['rome','roma'],               display:'Rome',              coords:[41.902, 12.496] },
-      { keys:['barcelone','barcelona'],     display:'Barcelone',         coords:[41.385,  2.173] },
-      { keys:['cologne','koln'],            display:'Cologne',           coords:[50.938,  6.960] },
-      { keys:['sarrebruck','saarbrucken'],  display:'Sarrebruck',        coords:[49.234,  6.996] },
-      { keys:['dudelange'],                 display:'Dudelange',         coords:[49.481,  6.087] },
-      { keys:['differdange'],               display:'Differdange',       coords:[49.524,  5.891] },
-      { keys:['trier','treve'],             display:'Trèves',            coords:[49.749,  6.637] },
-    ];
-
-    // Détection ville dans un titre : scan mot par mot contre CITY_TABLE
-    function detectCityInTitle(title) {
-      if (!title) return null;
-      var norm = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-      // 1. Après virgule : "KFC Belval, Esch-sur-Alzette"
-      var parts = title.split(',');
-      if (parts.length >= 2) {
-        var after = parts[parts.length - 1].trim();
-        var afterNorm = after.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
-        for (var i = 0; i < CITY_TABLE.length; i++) {
-          if (CITY_TABLE[i].keys.some(function(k) { return afterNorm === k || afterNorm.includes(k); })) {
-            return CITY_TABLE[i];
-          }
-        }
-      }
-      // 2. Scan de tous les mots du titre contre la table
-      for (var i = 0; i < CITY_TABLE.length; i++) {
-        var entry = CITY_TABLE[i];
-        if (entry.keys.some(function(k) { return norm.includes(k); })) {
-          return entry;
-        }
-      }
-      return null;
-    }
-
-    // Construire les clusters par rayon 80km
-    // Priorité : coords stockées → parsing titre → "Autres"
-    var clusters = [];
-    favs.forEach(function(f) {
-      var coords = null;
-      var clusterName = 'Autres';
-
-      // 1. Coords GPS stockées au moment du cœur
-      var _fLat = parseFloat(f.lat), _fLng = parseFloat(f.lng);
-      if (!isNaN(_fLat) && !isNaN(_fLng) && _fLat !== 0 && _fLng !== 0 && Math.abs(_fLat) > 0.01 && Math.abs(_fLng) > 0.01) {
-        coords = [_fLat, _fLng];
-        // Trouver la ville la plus proche dans CITY_TABLE
-        var bestDist = 999, bestEntry = null;
-        CITY_TABLE.forEach(function(e) {
-          var d = haversineKm(coords, e.coords);
-          if (d < bestDist) { bestDist = d; bestEntry = e; }
-        });
-        clusterName = (bestDist < 80 && bestEntry) ? bestEntry.display : (f.city || 'Autres');
-      }
-      // 2. Fallback : parsing du titre
-      else {
-        var cityEntry = detectCityInTitle(f.activity_title);
-        if (cityEntry) { coords = cityEntry.coords; clusterName = cityEntry.display; }
-        else if (f.city) { clusterName = f.city; }
-      }
-
-      var placed = false;
-      for (var i = 0; i < clusters.length; i++) {
-        var c = clusters[i];
-        if (!c.center && !coords) { c.items.push(f); placed = true; break; }
-        var dist = (c.center && coords) ? haversineKm(c.center, coords) : 999;
-        if (dist <= 80) { c.items.push(f); placed = true; break; }
-      }
-      if (!placed) clusters.push({ name: clusterName, center: coords, items: [f] });
-    });
+    // ── Clustering via fonction globale clusterFavs ──
+    var clusters = clusterFavs(favs);
 
     clusters.forEach(function(cluster) {
       html += '<div style="margin-bottom:4px">'
