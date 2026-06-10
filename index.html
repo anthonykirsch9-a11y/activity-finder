@@ -6020,6 +6020,9 @@ function updateProgramModalLang() {
   // Hint dates
   const hintEl = document.getElementById('wp-hint-dates');
   if (hintEl) hintEl.innerHTML = t.hintDates || 'Choisis une date en haut<br>puis clique <strong>Générer</strong>';
+  const hintEl2 = document.getElementById('wp-hint-dates2');
+  const _hint2 = {fr:'Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong>',en:'Adjust dates above if needed,<br>then click <strong>Generate</strong>',es:'Ajusta las fechas arriba si es necesario,<br>luego haz clic en <strong>Generar</strong>',de:'Passe die Daten oben an,<br>dann klicke auf <strong>Generieren</strong>',it:'Regola le date sopra se necessario,<br>poi clicca su <strong>Genera</strong>',pt:'Ajusta as datas acima se necessário,<br>depois clica em <strong>Gerar</strong>'};
+  if (hintEl2) hintEl2.innerHTML = _hint2[lang] || _hint2.fr;
 }
 
 function openWeekendProgram() {
@@ -6039,7 +6042,7 @@ function openWeekendProgram() {
       <div style="text-align:center;padding:30px 20px">
         <div style="font-size:40px;margin-bottom:10px">🗓</div>
         <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:6px">${favs.length} ${apt().favsWord||'favori'}${favs.length>1?'s':''}</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6">Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong></div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6" id="wp-hint-dates2">Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong></div>
       </div>`;
   }
 }
@@ -6256,7 +6259,8 @@ function populateWpRegions() {
   if (!sel) return;
   var favs = localLoad('favorites') || [];
   var clusters = clusterFavs(favs);
-  sel.innerHTML = '<option value="all">🌍 Tous mes favoris (' + favs.length + ')</option>';
+  const _allFavsLabel = {fr:'🌍 Tous mes favoris',en:'🌍 All my favorites',es:'🌍 Todos mis favoritos',de:'🌍 Alle Favoriten',it:'🌍 Tutti i preferiti',pt:'🌍 Todos os favoritos'};
+  sel.innerHTML = '<option value="all">' + (_allFavsLabel[lang]||'🌍 Tous mes favoris') + ' (' + favs.length + ')</option>';
   clusters
     .filter(function(c){ return c.name !== 'Autres'; })
     .sort(function(a,b){ return b.items.length - a.items.length; })
