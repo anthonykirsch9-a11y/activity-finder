@@ -930,6 +930,46 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 /* Tabs */
 .view-tab.active { font-weight: 700 !important; }
 
+.rc-viator-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, #589442, #3d6b2e);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: 'DM Sans', sans-serif;
+  border: none;
+}
+.rc-viator-btn:hover { opacity: 0.85; }
+.rc-viator-btn.viator-btn-pending {
+  background: linear-gradient(135deg, #7aaa64, #5a8c49);
+  opacity: 0.75;
+  position: relative;
+  overflow: hidden;
+}
+.rc-viator-btn.viator-btn-pending::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  animation: viator-shimmer 1.4s infinite;
+}
+@keyframes viator-shimmer {
+  0%   { left: -60%; }
+  100% { left: 120%; }
+}
+.rc-viator-btn.viator-btn-ready {
+  background: linear-gradient(135deg, #589442, #3d6b2e);
+  opacity: 1;
+}
 .rc-pro-action-btn {
   width: 38px; height: 38px; border-radius: 10px;
   border: 1.5px solid var(--border); background: var(--bg);
@@ -1636,8 +1676,129 @@ const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 const STRIPE_PUB_KEY   = 'COLLE_TON_STRIPE_PUBLISHABLE_KEY_ICI';
 const STRIPE_PRICE_ID  = 'COLLE_TON_STRIPE_PRICE_ID_ICI';
 const FREE_LIMIT       = 3;
+const VIATOR_PID = 'P00305178';
+const VIATOR_MCID = '42383';
+const VIATOR_API_KEY = 'cdb9e96a-3302-4cea-b26b-dc7e2cc6a18e';
+const VIATOR_TYPES = ['Culture','Divertissement','Sport','Nature','Entertainment','Cultural','Leisure'];
+const VIATOR_CITIES = ['Londres','London','Paris','Rome','Roma','Barcelone','Barcelona','Amsterdam','Berlin','Madrid','Bruxelles','Brussels','Vienne','Vienna','Prague','Lisbonne','Lisbon','Dublin','Édimbourg','Edinburgh','Florence','Venise','Venice','Strasbourg','Lyon','Marseille','Nice','Bruges','Anvers','Antwerp','Cologne','Munich'];
+
 const PEXELS_KEY       = 'OjOWZuQpato1V2fXEnpR4jIWnH4qsUmgxMImacQcY4vj0ZJNAAnPsolg';
 const _pexelsCache     = {};
+
+// ══════════════════════════════════════════════════════════════
+// VIATOR API — enrichissement des boutons après rendu des cartes
+// Stratégie : appel direct → fallback Supabase proxy si CORS
+// ══════════════════════════════════════════════════════════════
+const _viatorCache = {};
+
+async function _viatorFetchDirect(title, city) {
+  const resp = await fetch('https://api.viator.com/partner/search/freetext', {
+    method: 'POST',
+    headers: {
+      'Accept-Language': 'fr-FR',
+      'Accept': 'application/json;version=2.0',
+      'exp-api-key': VIATOR_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      searchTerm: title + ' ' + city,
+      searchTypes: [{ searchType: 'PRODUCTS', pagination: { offset: 0, limit: 3 } }],
+      currency: 'EUR'
+    })
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  return await resp.json();
+}
+
+async function _viatorFetchProxy(title, city) {
+  const resp = await fetch(SUPABASE_URL + '/functions/v1/viator-proxy', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + SUPABASE_ANON
+    },
+    body: JSON.stringify({ title, city })
+  });
+  if (!resp.ok) throw new Error('Proxy HTTP ' + resp.status);
+  return await resp.json();
+}
+
+async function getViatorProductUrl(title, city) {
+  const cacheKey = (title + '|' + city).toLowerCase().substring(0, 80);
+  if (_viatorCache[cacheKey]) return _viatorCache[cacheKey];
+
+  let data = null;
+  try {
+    data = await _viatorFetchDirect(title, city);
+  } catch(e) {
+    console.warn('[Viator] Direct call failed, trying proxy:', e.message);
+    try {
+      data = await _viatorFetchProxy(title, city);
+    } catch(e2) {
+      console.warn('[Viator] Proxy also failed:', e2.message);
+      return null;
+    }
+  }
+
+  let productUrl = null;
+  try {
+    const results = (data && data.products && data.products.results)
+      || (data && data.data && data.data.products && data.data.products.results)
+      || [];
+    if (results.length > 0) {
+      const product = results[0];
+      if (product.productUrl) {
+        productUrl = product.productUrl;
+      } else if (product.webURL) {
+        productUrl = product.webURL;
+      } else if (product.productCode) {
+        productUrl = 'https://www.viator.com/tours/' + product.productCode;
+      }
+      if (productUrl && productUrl.indexOf('pid=') === -1) {
+        const sep = productUrl.indexOf('?') !== -1 ? '&' : '?';
+        productUrl += sep + 'pid=' + VIATOR_PID + '&mcid=' + VIATOR_MCID + '&medium=link&campaign=weekio';
+      }
+      console.log('[Viator] Found product:', product.title || '?', '→', productUrl);
+    } else {
+      console.log('[Viator] No results for:', title, city);
+    }
+  } catch(e) {
+    console.warn('[Viator] Parse error:', e.message);
+  }
+
+  _viatorCache[cacheKey] = productUrl;
+  return productUrl;
+}
+
+async function enrichViatorButtons() {
+  const buttons = document.querySelectorAll('a.viator-btn-pending');
+  if (!buttons.length) return;
+  console.log('[Viator] Enriching ' + buttons.length + ' button(s)...');
+
+  const batchSize = 3;
+  const arr = Array.from(buttons);
+  for (let i = 0; i < arr.length; i += batchSize) {
+    const batch = arr.slice(i, i + batchSize);
+    await Promise.all(batch.map(async function(btn) {
+      const title = btn.dataset.viatorTitle || '';
+      const city  = btn.dataset.viatorCity  || '';
+      if (!title) return;
+      try {
+        const url = await getViatorProductUrl(title, city);
+        if (url) {
+          btn.href = url;
+          btn.classList.remove('viator-btn-pending');
+          btn.classList.add('viator-btn-ready');
+          console.log('[Viator] OK "' + title + '" → ' + url);
+        }
+      } catch(e) {
+        console.warn('[Viator] enrichViatorButtons error:', e);
+      }
+    }));
+    if (i + batchSize < arr.length) await new Promise(function(r){ setTimeout(r, 300); });
+  }
+}
+
 
 // ══════════════════════════════════════════════════════════════
 // CACHE RÉSULTATS CLAUDE — localStorage 2h, évite appels répétés
@@ -3863,6 +4024,8 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
       }
     }, idx * 600);
   });
+  // Enrichir les boutons Viator après que toutes les cartes sont rendues
+  setTimeout(() => enrichViatorButtons(), activities.length * 600 + 200);
 }
 
 
@@ -3926,6 +4089,14 @@ function buildActivityCard(a, idx, location) {
         <a class="rc-gmaps" href="https://wa.me/?text=${encodeURIComponent((a.titre||'') + ' — ' + (a.description||'').substring(0,80) + '… 📍 ' + (location||'') + '\n\nVia Weekio 🟢 https://weekio.app')}" target="_blank" rel="noopener" style="background:#25D366;color:#fff;border-color:#25D366;padding:9px 12px">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>${{fr:'Partager',en:'Share',es:'Compartir',de:'Teilen',it:'Condividi',pt:'Partilhar'}[lang]||'Partager'}
         </a>
+        ${((['Culture','Divertissement','Sport','Nature'].includes(a.type)) && (location||'').match(/london|londres|paris|rome|barcelona|barcelone|amsterdam|berlin|madrid|bruxelles|strasbourg|lyon|marseille|nice|vienna|vienne|prague|lisbonne|lisbon|dublin|florence|venise|venice|bruges|cologne|munich/i) || (a.titre||'').match(/tower|bridge|museum|musée|louvre|eiffel|palace|château|castle|cathedral|cathédrale|abbey|galerie|gallery|monument|national|royal|historic|imperial/i)) ? `<a class="rc-viator-btn viator-btn-pending"
+          href="https://www.viator.com/search?q=${encodeURIComponent((location||'').split(',')[0].trim())}&pid=P00305178&mcid=42383&medium=link&campaign=weekio"
+          data-viator-title="${(a.titre||'').replace(/"/g,'').replace(/[–—]/g,'-').substring(0,80)}"
+          data-viator-city="${(location||'').split(',')[0].trim().substring(0,40)}"
+          target="_blank" rel="noopener">
+          🎟 ${{fr:'Réserver',en:'Book',es:'Reservar',de:'Buchen',it:'Prenota',pt:'Reservar'}[lang]||'Réserver'}
+        </a>` : ''}
+        
         <button class="rc-pro-action-btn ${isFav?'active':''}"
           data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
           data-website="${websiteUrl||''}" data-photo="${photoUrl(a.type,a.titre)||''}"
@@ -4790,6 +4961,13 @@ function renderResults(activities, location, radius, budget, group, ages) {
           ${websiteUrl ? `<a class="rc-gmaps" href="${websiteUrl}" target="_blank" rel="noopener" style="background:var(--primary-light);color:var(--primary);border-color:var(--primary)">
             🌐 ${t.seeOfficialSite||'Site'}
           </a>` : ''}
+          ${((['Culture','Divertissement','Sport','Nature'].includes(a.type)) && (location||'').match(/london|londres|paris|rome|barcelona|barcelone|amsterdam|berlin|madrid|bruxelles|strasbourg|lyon|marseille|nice|vienna|vienne|prague|lisbonne|lisbon|dublin|florence|venise|venice|bruges|cologne|munich/i) || (a.titre||'').match(/tower|bridge|museum|musée|louvre|eiffel|palace|château|castle|cathedral|cathédrale|abbey|galerie|gallery|monument|national|royal|historic|imperial/i)) ? `<a class="rc-viator-btn viator-btn-pending"
+            href="https://www.viator.com/search?q=${encodeURIComponent((location||'').split(',')[0].trim())}&pid=P00305178&mcid=42383&medium=link&campaign=weekio"
+            data-viator-title="${(a.titre||'').replace(/"/g,'').replace(/[–—]/g,'-').substring(0,80)}"
+            data-viator-city="${(location||'').split(',')[0].trim().substring(0,40)}"
+            target="_blank" rel="noopener">
+            🎟 ${{fr:'Réserver',en:'Book',es:'Reservar',de:'Buchen',it:'Prenota',pt:'Reservar'}[lang]||'Réserver'}
+          </a>` : ''}
           <!-- Favoris et note — Pro uniquement -->
           ${userPlan === 'pro' ? `
           <button class="rc-pro-action-btn ${isFav?'active':''}"
@@ -4834,6 +5012,8 @@ function renderResults(activities, location, radius, budget, group, ages) {
     <div class="rc-grid">${cards}</div>
     
     <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
+  // Enrichir les boutons Viator après rendu
+  setTimeout(() => enrichViatorButtons(), 100);
 }
 
 // ── Init Supabase (désactivé si clés non configurées) ──
