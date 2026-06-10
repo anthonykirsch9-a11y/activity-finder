@@ -6042,7 +6042,7 @@ function openWeekendProgram() {
       <div style="text-align:center;padding:30px 20px">
         <div style="font-size:40px;margin-bottom:10px">🗓</div>
         <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:6px">${favs.length} ${apt().favsWord||'favori'}${favs.length>1?'s':''}</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6" id="wp-hint-dates2">Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong></div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">${({'fr':'Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong>','en':'Adjust dates above if needed,<br>then click <strong>Generate</strong>','es':'Ajusta las fechas arriba si es necesario,<br>luego haz clic en <strong>Generar</strong>','de':'Passe die Daten oben an,<br>dann klicke auf <strong>Generieren</strong>','it':'Regola le date sopra se necessario,<br>poi clicca su <strong>Genera</strong>','pt':'Ajusta as datas acima se necessário,<br>depois clica em <strong>Gerar</strong>'}[lang]||'Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong>')}</div>
       </div>`;
   }
 }
