@@ -1527,17 +1527,17 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
       <!-- Ambiance -->
       <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)" id="wp-lbl-ambiance">Ambiance</div>
       <div class="wp-ambiance-row" id="wp-ambiance-row">
-        <button class="wp-ambiance-btn active" data-ambiance="equilibre" onclick="selectWpAmbiance(this)">⚖️ Équilibré</button>
-        <button class="wp-ambiance-btn" data-ambiance="tranquille" onclick="selectWpAmbiance(this)">🌿 Tranquille</button>
-        <button class="wp-ambiance-btn" data-ambiance="sportif" onclick="selectWpAmbiance(this)">⚡ Sportif</button>
-        <button class="wp-ambiance-btn" data-ambiance="culturel" onclick="selectWpAmbiance(this)">🏛️ Culturel</button>
-        <button class="wp-ambiance-btn" data-ambiance="festif" onclick="selectWpAmbiance(this)">🎉 Festif</button>
+        <button class="wp-ambiance-btn active" data-ambiance="equilibre" id="wp-amb-equilibre" onclick="selectWpAmbiance(this)">⚖️ Équilibré</button>
+        <button class="wp-ambiance-btn" data-ambiance="tranquille" id="wp-amb-tranquille" onclick="selectWpAmbiance(this)">🌿 Tranquille</button>
+        <button class="wp-ambiance-btn" data-ambiance="sportif" id="wp-amb-sportif" onclick="selectWpAmbiance(this)">⚡ Sportif</button>
+        <button class="wp-ambiance-btn" data-ambiance="culturel" id="wp-amb-culturel" onclick="selectWpAmbiance(this)">🏛️ Culturel</button>
+        <button class="wp-ambiance-btn" data-ambiance="festif" id="wp-amb-festif" onclick="selectWpAmbiance(this)">🎉 Festif</button>
       </div>
 
       <!-- Région des favoris -->
       <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)" id="wp-lbl-zone">Favoris de quelle zone ?</div>
       <select class="wp-region-select" id="wp-region-select">
-        <option value="all">🌍 Tous mes favoris</option>
+        <option value="all" id="wp-opt-all">🌍 Tous mes favoris</option>
       </select>
 
       <!-- Dates -->
@@ -1571,7 +1571,7 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
     <div class="weekend-program-body" id="weekend-program-body">
       <div style="text-align:center;padding:30px 20px">
         <div style="font-size:40px;margin-bottom:10px">🗓</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6">Choisis une date en haut<br>puis clique <strong>Générer</strong></div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6" id="wp-hint-dates">Choisis une date en haut<br>puis clique <strong>Générer</strong></div>
       </div>
     </div>
   </div>
@@ -5382,6 +5382,7 @@ const AP_TRANSLATIONS = {
       myPrograms:'🗓 Mes programmes',
       albumSouvenirs:'📸 Album Souvenirs',
       storyCount:'souvenir',
+      ambianceLabels:{equilibre:'⚖️ Équilibré',tranquille:'🌿 Tranquille',sportif:'⚡ Sportif',culturel:'🏛️ Culturel',festif:'🎉 Festif'},hintDates:'Choisis une date en haut<br>puis clique <strong>Générer</strong>',favsWord:'favori',
       dayLabels:{lundi:'Lundi',mardi:'Mardi',mercredi:'Mercredi',jeudi:'Jeudi',vendredi:'Vendredi',samedi:'Samedi',dimanche:'Dimanche',journee:'Journée'},stepsFree:'🆓 Gratuit',stepsLabel:'étapes',
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté', avatarTitle:'Choisis ton avatar', avatarUpload:'Utiliser ma propre photo', avatarSave:'Valider',
@@ -5435,6 +5436,7 @@ const AP_TRANSLATIONS = {
       myPrograms:'🗓 My programmes',
       albumSouvenirs:'📸 Memory Album',
       storyCount:'memory',
+      ambianceLabels:{equilibre:'⚖️ Balanced',tranquille:'🌿 Quiet',sportif:'⚡ Active',culturel:'🏛️ Cultural',festif:'🎉 Festive'},hintDates:'Choose a date above<br>then click <strong>Generate</strong>',favsWord:'favorite',
       dayLabels:{lundi:'Monday',mardi:'Tuesday',mercredi:'Wednesday',jeudi:'Thursday',vendredi:'Friday',samedi:'Saturday',dimanche:'Sunday',journee:'Day'},stepsFree:'🆓 Free',stepsLabel:'steps',
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected', avatarTitle:'Choose your avatar', avatarUpload:'Use my own photo', avatarSave:'Save',
@@ -5488,6 +5490,7 @@ const AP_TRANSLATIONS = {
       myPrograms:'🗓 Mis programas',
       albumSouvenirs:'📸 Álbum de recuerdos',
       storyCount:'recuerdo',
+      ambianceLabels:{equilibre:'⚖️ Equilibrado',tranquille:'🌿 Tranquilo',sportif:'⚡ Deportivo',culturel:'🏛️ Cultural',festif:'🎉 Festivo'},hintDates:'Elige una fecha arriba<br>luego haz clic en <strong>Generar</strong>',favsWord:'favorito',
       dayLabels:{lundi:'Lunes',mardi:'Martes',mercredi:'Miércoles',jeudi:'Jueves',vendredi:'Viernes',samedi:'Sábado',dimanche:'Domingo',journee:'Día'},stepsFree:'🆓 Gratis',stepsLabel:'pasos',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado', avatarTitle:'Elige tu avatar', avatarUpload:'Usar mi propia foto', avatarSave:'Guardar',
@@ -5541,6 +5544,7 @@ const AP_TRANSLATIONS = {
       myPrograms:'🗓 Meine Programme',
       albumSouvenirs:'📸 Erinnerungsalbum',
       storyCount:'Erinnerung',
+      ambianceLabels:{equilibre:'⚖️ Ausgewogen',tranquille:'🌿 Ruhig',sportif:'⚡ Sportlich',culturel:'🏛️ Kulturell',festif:'🎉 Festlich'},hintDates:'Wähle ein Datum oben<br>dann klicke auf <strong>Generieren</strong>',favsWord:'Favorit',
       dayLabels:{lundi:'Montag',mardi:'Dienstag',mercredi:'Mittwoch',jeudi:'Donnerstag',vendredi:'Freitag',samedi:'Samstag',dimanche:'Sonntag',journee:'Tag'},stepsFree:'🆓 Kostenlos',stepsLabel:'Schritte',
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet', avatarTitle:'Wähle deinen Avatar', avatarUpload:'Eigenes Foto verwenden', avatarSave:'Speichern',
@@ -5594,6 +5598,7 @@ const AP_TRANSLATIONS = {
       myPrograms:'🗓 I miei programmi',
       albumSouvenirs:'📸 Album ricordi',
       storyCount:'ricordo',
+      ambianceLabels:{equilibre:'⚖️ Equilibrato',tranquille:'🌿 Tranquillo',sportif:'⚡ Sportivo',culturel:'🏛️ Culturale',festif:'🎉 Festoso'},hintDates:'Scegli una data sopra<br>poi clicca su <strong>Genera</strong>',favsWord:'preferito',
       dayLabels:{lundi:'Lunedì',mardi:'Martedì',mercredi:'Mercoledì',jeudi:'Giovedì',vendredi:'Venerdì',samedi:'Sabato',dimanche:'Domenica',journee:'Giorno'},stepsFree:'🆓 Gratuito',stepsLabel:'tappe',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connesso', avatarTitle:'Scegli il tuo avatar', avatarUpload:'Usa la mia foto', avatarSave:'Salva',
@@ -5647,6 +5652,7 @@ const AP_TRANSLATIONS = {
       myPrograms:'🗓 Os meus programas',
       albumSouvenirs:'📸 Álbum de memórias',
       storyCount:'memória',
+      ambianceLabels:{equilibre:'⚖️ Equilibrado',tranquille:'🌿 Tranquilo',sportif:'⚡ Desportivo',culturel:'🏛️ Cultural',festif:'🎉 Festivo'},hintDates:'Escolhe uma data em cima<br>depois clica em <strong>Gerar</strong>',favsWord:'favorito',
       dayLabels:{lundi:'Segunda',mardi:'Terça',mercredi:'Quarta',jeudi:'Quinta',vendredi:'Sexta',samedi:'Sábado',dimanche:'Domingo',journee:'Dia'},stepsFree:'🆓 Grátis',stepsLabel:'etapas',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Não conectado', avatarTitle:'Escolhe o teu avatar', avatarUpload:'Usar a minha foto', avatarSave:'Guardar',
@@ -5999,6 +6005,21 @@ function updateProgramModalLang() {
   if (btn_gen) btn_gen.textContent = t.programGenerate || '✨ Générer mon programme';
   const ph = document.getElementById('wp-constraints');
   if (ph) ph.placeholder = t.programConstraints || 'Contraintes (ex: rien le dimanche matin…)';
+  // Boutons ambiance
+  const al = t.ambianceLabels || {};
+  ['equilibre','tranquille','sportif','culturel','festif'].forEach(a => {
+    const b = document.getElementById('wp-amb-' + a);
+    if (b && al[a]) b.textContent = al[a];
+  });
+  // "Tous mes favoris" dans le dropdown
+  const optAll = document.getElementById('wp-opt-all');
+  if (optAll) {
+    const allLabel = {fr:'🌍 Tous mes favoris',en:'🌍 All my favorites',es:'🌍 Todos mis favoritos',de:'🌍 Alle Favoriten',it:'🌍 Tutti i preferiti',pt:'🌍 Todos os favoritos'};
+    optAll.textContent = allLabel[lang] || '🌍 Tous mes favoris';
+  }
+  // Hint dates
+  const hintEl = document.getElementById('wp-hint-dates');
+  if (hintEl) hintEl.innerHTML = t.hintDates || 'Choisis une date en haut<br>puis clique <strong>Générer</strong>';
 }
 
 function openWeekendProgram() {
@@ -6017,7 +6038,7 @@ function openWeekendProgram() {
     body.innerHTML = `
       <div style="text-align:center;padding:30px 20px">
         <div style="font-size:40px;margin-bottom:10px">🗓</div>
-        <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:6px">${favs.length} favori${favs.length>1?'s':''}</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:6px">${favs.length} ${apt().favsWord||'favori'}${favs.length>1?'s':''}</div>
         <div style="font-size:13px;color:var(--muted);line-height:1.6">Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong></div>
       </div>`;
   }
@@ -6288,7 +6309,14 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   const days = dayNames[lang] || dayNames.fr;
   const durMode = dur || _programDuration || 'weekend';
 
-  const ambianceBadge = { equilibre:'⚖️ Équilibré', tranquille:'🌿 Tranquille', sportif:'⚡ Sportif', culturel:'🏛️ Culturel', festif:'🎉 Festif' };
+  const _al = apt().ambianceLabels || {};
+  const ambianceBadge = {
+    equilibre: _al.equilibre || '⚖️ Équilibré',
+    tranquille: _al.tranquille || '🌿 Tranquille',
+    sportif: _al.sportif || '⚡ Sportif',
+    culturel: _al.culturel || '🏛️ Culturel',
+    festif: _al.festif || '🎉 Festif'
+  };
   const badge = ambianceBadge[ambiance] || '✨ Programme';
 
   // Mettre à jour la photo de couverture
