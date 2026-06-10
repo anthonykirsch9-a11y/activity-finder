@@ -1544,19 +1544,19 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
       <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)" id="wp-lbl-dates">Dates</div>
       <div class="wp-date-row">
         <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:rgba(255,255,255,0.5)">Du</label>
+          <label id="wp-lbl-du" style="font-size:10px;color:rgba(255,255,255,0.5)">Du</label>
           <input type="date" id="wp-date-from" class="wp-date-input" style="width:130px;color-scheme:dark">
         </div>
         <div style="color:rgba(255,255,255,0.4);font-size:14px;margin-top:16px">→</div>
         <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:rgba(255,255,255,0.5)">Au</label>
+          <label id="wp-lbl-au" style="font-size:10px;color:rgba(255,255,255,0.5)">Au</label>
           <input type="date" id="wp-date-to" class="wp-date-input" style="width:130px;color-scheme:dark">
         </div>
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-        <button class="wp-dur-btn" onclick="setWpDateShortcut('today')">Auj.</button>
-        <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')">Demain</button>
-        <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Ce week-end</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('today')" id="wp-btn-today">Auj.</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')" id="wp-btn-tomorrow">Demain</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')" id="wp-btn-weekend">Ce week-end</button>
       </div>
 
       <!-- Contraintes -->
@@ -5956,7 +5956,8 @@ function getWpDateLabel() {
   const fromVal = document.getElementById('wp-date-from')?.value || '';
   const toVal = document.getElementById('wp-date-to')?.value || '';
   if (!fromVal) return '';
-  const fmt = s => new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  const _locales = {fr:'fr-FR',en:'en-GB',es:'es-ES',de:'de-DE',it:'it-IT',pt:'pt-PT'};
+  const fmt = s => new Date(s + 'T12:00:00').toLocaleDateString(_locales[lang]||'fr-FR', { weekday:'long', day:'numeric', month:'long' });
   if (toVal && toVal !== fromVal) {
     const diff = Math.round((new Date(toVal) - new Date(fromVal)) / 86400000);
     _programDuration = diff >= 1 ? 'weekend' : 'journee';
@@ -5968,6 +5969,12 @@ function getWpDateLabel() {
 
 function updateProgramModalLang() {
   const t = apt();
+  const duLabels = {fr:'Du',en:'From',es:'Del',de:'Von',it:'Dal',pt:'De'};
+  const auLabels = {fr:'Au',en:'To',es:'Al',de:'Bis',it:'Al',pt:'Até'};
+  const todayLabels = {fr:'Auj.',en:'Today',es:'Hoy',de:'Heute',it:'Oggi',pt:'Hoje'};
+  const tomorrowLabels = {fr:'Demain',en:'Tomorrow',es:'Mañana',de:'Morgen',it:'Domani',pt:'Amanhã'};
+  const weekendLabels = {fr:'Ce week-end',en:'This weekend',es:'Este fin de semana',de:'Dieses Wochenende',it:'Questo fine settimana',pt:'Este fim de semana'};
+
   const el = document.getElementById('wp-modal-title');
   if (el) el.textContent = t.programTitle || '🗓 Mon programme';
   const sub = document.getElementById('wp-subtitle');
@@ -5978,6 +5985,16 @@ function updateProgramModalLang() {
   if (lbl_zone) lbl_zone.textContent = t.programZone || 'Favoris de quelle zone ?';
   const lbl_dates = document.getElementById('wp-lbl-dates');
   if (lbl_dates) lbl_dates.textContent = t.programDates || 'Dates';
+  const lbl_du = document.getElementById('wp-lbl-du');
+  if (lbl_du) lbl_du.textContent = duLabels[lang] || 'Du';
+  const lbl_au = document.getElementById('wp-lbl-au');
+  if (lbl_au) lbl_au.textContent = auLabels[lang] || 'Au';
+  const btn_today = document.getElementById('wp-btn-today');
+  if (btn_today) btn_today.textContent = todayLabels[lang] || 'Auj.';
+  const btn_tomorrow = document.getElementById('wp-btn-tomorrow');
+  if (btn_tomorrow) btn_tomorrow.textContent = tomorrowLabels[lang] || 'Demain';
+  const btn_weekend = document.getElementById('wp-btn-weekend');
+  if (btn_weekend) btn_weekend.textContent = weekendLabels[lang] || 'Ce week-end';
   const btn_gen = document.getElementById('wp-btn-generate');
   if (btn_gen) btn_gen.textContent = t.programGenerate || '✨ Générer mon programme';
   const ph = document.getElementById('wp-constraints');
@@ -6117,13 +6134,15 @@ async function generateWeekendProgram() {
   const prompt = langInstr + dateInstr + constraintInstr + '\nTu es un expert en organisation de sorties. Activités favorites:\n' + favDetails + '\n\nAMBIANCE SOUHAITÉE: ' + ambianceDesc[ambiance] + '\n\n' + durInstr + '\n\nRègles:\n- Respecte STRICTEMENT les contraintes\n- Adapte l\'ordre et le rythme à l\'ambiance choisie\n- Inclus emoji pertinent par activité\n- Note pratique courte et utile (réservation, tenue, horaire à confirmer…)\n- Types possibles: activite, repas, pause, transport\n\nRéponds UNIQUEMENT en JSON valide, structure exacte:\n' + jsonStructure;
 
   // ── Loader animé avec messages changeants ──
-  const loaderMsgs = [
-    '🗺️ Analyse de tes favoris…',
-    '🌤️ Récupération de la météo…',
-    '🧠 L\'IA compose ton itinéraire…',
-    '📍 Optimisation des trajets…',
-    '✨ Finalisation du programme…'
-  ];
+  const _loaderMsgsByLang = {
+    fr:['🗺️ Analyse de tes favoris…','🌤️ Récupération de la météo…','🧠 L\'IA compose ton itinéraire…','📍 Optimisation des trajets…','✨ Finalisation du programme…'],
+    en:['🗺️ Analysing your favorites…','🌤️ Fetching the weather…','🧠 AI is composing your itinerary…','📍 Optimising routes…','✨ Finalising the programme…'],
+    es:['🗺️ Analizando tus favoritos…','🌤️ Obteniendo el tiempo…','🧠 La IA compone tu itinerario…','📍 Optimizando rutas…','✨ Finalizando el programa…'],
+    de:['🗺️ Favoriten werden analysiert…','🌤️ Wetter wird geladen…','🧠 KI erstellt deine Route…','📍 Wege werden optimiert…','✨ Programm wird fertiggestellt…'],
+    it:['🗺️ Analisi dei preferiti…','🌤️ Recupero del meteo…','🧠 L\'IA compone il tuo itinerario…','📍 Ottimizzazione percorsi…','✨ Programma in fase finale…'],
+    pt:['🗺️ A analisar os teus favoritos…','🌤️ A obter o tempo…','🧠 A IA compõe o teu itinerário…','📍 A otimizar rotas…','✨ A finalizar o programa…']
+  };
+  const loaderMsgs = _loaderMsgsByLang[lang] || _loaderMsgsByLang.fr;
   let _loaderIdx = 0;
   body.innerHTML = '<div style="text-align:center;padding:40px 20px" id="wp-loader">'
     + '<div style="font-size:36px;margin-bottom:12px">✨</div>'
