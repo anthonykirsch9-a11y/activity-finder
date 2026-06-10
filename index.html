@@ -3325,9 +3325,7 @@ function applyProfile() {
     document.querySelectorAll('#group-type .pill').forEach(p => {
       p.classList.toggle('selected', p.dataset.val === profile.group);
     });
-    persons = [];
-    personCounter = 0;
-    syncAgesUI();
+    // Ne pas réinitialiser persons ici — les âges seront chargés juste après
   }
 
   // Budget
@@ -3349,14 +3347,22 @@ function applyProfile() {
     });
   }
 
-  // Âges — on ajoute les personnes puis on remplit les champs
+  // Âges — reset propre puis restauration
   if (profile.ages && profile.ages.length) {
+    persons = [];
+    personCounter = 0;
+    syncAgesUI();
     while (persons.length < profile.ages.length) addPerson();
     setTimeout(() => {
       document.querySelectorAll('.age-input').forEach((inp, i) => {
         if (profile.ages[i] !== undefined) inp.value = profile.ages[i];
       });
-    }, 200);
+    }, 300);
+  } else if (profile.group) {
+    // Pas d'âges sauvegardés — juste syncAgesUI pour le groupe
+    persons = [];
+    personCounter = 0;
+    syncAgesUI();
   }
 
   // Bouton save visible
