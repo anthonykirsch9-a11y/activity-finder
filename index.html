@@ -667,32 +667,85 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 @keyframes slideUp { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 
 /* ── Programme week-end ── */
-.weekend-program-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:25000; align-items:flex-start; justify-content:center; overflow-y:auto; padding:20px; backdrop-filter:blur(3px); }
+.weekend-program-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:25000; align-items:flex-start; justify-content:center; overflow-y:auto; padding:16px; backdrop-filter:blur(6px); }
 .weekend-program-modal.open { display:flex; }
-.weekend-program-card { background:var(--card); border-radius:20px; max-width:520px; width:100%; box-shadow:0 24px 80px rgba(0,0,0,0.4); overflow:hidden; margin:auto; }
-.weekend-program-header { background:linear-gradient(135deg,#3A5C38,#5C7A5A); padding:20px; display:flex; align-items:center; justify-content:space-between; }
-.weekend-program-body { padding:20px; max-height:70vh; overflow-y:auto; }
-.program-day { margin-bottom:20px; }
-.program-day-title { font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700; color:var(--text); margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid var(--primary); }
-.program-step { display:flex; gap:12px; margin-bottom:12px; align-items:flex-start; }
-.program-time { font-size:12px; font-weight:700; color:var(--primary); min-width:50px; padding-top:2px; }
-.program-step-content { flex:1; background:var(--bg); border-radius:10px; padding:10px 12px; }
-.program-step-title { font-size:14px; font-weight:600; color:var(--text); }
-.program-step-detail { font-size:12px; color:var(--muted); margin-top:3px; }
-.program-transport { font-size:11px; color:var(--primary); margin:4px 0 4px 62px; display:flex; align-items:center; gap:4px; }
-.program-loading { text-align:center; padding:30px; }
-.generate-program-btn { width:100%; padding:13px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:12px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
-.generate-program-btn:hover { opacity:0.9; transform:translateY(-1px); }
-.generate-program-btn:disabled { opacity:0.5; cursor:default; transform:none; }
-/* Boutons durée programme */
-.wp-dur-btn {
-  font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif;
-  padding:5px 12px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.4);
-  background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.8);
-  cursor:pointer; transition:all 0.15s; white-space:nowrap;
-}
+.weekend-program-card { background:var(--card); border-radius:24px; max-width:520px; width:100%; box-shadow:0 32px 100px rgba(0,0,0,0.5); overflow:hidden; margin:auto; }
+
+/* Header hero */
+.weekend-program-header { background:linear-gradient(160deg,#1e3a1c 0%,#3A5C38 60%,#5C7A5A 100%); padding:22px 20px 18px; position:relative; overflow:hidden; transition:background 0.4s; }
+.weekend-program-header::before { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.55) 100%); pointer-events:none; z-index:0; }
+.weekend-program-header > * { position:relative; z-index:1; }
+.wp-cover-photo { position:absolute; inset:0; background-size:cover; background-position:center; z-index:0; opacity:0; transition:opacity 0.5s; }
+.wp-cover-photo.loaded { opacity:1; }
+.wp-hero-title { font-family:'Fraunces',serif; font-size:1.35rem; font-weight:800; color:#fff; margin-bottom:4px; }
+.wp-hero-sub { font-size:12px; color:rgba(255,255,255,0.65); margin-bottom:14px; }
+.wp-hero-badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+.wp-hero-badge { font-size:11px; font-weight:600; padding:4px 10px; border-radius:99px; background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.25); }
+.wp-hero-badge.active { background:rgba(255,255,255,0.92); color:#3A5C38; border-color:transparent; }
+
+/* Ambiance selector */
+.wp-ambiance-row { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.wp-ambiance-btn { font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; padding:6px 13px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.35); background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.85); cursor:pointer; transition:all 0.15s; }
+.wp-ambiance-btn:hover { background:rgba(255,255,255,0.2); }
+.wp-ambiance-btn.active { background:rgba(255,255,255,0.92); color:#3A5C38; border-color:transparent; font-weight:700; }
+
+/* Date row */
+.wp-date-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.wp-date-input { width:76px; padding:6px 10px; border:1.5px solid rgba(255,255,255,0.35); border-radius:10px; background:rgba(255,255,255,0.12); color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; outline:none; text-align:center; }
+.wp-date-input::placeholder { color:rgba(255,255,255,0.4); }
+
+/* Contraintes */
+.wp-constraint-input { width:100%; padding:8px 12px; border:1.5px solid rgba(255,255,255,0.25); border-radius:10px; background:rgba(255,255,255,0.08); color:#fff; font-family:'DM Sans',sans-serif; font-size:12px; outline:none; margin-top:8px; resize:none; }
+.wp-constraint-input::placeholder { color:rgba(255,255,255,0.35); }
+
+/* Body */
+.weekend-program-body { padding:0; max-height:65vh; overflow-y:auto; }
+
+/* Day section */
+.program-day { margin-bottom:0; }
+.program-day-header { background:linear-gradient(90deg,var(--primary),transparent); padding:12px 20px 10px; display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:2; backdrop-filter:blur(8px); }
+.program-day-title { font-family:'Fraunces',serif; font-size:1rem; font-weight:800; color:#fff; letter-spacing:.02em; }
+.program-day-meta { font-size:11px; color:rgba(255,255,255,0.7); margin-left:auto; }
+
+/* Timeline */
+.program-timeline { padding:16px 20px; position:relative; }
+.program-timeline::before { content:''; position:absolute; left:36px; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,var(--primary),transparent); opacity:.25; }
+
+.program-step { display:flex; gap:0; margin-bottom:4px; align-items:stretch; }
+.program-step-left { display:flex; flex-direction:column; align-items:center; width:56px; flex-shrink:0; padding-top:4px; }
+.program-time { font-size:11px; font-weight:800; color:var(--primary); letter-spacing:.03em; text-align:center; }
+.program-dot { width:10px; height:10px; border-radius:50%; background:var(--primary); margin:4px 0; border:2px solid var(--card); box-shadow:0 0 0 2px var(--primary); flex-shrink:0; }
+.program-dot.repas { background:#C4714A; box-shadow:0 0 0 2px #C4714A; }
+.program-dot.pause { background:#888; box-shadow:0 0 0 2px #888; }
+.program-step-content { flex:1; background:var(--bg); border-radius:14px; padding:12px 14px; margin-bottom:8px; border:1px solid var(--border); position:relative; overflow:hidden; transition:transform 0.15s; }
+.program-step-content:hover { transform:translateX(2px); }
+.program-step-photo { position:absolute; right:0; top:0; bottom:0; width:70px; background-size:cover; background-position:center; opacity:0.18; border-radius:0 14px 14px 0; }
+.program-step-title { font-size:13px; font-weight:700; color:var(--text); padding-right:60px; }
+.program-step-detail { font-size:11px; color:var(--muted); margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; }
+.program-step-chip { background:var(--primary-light); color:var(--primary); padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600; }
+.program-step-chip.orange { background:#FDF0EA; color:#C4714A; }
+
+/* Transport capsule */
+.program-transport { margin:0 20px 4px 56px; display:flex; align-items:center; gap:6px; }
+.program-transport-pill { font-size:10px; font-weight:600; color:var(--muted); background:var(--bg2); border:1px solid var(--border); border-radius:99px; padding:3px 10px; display:flex; align-items:center; gap:4px; }
+
+/* Boutons */
+.wp-generate-btn { width:100%; padding:14px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:14px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.wp-generate-btn:hover { opacity:0.9; transform:translateY(-1px); box-shadow:0 8px 24px rgba(196,113,74,0.4); }
+.wp-regen-btn { width:100%; padding:11px; background:transparent; color:var(--primary); border:2px solid var(--primary); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; cursor:pointer; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:6px; }
+.wp-regen-btn:hover { background:var(--primary-light); }
+.wp-share-btn { flex:1; padding:11px; background:var(--bg2); color:var(--text); border:1.5px solid var(--border); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+.program-actions { display:flex; gap:8px; padding:16px 20px 20px; }
+
+/* Région selector */
+.wp-region-select { width:100%; padding:7px 12px; border:1.5px solid rgba(255,255,255,0.3); border-radius:10px; background:rgba(255,255,255,0.1); color:#fff; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; outline:none; margin-top:8px; cursor:pointer; }
+.wp-region-select option { background:#3A5C38; color:#fff; }
+
+/* Boutons durée (compat) */
+.wp-dur-btn { font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; padding:5px 12px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.4); background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.8); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
 .wp-dur-btn:hover { background:rgba(255,255,255,0.25); color:#fff; }
-.wp-dur-btn.active { background:rgba(255,255,255,0.9); color:#3A5C38; border-color:transparent; font-weight:700; }
+.wp-dur-btn.active { background:rgba(255,255,255,0.92); color:#3A5C38; border-color:transparent; font-weight:700; }
+.generate-program-btn { width:100%; padding:13px; background:linear-gradient(135deg,#C4714A,#D4855C); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:12px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
 .beta-screen {
   display:none; position:fixed; inset:0;
   background:linear-gradient(160deg,#2E4A2C 0%,#4A7248 50%,#7A9E78 100%);
@@ -1461,39 +1514,59 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 <!-- ── PROGRAMME WEEK-END MODAL ── -->
 <div class="weekend-program-modal" id="weekend-program-modal">
   <div class="weekend-program-card">
-    <div class="weekend-program-header">
-      <div style="flex:1">
-        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:800;color:#fff" id="wp-title">🗓 Mon programme</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:6px" id="wp-subtitle">Basé sur tes favoris · Choisis tes dates et génère</div>
-        <!-- Sélecteur dates -->
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <label style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.05em">Du</label>
-            <input type="text" id="wp-date-from" placeholder="jj/mm" maxlength="5"
-              style="width:80px;padding:5px 10px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center"
-              oninput="formatDateInput(this)">
-          </div>
-          <div style="color:rgba(255,255,255,0.5);font-size:16px;margin-top:14px">→</div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <label style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.05em">Au (optionnel)</label>
-            <input type="text" id="wp-date-to" placeholder="jj/mm" maxlength="5"
-              style="width:80px;padding:5px 10px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center"
-              oninput="formatDateInput(this)">
-          </div>
-          <div style="margin-top:14px">
-            <button onclick="generateWeekendProgram()" class="wp-dur-btn" style="background:rgba(255,255,255,0.9);color:#3A5C38;border-color:transparent;font-weight:700;padding:6px 14px">
-              ✨ Générer
-            </button>
-          </div>
+    <div class="weekend-program-header" id="wp-header">
+      <div class="wp-cover-photo" id="wp-cover-photo"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div>
+          <div class="wp-hero-title">🗓 Mon programme</div>
+          <div class="wp-hero-sub" id="wp-subtitle">Basé sur tes favoris · Personnalise et génère</div>
         </div>
-        <!-- Raccourcis rapides -->
-        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="wp-shortcuts">
-          <button class="wp-dur-btn" onclick="setWpDateShortcut('today')">Auj.</button>
-          <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')">Demain</button>
-          <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Ce week-end</button>
+        <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0">×</button>
+      </div>
+
+      <!-- Ambiance -->
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Ambiance</div>
+      <div class="wp-ambiance-row" id="wp-ambiance-row">
+        <button class="wp-ambiance-btn active" data-ambiance="equilibre" onclick="selectWpAmbiance(this)">⚖️ Équilibré</button>
+        <button class="wp-ambiance-btn" data-ambiance="tranquille" onclick="selectWpAmbiance(this)">🌿 Tranquille</button>
+        <button class="wp-ambiance-btn" data-ambiance="sportif" onclick="selectWpAmbiance(this)">⚡ Sportif</button>
+        <button class="wp-ambiance-btn" data-ambiance="culturel" onclick="selectWpAmbiance(this)">🏛️ Culturel</button>
+        <button class="wp-ambiance-btn" data-ambiance="festif" onclick="selectWpAmbiance(this)">🎉 Festif</button>
+      </div>
+
+      <!-- Région des favoris -->
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Favoris de quelle zone ?</div>
+      <select class="wp-region-select" id="wp-region-select">
+        <option value="all">🌍 Tous mes favoris</option>
+      </select>
+
+      <!-- Dates -->
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Dates</div>
+      <div class="wp-date-row">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <label style="font-size:10px;color:rgba(255,255,255,0.5)">Du</label>
+          <input type="date" id="wp-date-from" class="wp-date-input" style="width:130px;color-scheme:dark">
+        </div>
+        <div style="color:rgba(255,255,255,0.4);font-size:14px;margin-top:16px">→</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <label style="font-size:10px;color:rgba(255,255,255,0.5)">Au</label>
+          <input type="date" id="wp-date-to" class="wp-date-input" style="width:130px;color-scheme:dark">
         </div>
       </div>
-      <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0;align-self:flex-start">×</button>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('today')">Auj.</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')">Demain</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Ce week-end</button>
+      </div>
+
+      <!-- Contraintes -->
+      <textarea class="wp-constraint-input" id="wp-constraints" rows="2"
+        placeholder="Contraintes (ex: rien le dimanche matin, budget serré le samedi, pas de voiture…)"></textarea>
+
+      <!-- Bouton générer -->
+      <button onclick="generateWeekendProgram()" class="wp-generate-btn" style="margin-top:12px">
+        ✨ Générer mon programme
+      </button>
     </div>
     <div class="weekend-program-body" id="weekend-program-body">
       <div style="text-align:center;padding:30px 20px">
@@ -1648,7 +1721,7 @@ const LANGS = {
     ephemExtra:`\n- Utilise le web search pour trouver 2-3 ÉVÉNEMENTS ÉPHÉMÈRES RÉELS et ACTUELS (brocante, marché, fête, festival, rassemblement, vide-greniers, expo…) près de la zone demandée cette semaine ou ce week-end. Pour chaque éphémère: mets l'adresse EXACTE ou la commune précise dans "infos_pratiques", et la date précise dans "frequence". "ephemere":true. Si aucun trouvé sur le web, propose un événement typique de saison avec lieu approximatif.`,
     noEphemExtra:'',
     nightExtra:`\n- Inclure 1 à 2 SORTIES NOCTURNES. RÈGLE STRICTE: bar branché avec NOM EXACT, club/discothèque, concert live, soirée, restaurant ouvert après 22h. JAMAIS zoo, musée, spa, karting. Utilise web search pour NOM EXACT et ADRESSE de vrais établissements. "nocturne":true OBLIGATOIRE.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1700,7 +1773,7 @@ const LANGS = {
     ephemExtra:`\n- Use web search to find 2-3 REAL and CURRENT ephemeral events (markets, fairs, festivals, rallies, car shows, food festivals…) near the requested area this week or weekend. For each ephemeral event: include the EXACT address or precise town in "infos_pratiques", and the real date in "frequence". "ephemere":true. If none found online, suggest a typical seasonal event with approximate location.`,
     noEphemExtra:'',
     nightExtra:`\n- Include 1-2 NIGHTLIFE options suited to the group. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Ephemeral only',
     onlyNight:'🌙 Nightlife only',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1752,7 +1825,7 @@ const LANGS = {
     ephemExtra:`\n- Usa la búsqueda web para encontrar 2-3 EVENTOS EFÍMEROS REALES y ACTUALES (mercadillos, ferias, fiestas, rallyes, festivales gastronómicos…) cerca de la zona solicitada esta semana o fin de semana. Para cada efímero: dirección EXACTA o municipio preciso en "infos_pratiques", fecha real en "frequence". "ephemere":true. Si no encuentras nada, propón un evento típico de temporada con ubicación aproximada.`,
     noEphemExtra:'',
     nightExtra:`\n- Incluir 1-2 opciones de vida nocturna. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Solo efímeros',
     onlyNight:'🌙 Solo nocturno',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1804,7 +1877,7 @@ const LANGS = {
     ephemExtra:`\n- Nutze die Websuche, um 2-3 ECHTE und AKTUELLE kurzfristige Events (Märkte, Messen, Feste, Oldtimertreffen, Foodfestivals…) in der Nähe der gesuchten Region diese Woche oder dieses Wochenende zu finden. Für jedes ephemere Event: GENAUE Adresse oder präziser Ort in "infos_pratiques", echtes Datum in "frequence". "ephemere":true. Falls nichts gefunden, typisches Saisonevent mit ungefährem Ort vorschlagen.`,
     noEphemExtra:'',
     nightExtra:`\n- 1-2 Nachtleben-Optionen. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Nur kurzfristige Events',
     onlyNight:'🌙 Nur Nachtleben',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1856,7 +1929,7 @@ const LANGS = {
     ephemExtra:`\n- Usa la ricerca web per trovare 2-3 EVENTI EFFIMERI REALI e ATTUALI (mercati, sagre, feste, raduni, festival gastronomici…) vicino alla zona richiesta questa settimana o weekend. Per ogni effimero: indirizzo ESATTO o comune preciso in "infos_pratiques", data reale in "frequence". "ephemere":true. Se non trovi nulla, proponi un evento tipico stagionale con luogo approssimativo.`,
     noEphemExtra:'',
     nightExtra:`\n- Includi 1-2 opzioni di vita notturna. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Solo effimeri',
     onlyNight:'🌙 Solo vita notturna',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -1908,7 +1981,7 @@ const LANGS = {
     ephemExtra:`\n- Usa a pesquisa web para encontrar 2-3 EVENTOS EFÉMEROS REAIS e ATUAIS (feiras, mercados, festas, concentrações, festivais gastronómicos…) perto da zona solicitada esta semana ou fim de semana. Para cada efémero: endereço EXATO ou localidade precisa em "infos_pratiques", data real em "frequence". "ephemere":true. Se não encontrares nada, propõe um evento típico da estação com localização aproximada.`,
     noEphemExtra:'',
     nightExtra:`\n- Incluir 1-2 opções de vida noturna. "nocturne":true.`,
-    noNightExtra:'',
+    noNightExtra:'\nINTERDIT: pas de sorties nocturnes. "nocturne":false pour toutes les activités.',
     onlyEphem:'🗓 Só efémeros',
     onlyNight:'🌙 Só vida noturna',
     promptFn:(group,agesStr,ageStr,budget,location,radius,moods,eph,night)=>
@@ -2921,7 +2994,7 @@ const PEXELS_DIRECT = {
   'moto':          'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'voiture':       'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   // Activités fixes
-  'chateau':       'https://images.pexels.com/photos/532826/pexels-photo-532826.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'chateau':       'https://images.pexels.com/photos/161901/pexels-photo-161901.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'museum':        'https://images.pexels.com/photos/1674049/pexels-photo-1674049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'randonnee':     'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'velo':          'https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
@@ -3843,6 +3916,7 @@ function buildActivityCard(a, idx, location) {
         <button class="rc-pro-action-btn ${isFav?'active':''}"
           data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
           data-website="${websiteUrl||''}" data-photo="${photoUrl(a.type,a.titre)||''}"
+          data-lat="${(a.lat && a.lat!==0) ? a.lat : (_lastSearchLat||'')}" data-lng="${(a.lng && a.lng!==0) ? a.lng : (_lastSearchLng||'')}" data-city="${encodeURIComponent(location||_lastSearchCity||'')}"
           title="Favoris">${isFav?'❤️':'🤍'}</button>
         <button class="rc-pro-action-btn"
           data-action="note" data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
@@ -4124,7 +4198,9 @@ async function runSearch(fromMap) {
 
     // Bug 5 fix: utiliser les variables d'état ephemOn / nightOn au lieu d'IDs inexistants
     const eph = ephemOn ? (t.ephemExtra || '\n- Inclure événements éphémères (marchés, brocantes, fêtes locales).') : (t.noEphemExtra || '');
-    const night = nightOn ? (t.nightExtra || '\n- Inclure sorties nocturnes.') : (t.noNightExtra || '');
+    const night = nightOn
+      ? (t.nightExtra || '\n- Inclure sorties nocturnes.')
+      : '\nINTERDIT ABSOLU: NE JAMAIS proposer de sorties nocturnes (bar, club, boîte, concert de nuit, soirée). "nocturne" doit être false pour TOUTES les activités.';
     const dateStr = getDateStr();
 
     // ── PARALLÉLISATION : Géocodage + Google Places simultanés ──
@@ -4132,6 +4208,10 @@ async function runSearch(fromMap) {
     let _ck = '';
     let searchLat = (fromMap && mapSearchCoords) ? mapSearchCoords.lat : null;
     let searchLng = (fromMap && mapSearchCoords) ? mapSearchCoords.lng : null;
+    // Sauvegarder immédiatement si coords déjà connues (fromMap)
+    if (searchLat && searchLng && Math.abs(searchLat) > 0.01) { _lastSearchLat = searchLat; _lastSearchLng = searchLng; _lastSearchCity = location; }
+    // Aussi réinitialiser si nouvelle ville
+    else { _lastSearchLat = null; _lastSearchLng = null; _lastSearchCity = location; }
     console.log('🚀 runSearch started, location:', location);
     try {
 
@@ -4147,6 +4227,8 @@ async function runSearch(fromMap) {
             searchLng = geoData.features[0].geometry.coordinates[0];
             searchLat = geoData.features[0].geometry.coordinates[1];
             _selectedCityCoords = { lat: searchLat, lng: searchLng };
+            // Sauvegarder pour les boutons favoris
+            if (Math.abs(searchLat) > 0.01) { _lastSearchLat = searchLat; _lastSearchLng = searchLng; _lastSearchCity = location; }
             console.log('✅ Geocoded:', searchLat, searchLng);
           }
         } catch(e) { console.error('❌ Geocoding error:', e.message); }
@@ -4154,6 +4236,7 @@ async function runSearch(fromMap) {
 
       // 🚀 Lancer le CDC dès que les coords sont connues — sans attendre Claude
       if (searchLat && searchLng) {
+        _lastSearchLat = searchLat; _lastSearchLng = searchLng; _lastSearchCity = location;
         fetchCoupDeCoeur(searchLat, searchLng, []).then(cdc => {
           if (cdc) renderCoupDeCoeurResult(cdc);
           else { const el = document.getElementById('cdc-card'); if(el) el.remove(); }
@@ -4192,9 +4275,12 @@ async function runSearch(fromMap) {
         const locForRules = fromMap && mapSearchCoords ? (mapSearchName||location) : location;
         const doneContext = getAlreadyDoneContext();
     // Historique 24h — ne plus revoir les mêmes activités (tous utilisateurs)
-    const seenTitles = getSeenTitles24h(location);
+    const seenTitles24h = getSeenTitles24h(location);
+    // Fusionner avec la mémoire session (plus fiable que localStorage sur Edge)
+    const allSeenSet = new Set([...seenTitles24h.map(t => t.toLowerCase()), ..._sessionSeenTitles]);
+    const seenTitles = [...allSeenSet];
     const seenContext = seenTitles.length > 0
-      ? '\n\nIMPORTANT — EXCLUSION ABSOLUE: Ces activités ont DÉJÀ été proposées à cet utilisateur dans les dernières 24h. Ne JAMAIS les reproposer ni proposer de variantes proches. Propose des activités COMPLÈTEMENT DIFFÉRENTES : ' + seenTitles.slice(0, 20).join(' / ')
+      ? '\n\nEXCLUSION ABSOLUE ET STRICTE — RÈGLE N°1: Les activités suivantes ont été proposées récemment. Il est FORMELLEMENT INTERDIT de les reproposer, de les paraphraser, ou de proposer un lieu similaire (même lieu différent nom, même type d\'activité dans la même ville). Propose des activités 100% différentes en type ET en lieu:\n' + seenTitles.slice(0, 30).map((t,i) => (i+1)+'. '+t).join('\n')
       : '';
         // Date du jour — toujours injectée pour éviter les dates passées
         const _today = new Date();
@@ -4205,7 +4291,7 @@ async function runSearch(fromMap) {
         const weatherHeader = weatherContext ? '🌤 METEO: ' + weatherContext.replace('\n- Météo: ','') + '\n' : '';
         const LANG_NAMES = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
         const langInstruction = `Réponds en ${LANG_NAMES[lang] || 'français'}.\n`;
-        const strictRules = "REGLES:1.Utilise les lieux certifiés fournis(lieu_certain:true).2.Pas de noms inventés(lieu_certain:false).3.GPS précis jamais 0.0.4.Pas de coords GPS dans description.5.ephemere:true SEULEMENT si date unique(brocante,fête locale,concert ponctuel).Casino/restaurant/musée/spa/bowling/karting/cinéma/bar=jamais ephemere:true.";
+        const strictRules = "REGLES:1.Utilise les lieux certifiés fournis(lieu_certain:true).2.Pas de noms inventés(lieu_certain:false).3.GPS précis jamais 0.0.4.Pas de coords GPS dans description.5.ephemere:true SEULEMENT si date unique(brocante,fête locale,concert ponctuel).Casino/restaurant/musée/spa/bowling/karting/cinéma/bar=jamais ephemere:true.6.QUOTA TYPES: maximum 1 activité Gastronomie sur 6. Maximum 1 activité Bien-être sur 6. VARIE les types: Sport, Culture, Divertissement, Nature obligatoirement représentés.";
 
         const varietyInstruction = ''; // variété gérée côté prompt
 
@@ -4226,6 +4312,8 @@ async function runSearch(fromMap) {
 
         // ── Pas de cache — chaque recherche doit être unique pour ce navigateur ──
         _ck = _mkCacheKey(location, group, budget, moodsForSearch, radius, onlyMode);
+        // Si on a déjà vu des activités en session, invalider le cache pour forcer de nouveaux résultats
+        if (_sessionSeenTitles.size > 0) _ck = _ck + '_' + Date.now();
 
         // Appel Claude via Supabase Edge Function — mode streaming
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
@@ -4313,8 +4401,20 @@ async function runSearch(fromMap) {
                 setTimeout(() => loadPhotosForResults([a]), 400);
               }
             });
-            const all = [...normalActs, ...specialActs];
+            let all = [...normalActs, ...specialActs];
+            // ── FILTRE ANTI-DOUBLON CAS 2 ──
+            const _seenNow2 = new Set([..._sessionSeenTitles, ...getSeenTitles24h(location).map(t=>t.toLowerCase())]);
+            if (_seenNow2.size > 0) {
+              all = all.filter(a => {
+                if (!a.titre) return true;
+                if (a.ephemere || a.nocturne) return true;
+                const tLow = a.titre.toLowerCase().trim();
+                if (_seenNow2.has(tLow)) return false;
+                return true;
+              });
+            }
             window._lastActivities = all;
+            all.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
             setTimeout(() => { if (map) placeActivityMarkers(all); else window._pendingMarkers = all; }, 500);
           }
 
@@ -4433,13 +4533,34 @@ async function runSearch(fromMap) {
     }
     if (!jsonMatch) throw new Error('Pas de JSON dans la reponse');
 
-    const activities = JSON.parse(jsonMatch[0]).slice(0, 6);
+    let activities = JSON.parse(jsonMatch[0]).slice(0, 6);
     if (!Array.isArray(activities) || !activities.length) throw new Error('Tableau vide');
 
     // Stocker dans le cache Claude (2h)
     _setCache(_ck, activities);
     await incrementSearchCount();
     await saveSearch(location, group, budget, activities);
+
+    // ── FILTRE ANTI-DOUBLON CÔTÉ CLIENT (garantie 100%) ──
+    // Récupérer tous les titres déjà vus (session + localStorage)
+    const _seenNow = new Set([..._sessionSeenTitles, ...getSeenTitles24h(location).map(t=>t.toLowerCase())]);
+    if (_seenNow.size > 0) {
+      const beforeCount = activities.length;
+      activities = activities.filter(a => {
+        if (!a.titre) return true;
+        // Ne jamais filtrer les éphémères/nocturnes — ce sont des événements fixes uniques
+        if (a.ephemere || a.nocturne) return true;
+        const tLow = a.titre.toLowerCase().trim();
+        if (_seenNow.has(tLow)) return false;
+        return true;
+      });
+      if (activities.length < beforeCount) {
+        console.log('🚫 Doublons exacts filtrés:', beforeCount - activities.length);
+      }
+    }
+
+    // Sauvegarder en mémoire session immédiatement
+    activities.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
 
     window._lastActivities = activities;
 
@@ -4660,6 +4781,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
           ${userPlan === 'pro' ? `
           <button class="rc-pro-action-btn ${isFav?'active':''}"
             data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
+            data-lat="${(a.lat && a.lat!==0) ? a.lat : (_lastSearchLat||'')}" data-lng="${(a.lng && a.lng!==0) ? a.lng : (_lastSearchLng||'')}" data-city="${encodeURIComponent(location||_lastSearchCity||'')}"
             title="Favoris">${isFav?'❤️':'🤍'}</button>
           <button class="rc-pro-action-btn"
             data-action="note" data-note-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
@@ -4993,6 +5115,10 @@ function getSpecialEventContext() {
 // SYSTÈME MÉMOIRES — style Snapchat avec "il y a X ans"
 // ══════════════════════════════════════════════════════════════
 let _memoryItems = [];   // liste de toutes les mémoires
+let _sessionSeenTitles = new Set(); // titres proposés dans cette session (en mémoire)
+let _lastSearchLat = null; // coords de la dernière recherche (pour fallback favoris)
+let _lastSearchLng = null;
+let _lastSearchCity = null;
 let _memoryIndex = 0;    // index courant
 let _memoryTimer = null; // auto-avance
 let _memoryItemsCache = []; // cache des items chargés depuis Supabase
@@ -5676,44 +5802,39 @@ function formatDateInput(input) {
 
 function setWpDateShortcut(mode) {
   const today = new Date();
-  const fmt = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+  const iso = d => d.toISOString().split('T')[0];
   const fromEl = document.getElementById('wp-date-from');
   const toEl = document.getElementById('wp-date-to');
   if (!fromEl) return;
   if (mode === 'today') {
-    fromEl.value = fmt(today); toEl.value = '';
+    fromEl.value = iso(today); toEl.value = iso(today);
   } else if (mode === 'tomorrow') {
     const tom = new Date(today); tom.setDate(today.getDate() + 1);
-    fromEl.value = fmt(tom); toEl.value = '';
+    fromEl.value = iso(tom); toEl.value = iso(tom);
   } else if (mode === 'weekend') {
     const day = today.getDay();
     const sat = new Date(today); sat.setDate(today.getDate() + ((6 - day + 7) % 7 || 7));
     const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
-    fromEl.value = fmt(sat); toEl.value = fmt(sun);
+    fromEl.value = iso(sat); toEl.value = iso(sun);
   }
 }
 
 function getWpDateLabel() {
   const fromVal = document.getElementById('wp-date-from')?.value || '';
   const toVal = document.getElementById('wp-date-to')?.value || '';
-  const year = new Date().getFullYear();
-  if (!fromVal || fromVal.length < 5) return '';
-  const [fd, fm] = fromVal.split('/');
-  const fromDate = new Date(year, parseInt(fm)-1, parseInt(fd));
-  const fmt = d => d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
-  if (toVal && toVal.length === 5) {
-    const [td, tm] = toVal.split('/');
-    const toDate = new Date(year, parseInt(tm)-1, parseInt(td));
-    // Si 2 jours = week-end → programme sur 2 jours
-    const diff = Math.round((toDate - fromDate) / 86400000);
+  if (!fromVal) return '';
+  const fmt = s => new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  if (toVal && toVal !== fromVal) {
+    const diff = Math.round((new Date(toVal) - new Date(fromVal)) / 86400000);
     _programDuration = diff >= 1 ? 'weekend' : 'journee';
-    return `Du ${fmt(fromDate)} au ${fmt(toDate)}`;
+    return 'Du ' + fmt(fromVal) + ' au ' + fmt(toVal);
   }
   _programDuration = 'journee';
-  return `Le ${fmt(fromDate)}`;
+  return 'Le ' + fmt(fromVal);
 }
 
 function openWeekendProgram() {
+  populateWpRegions();
   const modal = document.getElementById('weekend-program-modal');
   const body = document.getElementById('weekend-program-body');
   modal.classList.add('open');
@@ -5738,55 +5859,159 @@ function closeWeekendProgram() {
 }
 
 async function generateWeekendProgram() {
-  const favs = localLoad('favorites') || [];
+  // Charger favoris depuis Supabase si dispo
+  let favs = [];
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    const { data } = await _sb.from('favorites')
+      .select('activity_id, titre, website, photo_url, lat, lng, city, created_at')
+      .eq('user_id', currentUser.id);
+    if (data && data.length) {
+      favs = data.map(f => ({
+        activity_id: f.activity_id,
+        activity_title: f.titre,
+        photo_url: f.photo_url,
+        lat: f.lat || null,
+        lng: f.lng || null,
+        city: f.city || null,
+        saved_at: f.created_at
+      }));
+      localSave('favorites', favs);
+    }
+  }
+  if (!favs.length) favs = localLoad('favorites') || [];
+
   const notes = localLoad('notes') || [];
   const body = document.getElementById('weekend-program-body');
 
   if (favs.length < 2) {
-    body.innerHTML = `<p style="color:var(--muted);padding:20px;text-align:center">${apt().programMinFavs||'Ajoute au moins 2 favoris !'}</p>`;
+    body.innerHTML = '<p style="color:var(--muted);padding:20px;text-align:center">Ajoute au moins 2 favoris pour générer un programme !</p>';
     return;
   }
 
-  const favDetails = favs.map(f => {
+  // Filtrer par région via clusterFavs
+  const regionVal = document.getElementById('wp-region-select')?.value || 'all';
+  let filteredFavs = favs;
+  if (regionVal !== 'all') {
+    const clusters = clusterFavs(favs);
+    const cluster = clusters.find(c => c.name === regionVal);
+    filteredFavs = cluster ? cluster.items : favs;
+    if (filteredFavs.length < 2) filteredFavs = favs;
+  }
+
+  const ambiance = document.querySelector('.wp-ambiance-btn.active')?.dataset?.ambiance || 'equilibre';
+  const constraints = (document.getElementById('wp-constraints')?.value || '').trim();
+
+  const ambianceDesc = {
+    equilibre: 'équilibré, mixte activités culturelles et détente',
+    tranquille: 'calme et reposant, activités douces, sans stress ni fatigue, idéal pour se ressourcer',
+    sportif: 'dynamique et physique, privilégie les activités actives, marche, sport, plein air',
+    culturel: 'culturel et enrichissant, musées, patrimoine, découvertes historiques, gastronomie locale',
+    festif: 'festif et convivial, sorties, ambiances animées, restaurants, activités fun'
+  };
+
+  const favDetails = filteredFavs.map(f => {
     const note = notes.find(n => n.activity_id === f.activity_id);
-    return `- ${f.activity_title}${note?.stars ? ' (noté ' + note.stars + '/5)' : ''}`;
+    return '- ' + (f.activity_title || f.activity_id) + (note?.stars ? ' (noté ' + note.stars + '/5)' : '');
   }).join('\n');
 
   const langNames = { fr:'français', en:'English', es:'español', de:'Deutsch', it:'italiano', pt:'português' };
-  const langInstr = `Réponds en ${langNames[lang]||'français'}.`;
-
-  // Date via le nouveau sélecteur jj/mm
+  const langInstr = 'Réponds en ' + (langNames[lang] || 'français') + '.';
   const dateLabel = getWpDateLabel();
-  const dateInstr = dateLabel ? `\nDATE: Le programme est prévu pour : ${dateLabel}.` : '';
-
-  // Durée déterminée par getWpDateLabel() (met à jour _programDuration)
+  const dateInstr = dateLabel ? '\nDATE: ' + dateLabel + '.' : '';
   const dur = _programDuration || 'weekend';
+  // Calculer _programDuration ici (au moment de la génération, pas avant)
+  const fromValNow = document.getElementById('wp-date-from')?.value || '';
+  const toValNow = document.getElementById('wp-date-to')?.value || '';
+  if (fromValNow && toValNow && fromValNow !== toValNow) {
+    const diffDays = Math.round((new Date(toValNow) - new Date(fromValNow)) / 86400000);
+    _programDuration = diffDays >= 1 ? 'weekend' : 'journee';
+  } else if (fromValNow) {
+    _programDuration = 'journee';
+  }
+
+  const constraintInstr = constraints
+    ? '\n\nCONTRAINTES ABSOLUES — RÈGLE PRIORITAIRE N°1 — RESPECTER À LA LETTRE:\n' + constraints + '\nSi une contrainte dit "rien le dimanche", le dimanche doit être VIDE ou marqué "Journée libre". AUCUNE exception.'
+    : '';
+
   let durInstr = '';
   let jsonStructure = '';
 
   if (dur === 'journee') {
-    durInstr = `Crée un programme pour UNE JOURNÉE (environ 9h-20h) en sélectionnant 3-4 activités parmi les favorites. Inclus une pause déjeuner logique.`;
-    jsonStructure = `{"journee": [{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"},{"heure":"12h30","titre":"Déjeuner","duree":"1h30","transport":"","trajet":"","note":"suggestion de restaurant","type":"repas"}]}`;
+    durInstr = 'Crée un programme pour UNE JOURNÉE (9h-20h), 3-4 activités. Inclus déjeuner.';
+    jsonStructure = '{"journee":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite","emoji":"🏰","budget":15,"lat":48.856,"lng":2.352}]}';
   } else {
-    durInstr = `Crée un programme sur les dates indiquées en organisant toutes les activités favorites de façon optimale. Si plusieurs jours, répartis sur SAMEDI et DIMANCHE. Inclus des pauses repas logiques.`;
-    jsonStructure = `{"samedi":[{"heure":"09h00","titre":"...","duree":"2h","transport":"voiture","trajet":"10 min","note":"...","type":"activite"}],"dimanche":[{"heure":"10h00","titre":"...","duree":"3h","transport":"à pied","trajet":"5 min","note":"...","type":"activite"}]}`;
+    // Calculer les vrais jours entre fromDate et toDate
+    const fromD = document.getElementById('wp-date-from')?.value;
+    const toD = document.getElementById('wp-date-to')?.value;
+    const dayNames_fr = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+    let jours = [];
+    if (fromD && toD) {
+      let cur = new Date(fromD + 'T12:00:00');
+      const end = new Date(toD + 'T12:00:00');
+      while (cur <= end) {
+        jours.push(dayNames_fr[cur.getDay()]);
+        cur.setDate(cur.getDate() + 1);
+      }
+    } else {
+      jours = ['samedi', 'dimanche'];
+    }
+    const joursStr = jours.join(', ');
+    durInstr = 'Crée un programme sur ' + (dateLabel || joursStr) + '. UTILISE EXACTEMENT ces clés JSON dans cet ordre : ' + jours.map(j => '"' + j + '"').join(', ') + '. NE JAMAIS utiliser d\'autres clés. Inclus repas logiques.';
+    // JSON structure dynamique avec les vrais noms de jours
+    const exStep = '{"heure":"09h00","titre":"...","duree":"2h","transport":"à pied","trajet":"5 min","note":"...","type":"activite","emoji":"🏰","budget":15,"lat":51.507,"lng":-0.128}';
+    jsonStructure = '{' + jours.map(j => '"' + j + '":[' + exStep + ']').join(',') + '}';
   }
 
-  const prompt = `${langInstr}${dateInstr}
-Tu es un expert en organisation de sorties. L'utilisateur a sélectionné ces activités favorites:
-${favDetails}
+  const prompt = langInstr + dateInstr + constraintInstr + '\nTu es un expert en organisation de sorties. Activités favorites:\n' + favDetails + '\n\nAMBIANCE SOUHAITÉE: ' + ambianceDesc[ambiance] + '\n\n' + durInstr + '\n\nRègles:\n- Respecte STRICTEMENT les contraintes\n- Adapte l\'ordre et le rythme à l\'ambiance choisie\n- Inclus emoji pertinent par activité\n- Note pratique courte et utile (réservation, tenue, horaire à confirmer…)\n- Types possibles: activite, repas, pause, transport\n\nRéponds UNIQUEMENT en JSON valide, structure exacte:\n' + jsonStructure;
 
-${durInstr}
+  // ── Loader animé avec messages changeants ──
+  const loaderMsgs = [
+    '🗺️ Analyse de tes favoris…',
+    '🌤️ Récupération de la météo…',
+    '🧠 L\'IA compose ton itinéraire…',
+    '📍 Optimisation des trajets…',
+    '✨ Finalisation du programme…'
+  ];
+  let _loaderIdx = 0;
+  body.innerHTML = '<div style="text-align:center;padding:40px 20px" id="wp-loader">'
+    + '<div style="font-size:36px;margin-bottom:12px">✨</div>'
+    + '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Génération en cours…</div>'
+    + '<div id="wp-loader-msg" style="font-size:12px;color:var(--muted);min-height:18px;transition:opacity 0.3s">' + loaderMsgs[0] + '</div>'
+    + '</div>';
+  const _loaderInterval = setInterval(() => {
+    _loaderIdx = (_loaderIdx + 1) % loaderMsgs.length;
+    const el = document.getElementById('wp-loader-msg');
+    if (el) { el.style.opacity = '0'; setTimeout(() => { if(el) { el.textContent = loaderMsgs[_loaderIdx]; el.style.opacity = '1'; }}, 300); }
+  }, 2000);
 
-Pour chaque activité inclue:
-- L'heure de début recommandée
-- La durée estimée
-- Le moyen de transport (voiture, à pied, transports en commun)
-- Le temps de trajet approximatif
-- Une note pratique courte (réservation, tenue, etc.)
-
-Réponds UNIQUEMENT en JSON valide, structure exacte:
-${jsonStructure}`;
+  // ── Météo en parallèle ──
+  let weatherInfo = null;
+  try {
+    const cityEntry = detectCity(filteredFavs[0]?.activity_title || '');
+    const fLat0 = parseFloat(filteredFavs[0]?.lat), fLng0 = parseFloat(filteredFavs[0]?.lng);
+    const wLat = (!isNaN(fLat0) && Math.abs(fLat0) > 0.01) ? fLat0 : (cityEntry?.c?.[0] || _lastSearchLat);
+    const wLng = (!isNaN(fLng0) && Math.abs(fLng0) > 0.01) ? fLng0 : (cityEntry?.c?.[1] || _lastSearchLng);
+    const fromDate = document.getElementById('wp-date-from')?.value;
+    // Vérifier que la date est dans les 14 prochains jours
+    const _daysDiff = fromDate ? Math.round((new Date(fromDate) - new Date()) / 86400000) : 0;
+    if (wLat && wLng && Math.abs(wLat) > 0.01 && _daysDiff <= 13) {
+      const wUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + wLat + '&longitude=' + wLng + '&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=14';
+      const wRes = await fetch(wUrl);
+      if (wRes.ok) {
+        const wData = await wRes.json();
+        const wCodes = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',53:'🌦️',61:'🌧️',63:'🌧️',80:'🌦️',81:'🌧️',95:'⛈️'};
+        const targetDate = fromDate || new Date().toISOString().split('T')[0]; // fromDate du scope parent
+        const idx2 = (wData.daily?.time || []).indexOf(targetDate);
+        if (idx2 >= 0) {
+          weatherInfo = {
+            icon: wCodes[wData.daily.weathercode[idx2]] || '🌡️',
+            tMax: Math.round(wData.daily.temperature_2m_max[idx2]),
+            tMin: Math.round(wData.daily.temperature_2m_min[idx2])
+          };
+        }
+      }
+    }
+  } catch(we) { /* météo optionnelle */ }
 
   try {
     const res = await fetch(SUPABASE_URL + '/functions/v1/search', {
@@ -5794,85 +6019,353 @@ ${jsonStructure}`;
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON },
       body: JSON.stringify({ prompt, model: 'claude-sonnet-4-6' })
     });
-    if (!res.ok) {
-      const errText = await res.text().catch(() => 'unknown');
-      throw new Error('HTTP ' + res.status + ': ' + errText.substring(0, 200));
-    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-    const text = (data.content||[]).map(c=>c.text||'').join('');
+    const text = (data.content || []).map(c => c.text || '').join('');
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('Pas de JSON dans la réponse');
+    if (!match) throw new Error('Pas de JSON');
     const program = JSON.parse(match[0]);
-    renderWeekendProgram(program, dur);
+    clearInterval(_loaderInterval);
+    // Sauvegarder pour ré-affichage depuis "Mes programmes"
+    window._lastSavedProgram = program;
+    window._lastSavedDur = dur;
+    window._lastSavedAmbiance = ambiance;
+    window._lastSavedDateLabel = dateLabel;
+    window._lastSavedWeather = weatherInfo;
+    renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo);
   } catch(e) {
-    body.innerHTML = `<p style="color:#C0392B;padding:20px;text-align:center">${apt().programError||'Erreur lors de la génération.'}</p>
-    <button onclick="generateWeekendProgram()" class="generate-program-btn">🔄 ${apt().programRegenerate||'Régénérer'}</button>`;
+    clearInterval(_loaderInterval);
+    console.error('Programme erreur:', e);
+    body.innerHTML = '<p style="color:#C0392B;padding:20px;text-align:center">Erreur lors de la génération. Réessaie !</p><button onclick="generateWeekendProgram()" class="wp-regen-btn">🔄 Réessayer</button>';
   }
 }
 
-function renderWeekendProgram(program, dur) {
+// Helpers région
+function extractFavCity(title) {
+  if (!title) return 'Autres';
+  var parts = title.split(',');
+  if (parts.length >= 2) return parts[parts.length - 1].trim();
+  var m = title.match(/(?:\bà|\bau|\ben|\bnear|\bin)\s+([A-ZÀ-Ü][a-zA-ZÀ-ÿ\s\-]+)/);
+  return m ? m[1].trim() : title.trim();
+}
+function normalizeCity(city) {
+  if (!city) return '';
+  return city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+}
+
+function selectWpAmbiance(btn) {
+  document.querySelectorAll('.wp-ambiance-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function populateWpRegions() {
+  var sel = document.getElementById('wp-region-select');
+  if (!sel) return;
+  var favs = localLoad('favorites') || [];
+  var clusters = clusterFavs(favs);
+  sel.innerHTML = '<option value="all">🌍 Tous mes favoris (' + favs.length + ')</option>';
+  clusters
+    .filter(function(c){ return c.name !== 'Autres'; })
+    .sort(function(a,b){ return b.items.length - a.items.length; })
+    .forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.name;
+      opt.textContent = '📍 ' + c.name + ' (' + c.items.length + ')';
+      sel.appendChild(opt);
+    });
+  var autres = clusters.find(function(c){ return c.name === 'Autres'; });
+  if (autres && autres.items.length) {
+    var opt = document.createElement('option');
+    opt.value = 'Autres';
+    opt.textContent = '📍 Autres (' + autres.items.length + ')';
+    sel.appendChild(opt);
+  }
+}
+
+
+
+// Photo de couverture par ville pour le programme
+var WP_COVER_PHOTOS = {
+  'Londres':    'https://images.pexels.com/photos/220769/pexels-photo-220769.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Paris':      'https://images.pexels.com/photos/699466/pexels-photo-699466.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Luxembourg': 'https://images.pexels.com/photos/2070485/pexels-photo-2070485.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Bruxelles':  'https://images.pexels.com/photos/3632682/pexels-photo-3632682.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Amsterdam':  'https://images.pexels.com/photos/967292/pexels-photo-967292.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Berlin':     'https://images.pexels.com/photos/2736139/pexels-photo-2736139.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Rome':       'https://images.pexels.com/photos/532263/pexels-photo-532263.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Barcelone':  'https://images.pexels.com/photos/1388030/pexels-photo-1388030.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Madrid':     'https://images.pexels.com/photos/3882895/pexels-photo-3882895.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Strasbourg': 'https://images.pexels.com/photos/2100587/pexels-photo-2100587.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Lyon':       'https://images.pexels.com/photos/2929234/pexels-photo-2929234.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Marseille':  'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+  'Lille':      'https://images.pexels.com/photos/3224730/pexels-photo-3224730.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
+};
+function getCityPhoto(regionName) {
+  if (!regionName) return null;
+  for (var k in WP_COVER_PHOTOS) {
+    if (regionName.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(regionName.toLowerCase())) {
+      return WP_COVER_PHOTOS[k];
+    }
+  }
+  return null;
+}
+
+function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   const body = document.getElementById('weekend-program-body');
-  const dayNames = { fr: ['SAMEDI', 'DIMANCHE'], en: ['SATURDAY', 'SUNDAY'], es: ['SÁBADO', 'DOMINGO'], de: ['SAMSTAG', 'SONNTAG'], it: ['SABATO', 'DOMENICA'], pt: ['SÁBADO', 'DOMINGO'] };
+  const dayNames = { fr:['Samedi','Dimanche'], en:['Saturday','Sunday'], es:['Sábado','Domingo'], de:['Samstag','Sonntag'], it:['Sabato','Domenica'], pt:['Sábado','Domingo'] };
   const days = dayNames[lang] || dayNames.fr;
-  const typeIcons = { activite: '📍', repas: '🍽️', transport: '🚗', pause: '☕' };
-  const durMode = dur || _programDuration || 'soiree';
+  const durMode = dur || _programDuration || 'weekend';
+
+  const ambianceBadge = { equilibre:'⚖️ Équilibré', tranquille:'🌿 Tranquille', sportif:'⚡ Sportif', culturel:'🏛️ Culturel', festif:'🎉 Festif' };
+  const badge = ambianceBadge[ambiance] || '✨ Programme';
+
+  // Mettre à jour la photo de couverture
+  const regionVal2 = document.getElementById('wp-region-select')?.value || 'all';
+  const coverPhoto = getCityPhoto(regionVal2 !== 'all' ? regionVal2 : '');
+  const coverEl = document.getElementById('wp-cover-photo');
+  if (coverEl && coverPhoto) {
+    coverEl.style.backgroundImage = 'url(' + coverPhoto + ')';
+    const img = new Image();
+    img.onload = () => coverEl.classList.add('loaded');
+    img.src = coverPhoto;
+  }
+
+  // Mettre à jour le sous-titre avec météo
+  const sub = document.getElementById('wp-subtitle');
+  let subText = (dateLabel || 'Ce week-end') + ' · ' + badge;
+  if (weatherInfo) subText += ' · ' + weatherInfo.icon + ' ' + weatherInfo.tMax + '°/' + weatherInfo.tMin + '°';
+  if (sub) sub.textContent = subText;
 
   function renderSteps(steps) {
-    if (!steps?.length) return '';
-    let h = '';
+    if (!steps || !steps.length) return '';
+    let h = '<div class="program-timeline">';
     steps.forEach((step, i) => {
-      h += `<div class="program-step">
-        <div class="program-time">${step.heure}</div>
-        <div class="program-step-content">
-          <div class="program-step-title">${typeIcons[step.type]||'📍'} ${step.titre}</div>
-          <div class="program-step-detail">⏱ ${step.duree}${step.note ? ' · ' + step.note : ''}</div>
-        </div>
-      </div>`;
+      const dotClass = step.type === 'repas' ? 'repas' : step.type === 'pause' ? 'pause' : '';
+      const photo = PEXELS_DIRECT[getPhotoTheme(step.type === 'repas' ? 'Gastronomie' : '', step.titre || step.title || '')] || '';
+
+      h += '<div class="program-step">';
+      h += '<div class="program-step-left">';
+      h += '<div class="program-time">' + (step.heure || '') + '</div>';
+      h += '<div class="program-dot ' + dotClass + '"></div>';
+      h += '</div>';
+      h += '<div class="program-step-content">';
+      if (photo) h += '<div class="program-step-photo" style="background-image:url(' + photo + ')"></div>';
+      h += '<div class="program-step-title">' + (step.emoji || (step.type === 'repas' ? '🍽️' : step.type === 'pause' ? '☕' : '📍')) + ' ' + (step.titre || step.title || '') + '</div>';
+      h += '<div class="program-step-detail">';
+      if (step.duree) h += '<span class="program-step-chip">⏱ ' + step.duree + '</span>';
+      if (typeof step.budget === 'number') {
+        h += '<span class="program-step-chip' + (step.budget === 0 ? '' : ' orange') + '">' + (step.budget === 0 ? '🆓 Gratuit' : '💶 ~' + step.budget + '€') + '</span>';
+      }
+      if (step.note) h += '<span style="color:var(--muted);font-size:11px">' + step.note + '</span>';
+      h += '</div>';
+      h += '</div></div>';
+
       if (step.transport && i < steps.length - 1) {
-        h += `<div class="program-transport">↓ ${step.transport}${step.trajet ? ' · ' + step.trajet : ''}</div>`;
+        const tIcons = { voiture:'🚗', pied:'🚶', marche:'🚶', velo:'🚴', transports:'🚌', bus:'🚌', train:'🚂', metro:'🚇' };
+        const tKey = Object.keys(tIcons).find(k => (step.transport || '').toLowerCase().includes(k)) || 'voiture';
+        h += '<div class="program-transport"><div class="program-transport-pill">' + (tIcons[tKey] || '🚗') + ' ' + step.transport + (step.trajet ? ' · ' + step.trajet : '') + '</div></div>';
       }
     });
+    h += '</div>';
     return h;
   }
 
-  const sectionTitles = {
-    soiree:  { fr:'🌙 SOIRÉE', en:'🌙 EVENING', es:'🌙 TARDE-NOCHE', de:'🌙 ABEND', it:'🌙 SERATA', pt:'🌙 NOITE' },
-    journee: { fr:'☀️ JOURNÉE', en:'☀️ DAY', es:'☀️ DÍA', de:'☀️ TAG', it:'☀️ GIORNATA', pt:'☀️ DIA' },
-  };
-
   let html = '';
+  const keys = Object.keys(program);
 
-  if (durMode === 'soiree' && program.soiree?.length) {
-    const title = (sectionTitles.soiree[lang] || sectionTitles.soiree.fr);
-    html += `<div class="program-day"><div class="program-day-title">${title}</div>${renderSteps(program.soiree)}</div>`;
-  } else if (durMode === 'journee' && program.journee?.length) {
-    const title = (sectionTitles.journee[lang] || sectionTitles.journee.fr);
-    html += `<div class="program-day"><div class="program-day-title">${title}</div>${renderSteps(program.journee)}</div>`;
+  const dayColors = ['#3A5C38','#5C4A38','#3A4A5C','#5C3A5C','#5C5A3A'];
+  const dayFr = {lundi:'Lundi',mardi:'Mardi',mercredi:'Mercredi',jeudi:'Jeudi',vendredi:'Vendredi',samedi:'Samedi',dimanche:'Dimanche',journee:'Journée'};
+  if (durMode === 'journee' && program.journee?.length) {
+    html += '<div class="program-day"><div class="program-day-header"><div class="program-day-title">☀️ ' + (dateLabel || 'Journée') + '</div></div>' + renderSteps(program.journee) + '</div>';
   } else {
-    // Week-end (samedi + dimanche)
-    if (program.samedi?.length) {
-      html += `<div class="program-day"><div class="program-day-title">📅 ${days[0]}</div>${renderSteps(program.samedi)}</div>`;
-    }
-    if (program.dimanche?.length) {
-      html += `<div class="program-day"><div class="program-day-title">📅 ${days[1]}</div>${renderSteps(program.dimanche)}</div>`;
-    }
-    // Fallback si Claude a renvoyé soiree/journee en mode weekend
-    if (!program.samedi?.length && !program.dimanche?.length) {
-      const firstKey = Object.keys(program)[0];
-      if (firstKey && program[firstKey]?.length) {
-        html += `<div class="program-day"><div class="program-day-title">📋 Programme</div>${renderSteps(program[firstKey])}</div>`;
-      }
-    }
+    keys.forEach(function(key, idx) {
+      if (!program[key] || !program[key].length) return;
+      var dayLabel = dayFr[key] || key.charAt(0).toUpperCase() + key.slice(1);
+      var col = dayColors[idx % dayColors.length];
+      html += '<div class="program-day"><div class="program-day-header" style="background:linear-gradient(90deg,' + col + ',transparent)"><div class="program-day-title">📅 ' + dayLabel + '</div><div class="program-day-meta">' + program[key].length + ' étapes</div></div>' + renderSteps(program[key]) + '</div>';
+    });
   }
 
   if (!html) {
-    html = `<p style="color:var(--muted);padding:20px;text-align:center">Impossible de générer le programme. Réessaie !</p>`;
+    html = '<p style="color:var(--muted);padding:20px;text-align:center">Programme vide. Réessaie !</p>';
   }
 
-  html += `<button onclick="generateWeekendProgram()" class="generate-program-btn" style="background:var(--primary)">${apt().programRegenerate||'🔄 Régénérer'}</button>`;
+  // ── Budget total ──
+  const allSteps = [...(program.journee||[]), ...(program.samedi||[]), ...(program.dimanche||[])];
+  const totalBudget = allSteps.reduce((s, step) => s + (typeof step.budget === 'number' ? step.budget : 0), 0);
+  if (totalBudget >= 0 && allSteps.length) {
+    html += '<div style="margin:0 20px 4px;padding:12px 16px;background:linear-gradient(135deg,var(--primary-light),var(--bg2));border-radius:14px;display:flex;align-items:center;justify-content:space-between">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--text)">💰 Budget estimé / personne</div>'
+      + '<div style="font-size:18px;font-weight:800;color:var(--primary)">' + (totalBudget === 0 ? 'Gratuit 🆓' : '~' + totalBudget + ' €') + '</div>'
+      + '</div>';
+  }
+
+  // ── Carte Leaflet/OpenStreetMap (sans clé API) ──
+  const stepsWithGPS = allSteps.filter(s => s.lat && s.lng && Math.abs(parseFloat(s.lat)) > 0.01);
+  if (stepsWithGPS.length >= 2) {
+    const mapId = 'wp-map-' + Date.now();
+    html += '<div style="margin:12px 20px;border-radius:14px;overflow:hidden;position:relative">'
+      + '<div id="' + mapId + '" style="height:180px;width:100%;border-radius:14px;background:#e8e8e8"></div>'
+      + '<div style="position:absolute;bottom:8px;right:8px;background:rgba(26,58,24,0.85);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px;z-index:999">' + stepsWithGPS.length + ' lieux</div>'
+      + '</div>';
+    // Initialiser Leaflet après rendu du HTML
+    setTimeout(function() {
+      if (typeof L === 'undefined') return;
+      const mapEl = document.getElementById(mapId);
+      if (!mapEl) return;
+      try {
+        const lmap = L.map(mapId, { zoomControl:false, attributionControl:false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(lmap);
+        const bounds = [];
+        stepsWithGPS.forEach(function(s, i) {
+          const lat = parseFloat(s.lat), lng = parseFloat(s.lng);
+          const icon = L.divIcon({
+            html: '<div style="background:#3A5C38;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3)">' + (i+1) + '</div>',
+            className: '', iconSize:[22,22], iconAnchor:[11,11]
+          });
+          L.marker([lat,lng], {icon}).addTo(lmap).bindPopup('<b>' + (s.titre||s.title||'') + '</b>');
+          bounds.push([lat,lng]);
+        });
+        lmap.fitBounds(bounds, {padding:[20,20]});
+      } catch(e) { console.warn('Carte:', e); }
+    }, 200);
+  }
+
+  // ── Booking si programme multi-jours loin de chez soi ──
+  const regionVal3 = document.getElementById('wp-region-select')?.value || 'all';
+  if (regionVal3 !== 'all') {
+    const cityEntry3 = GEO_CITIES.find(e => e.d === regionVal3);
+    const userLat = _lastSearchLat || 49.6;
+    const userLng = _lastSearchLng || 6.1;
+    const destCoords = cityEntry3 ? cityEntry3.c : null;
+    const distToCity = destCoords ? haversineKm([userLat, userLng], destCoords) : 0;
+    if (distToCity > 80 || ['Londres','Paris','Amsterdam','Berlin','Rome','Barcelone','Bruxelles'].includes(regionVal3)) {
+      const bookingCity = encodeURIComponent(regionVal3.toLowerCase().replace('è','e').replace('é','e'));
+      const fromDateB = document.getElementById('wp-date-from')?.value || '';
+      const toDateB = document.getElementById('wp-date-to')?.value || '';
+      // Lien affilié CJ Affiliate (CID: 7978492) → Booking.com
+      const bookingBase = 'https://www.booking.com/searchresults.fr.html?ss=' + bookingCity
+        + (fromDateB ? '&checkin=' + fromDateB : '')
+        + (toDateB ? '&checkout=' + toDateB : '')
+        + '&lang=fr&no_rooms=1&group_adults=2';
+      const bookingUrl = 'https://www.anrdoezrs.net/click-7978492-15734897?url=' + encodeURIComponent(bookingBase);
+      html += '<a href="' + bookingUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;margin:0 20px 12px;padding:14px 16px;background:linear-gradient(135deg,#003580,#0056b3);border-radius:14px;text-decoration:none;color:#fff">'
+        + '<span style="font-size:22px">🏨</span>'
+        + '<div style="flex:1">'
+        + '<div style="font-size:13px;font-weight:700">Où dormir à ' + regionVal3 + ' ?</div>'
+        + '<div style="font-size:11px;opacity:0.8">Comparer les hôtels sur Booking.com</div>'
+        + '</div>'
+        + '<span style="font-size:18px">→</span>'
+        + '</a>';
+    }
+  }
+
+  // Actions
+  html += '<div class="program-actions">';
+  html += '<button onclick="generateWeekendProgram()" class="wp-regen-btn">🔄 Régénérer</button>';
+  html += '<button onclick="saveWeekendProgram()" class="wp-share-btn">💾 Sauvegarder</button>';
+  html += '<button onclick="shareWeekendProgram()" class="wp-share-btn">📤 Partager</button>';
+  html += '</div>';
+
   body.innerHTML = html;
 }
+
+async function deleteSavedProgram(actId) {
+  if (!confirm('Supprimer ce programme ?')) return;
+  // Supprimer de Supabase
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    await _sb.from('notes').delete().eq('user_id', currentUser.id).eq('activity_id', actId);
+  }
+  // Supprimer du localStorage
+  const notes = (localLoad('notes') || []).filter(n => n.activity_id !== actId);
+  localSave('notes', notes);
+  const progs = localLoad('saved_programs') || {};
+  delete progs[actId];
+  localSave('saved_programs', progs);
+  // Rafraîchir l'onglet
+  renderAccountActivities();
+}
+
+function openSavedProgram(actId) {
+  // Rouvrir le modal programme avec le vrai rendu
+  const saved = (localLoad('saved_programs') || {})[actId];
+  if (saved && saved.program) {
+    // Ouvrir le modal
+    populateWpRegions();
+    const modal = document.getElementById('weekend-program-modal');
+    modal.classList.add('open');
+    // Ré-afficher directement le programme
+    renderWeekendProgram(saved.program, saved.dur, saved.ambiance, saved.dateLabel, saved.weatherInfo);
+  } else {
+    // Fallback : ouvrir la mémoire texte
+    openMemory(actId);
+  }
+}
+
+async function saveWeekendProgram() {
+  if (!_sb || !currentUser || currentUser.id === 'beta-user') {
+    alert('Connecte-toi pour sauvegarder ton programme !');
+    return;
+  }
+  const regionVal = document.getElementById('wp-region-select')?.value || 'all';
+  const fromVal = document.getElementById('wp-date-from')?.value || '';
+  const savedAt = new Date().toISOString();
+  const actId = 'program_' + savedAt.replace(/[^0-9]/g,'').slice(0,14);
+  const title = '🗓 Programme ' + (regionVal !== 'all' ? regionVal : '') + (fromVal ? ' · ' + new Date(fromVal+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'}) : '');
+
+  // Sauvegarder le JSON du programme pour pouvoir le ré-afficher
+  const programJson = JSON.stringify(window._lastSavedProgram || {});
+  const programMeta = JSON.stringify({ dur: window._lastSavedDur, ambiance: window._lastSavedAmbiance, dateLabel: window._lastSavedDateLabel });
+
+  // Extraire le texte pour aperçu
+  const bodyEl = document.getElementById('weekend-program-body');
+  const stepsText = bodyEl ? Array.from(bodyEl.querySelectorAll('.program-step-title')).map(e => e.textContent.trim()).join(' → ') : '';
+
+  try {
+    await _sb.from('notes').insert({
+      user_id: currentUser.id,
+      activity_id: actId,
+      activity_title: title,
+      note: stepsText.substring(0, 500),
+      stars: 0,
+      done: false,
+      created_at: savedAt
+    });
+    // Stocker le JSON complet en localStorage pour ré-affichage
+    const savedProgs = localLoad('saved_programs') || {};
+    savedProgs[actId] = { program: window._lastSavedProgram, dur: window._lastSavedDur, ambiance: window._lastSavedAmbiance, dateLabel: window._lastSavedDateLabel, weatherInfo: window._lastSavedWeather };
+    localSave('saved_programs', savedProgs);
+
+    const existing = localLoad('notes') || [];
+    existing.unshift({ user_id: currentUser.id, activity_id: actId, activity_title: title, note: stepsText.substring(0,500), stars: 0, done: false, created_at: savedAt });
+    localSave('notes', existing);
+
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A3A18;color:white;padding:12px 24px;border-radius:99px;font-size:13px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+    toast.textContent = '✅ Programme sauvegardé !';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+    // Rafraîchir l'onglet Activités si ouvert
+    if (document.getElementById('ap-pane-activities')?.classList.contains('active')) {
+      renderAccountActivities();
+    }
+  } catch(e) {
+    console.error('Save program:', e);
+    alert('Erreur lors de la sauvegarde. Réessaie !');
+  }
+}
+
+function shareWeekendProgram() {
+  const body = document.getElementById('weekend-program-body');
+  if (!body) return;
+  const text = Array.from(body.querySelectorAll('.program-step-title, .program-time'))
+    .map(el => el.textContent.trim()).filter(Boolean).join(' · ');
+  const msg = 'Mon programme Weekio 🟢\n' + text + '\n\nhttps://weekio.app';
+  if (navigator.share) { navigator.share({ text: msg }); }
+  else { navigator.clipboard?.writeText(msg); }
+}
+
 
 // ══════════════════════════════════════════════════════════════
 // PANNEAU MÉMOIRES — grille + stories style Snapchat
@@ -6033,21 +6526,128 @@ async function renderMemoriesPane() {
 }
 
 
+// ── Fonctions géo globales ──
+function haversineKm(c1, c2) {
+  if (!c1 || !c2) return 9999;
+  var R = 6371;
+  var dLat = (c2[0]-c1[0]) * Math.PI/180;
+  var dLon = (c2[1]-c1[1]) * Math.PI/180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(c1[0]*Math.PI/180)*Math.cos(c2[0]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function normalizeKey(str) {
+  if (!str) return '';
+  return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
+}
+
+// Table de référence mondiale
+var GEO_CITIES = [
+  { k:['london','londre','londres','southbank','southwark','camden','soho','westminster','hackney','brixton','shoreditch','notting','chelsea','kensington','hyde park','tower bridge','tower of london','buckingham','covent','greenwich'], d:'Londres', c:[51.507,-0.128] },
+  { k:['paris','montmartre','marais','bastille','belleville','pigalle','eiffel','louvre','versailles','invalides','chatelet','nation','vincennes'], d:'Paris', c:[48.856,2.352] },
+  { k:['luxembourg','lux city','ville de luxembourg','kirchberg','clausen','grund','bonnevoie','limpertsberg'], d:'Luxembourg', c:[49.611,6.132] },
+  { k:['esch','esch-sur-alzette','belval','differdange','dudelange','schifflange','rumelange','kayl','tetange','oberkorn'], d:'Région Sud Luxembourg', c:[49.496,5.986] },
+  { k:['thionville','yutz','manom','cattenom','knutange','nilvange','fontoy','audun'], d:'Thionville', c:[49.358,6.169] },
+  { k:['metz','woippy','montigny','borny','sablon','queuleu','vallières'], d:'Metz', c:[49.119,6.176] },
+  { k:['nancy','vandœuvre','essey','jarville','laxou','villers'], d:'Nancy', c:[48.692,6.184] },
+  { k:['hayange','hayange','feralia','knutange','nilvange','fontoy','rombas','amnéville','clouange'], d:'Hayange', c:[49.330,6.065] },
+  { k:['hackenberg','veckring','illange','apach','sierck','montenach','manderen','waldwisse'], d:'Pays des Trois Frontières', c:[49.370,6.380] },
+  { k:['longwy','longuyon','mont-saint-martin','herserange'], d:'Longwy', c:[49.521,5.760] },
+  { k:['arlon','virton','etalle','florenville'], d:'Arlon', c:[49.685,5.812] },
+  { k:['bruxelles','brussels','ixelles','uccle','molenbeek','schaerbeek','anderlecht','laeken','atomium','midi'], d:'Bruxelles', c:[50.846,4.352] },
+  { k:['liege','liège','seraing','herstal','ans','bressoux'], d:'Liège', c:[50.632,5.569] },
+  { k:['namur','jambes','champion'], d:'Namur', c:[50.467,4.867] },
+  { k:['strasbourg','kehl','illkirch','schiltigheim','oberhausbergen'], d:'Strasbourg', c:[48.573,7.752] },
+  { k:['lyon','villeurbanne','caluire','vénissieux','bron'], d:'Lyon', c:[45.764,4.834] },
+  { k:['marseille','aix-en-provence','cassis','aubagne'], d:'Marseille', c:[43.296,5.381] },
+  { k:["lille","roubaix","tourcoing","villeneuve-d'ascq","villeneuvescq"], d:"Lille", c:[50.629,3.057] },
+  { k:['barcelone','barcelona','badalona','sitges'], d:'Barcelone', c:[41.385,2.173] },
+  { k:['amsterdam','rotterdam','la haye','den haag','utrecht','haarlem'], d:'Amsterdam', c:[52.370,4.895] },
+  { k:['berlin','potsdam','charlottenburg','mitte','kreuzberg','prenzlauer'], d:'Berlin', c:[52.520,13.405] },
+  { k:['rome','roma','trastevere','vatican','colosseum','colisée','pantheon','trevi'], d:'Rome', c:[41.902,12.496] },
+  { k:['madrid','toledo','salamanque','ségovie'], d:'Madrid', c:[40.416,-3.703] },
+  { k:['cologne','köln','bonn','aachen','aix-la-chapelle','düsseldorf'], d:'Cologne', c:[50.938,6.960] },
+  { k:['sarrebruck','saarbrücken','forbach','freyming','merlebach','stiring'], d:'Sarrebruck', c:[49.234,6.996] },
+  { k:['trèves','trier','wittlich','bernkastel'], d:'Trèves', c:[49.749,6.637] },
+  { k:['reims','épernay','chalons','troyes'], d:'Reims', c:[49.258,4.031] },
+  { k:['sanem','differdange','petange','rodange','bascharage'], d:'Région Ouest Luxembourg', c:[49.524,5.891] },
+];
+
+// Détecter la ville dans un titre — scan exhaustif
+function detectCity(title) {
+  if (!title) return null;
+  var norm = title.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  // Priorité 1 : après virgule
+  var parts = title.split(',');
+  if (parts.length >= 2) {
+    var after = parts[parts.length-1].trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z ]/g,'').trim();
+    for (var i=0; i<GEO_CITIES.length; i++) {
+      if (GEO_CITIES[i].k.some(function(k){ return after===k||after.includes(k)||k.includes(after.replace(/ /g,'')); }))
+        return GEO_CITIES[i];
+    }
+  }
+  // Priorité 2 : scan mots dans titre complet
+  for (var i=0; i<GEO_CITIES.length; i++) {
+    if (GEO_CITIES[i].k.some(function(k){ return norm.includes(k); }))
+      return GEO_CITIES[i];
+  }
+  return null;
+}
+
+// Clusteriser une liste de favoris par rayon 80km
+function clusterFavs(favs) {
+  var clusters = [];
+  favs.forEach(function(f) {
+    var coords = null, name = 'Autres';
+    // 1. Coords GPS stockées
+    var fLat = parseFloat(f.lat), fLng = parseFloat(f.lng);
+    if (!isNaN(fLat) && Math.abs(fLat) > 0.01 && !isNaN(fLng) && Math.abs(fLng) > 0.01) {
+      coords = [fLat, fLng];
+      // Trouver le nom le plus proche
+      var best = null, bestD = 9999;
+      GEO_CITIES.forEach(function(e) { var d=haversineKm(coords,e.c); if(d<bestD){bestD=d;best=e;} });
+      name = (best && bestD < 100) ? best.d : (f.city || 'Autres');
+    }
+    // 2. Parsing titre
+    if (!coords) {
+      var entry = detectCity(f.activity_title);
+      if (entry) { coords = entry.c; name = entry.d; }
+      else if (f.city) { name = f.city; }
+    }
+    // Placer dans cluster existant si dans rayon 80km
+    var placed = false;
+    for (var i=0; i<clusters.length; i++) {
+      var c = clusters[i];
+      if (!c.center && !coords) { c.items.push(f); placed=true; break; }
+      if (c.center && coords && haversineKm(c.center, coords) <= 80) { c.items.push(f); placed=true; break; }
+    }
+    if (!placed) clusters.push({ name:name, center:coords, items:[f] });
+  });
+  return clusters;
+}
+
 async function renderAccountActivities() {
   const ta = apt();
   const el = document.getElementById('ap-activities-list');
   if (!el) return;
 
   // Toujours recharger depuis localStorage pour beta
-  const notes = (_sb && currentUser?.id !== 'beta-user')
-    ? ((await _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false})).data || [])
-    : (localLoad('notes') || []);
+  // Charger done:true ET les programmes (activity_id starts with 'program_')
+  let notes = [];
+  if (_sb && currentUser?.id !== 'beta-user') {
+    const [resDone, resProgs] = await Promise.all([
+      _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', true).order('created_at',{ascending:false}),
+      _sb.from('notes').select('*').eq('user_id', currentUser.id).eq('done', false).like('activity_id', 'program_%').order('created_at',{ascending:false})
+    ]);
+    notes = [...(resDone.data || []), ...(resProgs.data || [])];
+  } else {
+    notes = localLoad('notes') || [];
+  }
 
   // FIX multi-appareils : toujours lire les favoris depuis Supabase
   let favsRaw = [];
   if (_sb && currentUser && currentUser.id !== 'beta-user') {
     const { data: favsDb } = await _sb.from('favorites')
-      .select('activity_id, titre, website, photo_url, created_at')
+      .select('activity_id, titre, website, photo_url, lat, lng, city, created_at')
       .eq('user_id', currentUser.id)
       .order('created_at', { ascending: false });
     if (favsDb && favsDb.length > 0) {
@@ -6056,6 +6656,9 @@ async function renderAccountActivities() {
         activity_title: f.titre || f.activity_id,
         website: f.website || null,
         photo_url: f.photo_url || null,
+        lat: f.lat || null,
+        lng: f.lng || null,
+        city: f.city || null,
         saved_at: f.created_at
       }));
       localSave('favorites', favsRaw);
@@ -6100,7 +6703,32 @@ async function renderAccountActivities() {
     localSave('activity_photos', photos);
   }
 
+  // ── Charger les programmes sauvegardés (activity_id commence par 'program_') ──
+  const savedPrograms = notes.filter(n => (n.activity_id||'').startsWith('program_'));
+  const doneNotes = notes.filter(n => n.done && !(n.activity_id||'').startsWith('program_'));
+
   let html = '';
+
+  // ── Section Mes Programmes (si il y en a) ──
+  if (savedPrograms.length) {
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🗓 Mes programmes</div>';
+    savedPrograms.forEach(function(p) {
+      var dateStr = new Date(p.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric'});
+      var stepsList = (p.note||'').split(' → ');
+      var preview = stepsList.slice(0,3).join(' → ') + (stepsList.length > 3 ? '…' : '');
+      var aid = p.activity_id;
+      html += '<div class="activity-item" style="border-left:3px solid var(--primary);padding-left:10px">';
+      html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">';
+      html += '<div style="flex:1;cursor:pointer" onclick="openSavedProgram(\'' + aid + '\')">';
+      html += '<div class="activity-item-title">' + (p.activity_title||'Programme') + '</div>';
+      html += '<div class="activity-item-meta" style="font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4">' + preview + '</div>';
+      html += '<div class="activity-item-meta">' + dateStr + '</div>';
+      html += '</div>';
+      html += '<button onclick="deleteSavedProgram(\'' + aid + '\')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:4px;flex-shrink:0" title="Supprimer">🗑️</button>';
+      html += '</div></div>';
+    });
+    html += '<div style="height:8px"></div>';
+  } // fin if savedPrograms.length
 
   // Bouton Mémoires en haut si des activités faites existent
   const allNotes = localLoad('notes') || [];
@@ -6167,56 +6795,10 @@ async function renderAccountActivities() {
       return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
     }
 
-    function getCityCoords(cityName) {
-      var key = normalizeKey(cityName);
-      // Cherche exactement
-      if (CITY_COORDS[key]) return CITY_COORDS[key];
-      // Cherche si la clé contient le nom ou vice versa
-      for (var k in CITY_COORDS) {
-        if (key.includes(k) || k.includes(key)) return CITY_COORDS[k];
-      }
-      return null;
-    }
+    // getCityCoords et haversineKm → voir fonctions globales ci-dessous
 
-    function haversineKm(c1, c2) {
-      var R = 6371;
-      var dLat = (c2[0] - c1[0]) * Math.PI / 180;
-      var dLon = (c2[1] - c1[1]) * Math.PI / 180;
-      var a = Math.sin(dLat/2) * Math.sin(dLat/2)
-        + Math.cos(c1[0]*Math.PI/180) * Math.cos(c2[0]*Math.PI/180)
-        * Math.sin(dLon/2) * Math.sin(dLon/2);
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-
-    function extractCity(title) {
-      if (!title) return 'Autres';
-      var parts = title.split(',');
-      if (parts.length >= 2) return parts[parts.length - 1].trim();
-      var m = title.match(/(?:\bà|\bau|\ben|\bnear|\bin)\s+([A-ZÀ-Ü][a-zA-ZÀ-ÿ\s\-]+)/);
-      return m ? m[1].trim() : title.trim();
-    }
-
-    // Construire les clusters par rayon 80km
-    var clusters = []; // [{name, center, items}]
-    favs.forEach(function(f) {
-      var city = extractCity(f.activity_title);
-      var coords = getCityCoords(city);
-      var placed = false;
-      for (var i = 0; i < clusters.length; i++) {
-        var c = clusters[i];
-        var dist = c.center && coords ? haversineKm(c.center, coords) : 999;
-        if (dist <= 80) {
-          c.items.push(f);
-          // Mettre à jour le nom du cluster avec la ville la plus représentée
-          if (coords && !c.center) c.center = coords;
-          placed = true;
-          break;
-        }
-      }
-      if (!placed) {
-        clusters.push({ name: city, center: coords, items: [f] });
-      }
-    });
+    // ── Clustering via fonction globale clusterFavs ──
+    var clusters = clusterFavs(favs);
 
     clusters.forEach(function(cluster) {
       html += '<div style="margin-bottom:4px">'
@@ -6238,9 +6820,9 @@ async function renderAccountActivities() {
     });
   }
   // Activités faites
-  if (notes.length) {
+  if (doneNotes.length) {
     html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px">✓ ${ta.doneTitle||'Déjà fait'}</div>`;
-    html += notes.map(n => {
+    html += doneNotes.map(n => {
       const photo = photos[n.activity_id];
       const ago = getTimeAgoLabel(n.created_at);
       const isAnniversary = ago && ago.includes('an');
@@ -6333,14 +6915,18 @@ async function renderAccountActivities() {
   }, { capture: true });
 }
 
-function removeFavorite(activityId) {
+async function removeFavorite(activityId) {
   favorites.delete(activityId);
   const saved = (localLoad('favorites')||[]).filter(f=>f.activity_id!==activityId);
   localSave('favorites', saved);
+  // FIX : supprimer aussi dans Supabase
+  if (_sb && currentUser && currentUser.id !== 'beta-user') {
+    await _sb.from('favorites').delete().eq('user_id', currentUser.id).eq('activity_id', activityId);
+  }
   renderAccountActivities();
   // Mettre à jour le bouton cœur sur la carte si visible
-  const favBtn = document.querySelector(`[data-fav-id="${activityId}"]`);
-  if (favBtn) favBtn.textContent = '🤍';
+  const favBtn = document.querySelector('[data-fav-id="' + activityId + '"]');
+  if (favBtn) { favBtn.textContent = '🤍'; favBtn.classList.remove('active'); }
 }
 
 function triggerPhotoUpload(activityId) {
@@ -6625,19 +7211,21 @@ async function saveSearch(location, group, budget, activities) {
 
   // ── Historique local CE navigateur (24h) — toutes villes ──
   const cutoff24 = Date.now() - 24 * 60 * 60 * 1000;
-  const seenData = localLoad('seen_activities') || { entries: [] };
+  // Clé par utilisateur pour éviter les interférences entre comptes
+  const _seenUid = currentUser?.id || 'guest';
+  const _seenKey = 'seen_activities_' + _seenUid;
+  const seenData = localLoad(_seenKey) || { entries: [] };
   // Purger les > 24h
   seenData.entries = (seenData.entries || []).filter(e => e.ts > cutoff24);
-  // Ajouter les nouveaux titres avec timestamp
   const now = Date.now();
   titles.forEach(t => {
-    if (!seenData.entries.find(e => e.title === t)) {
-      seenData.entries.push({ title: t, ts: now });
+    const tLow = t.toLowerCase();
+    if (!seenData.entries.find(e => e.title === tLow)) {
+      seenData.entries.push({ title: tLow, ts: now });
     }
   });
-  // Garder max 100 titres
-  seenData.entries = seenData.entries.slice(-100);
-  localSave('seen_activities', seenData);
+  seenData.entries = seenData.entries.slice(-150);
+  localSave(_seenKey, seenData);
 
   // ── Sauvegarder aussi dans l'historique global (pour panneau compte) ──
   const searchData = {
@@ -6725,7 +7313,7 @@ async function initFavorites() {
   if (_sb && currentUser && currentUser.id !== 'beta-user') {
     // Charger depuis Supabase → multi-appareils
     const { data } = await _sb.from('favorites')
-      .select('activity_id, titre, website, photo_url, created_at')
+      .select('activity_id, titre, website, photo_url, lat, lng, city, created_at')
       .eq('user_id', currentUser.id)
       .order('created_at', { ascending: false });
     if (data && data.length > 0) {
@@ -6746,14 +7334,14 @@ async function initFavorites() {
   favorites = new Set(saved.map(f => f.activity_id));
 }
 
-async function toggleFavorite(titleEncoded, activityId, website, photoUrl) {
+async function toggleFavorite(titleEncoded, activityId, website, photoUrl, lat, lng, city) {
   if (userPlan !== 'pro') { openUpgrade(); return; }
   const id = activityId || '';
-  const btn = document.querySelector(`[data-fav-id="${id}"]`);
+  const btn = document.querySelector('[data-fav-id="' + id + '"]');
   if (favorites.has(id)) {
     // Supprimer
     favorites.delete(id);
-    if (btn) btn.textContent = '🤍';
+    if (btn) { btn.textContent = '🤍'; btn.classList.remove('active'); }
     if (_sb && currentUser && currentUser.id !== 'beta-user') {
       await _sb.from('favorites').delete().eq('user_id', currentUser.id).eq('activity_id', id);
     }
@@ -6762,13 +7350,16 @@ async function toggleFavorite(titleEncoded, activityId, website, photoUrl) {
   } else {
     // Ajouter
     favorites.add(id);
-    if (btn) btn.textContent = '❤️';
+    if (btn) { btn.textContent = '❤️'; btn.classList.add('active'); }
     const favData = {
       user_id: currentUser?.id,
       activity_id: id,
       titre: decodeURIComponent(titleEncoded||''),
       website: website || null,
       photo_url: photoUrl || null,
+      lat: (lat !== null && !isNaN(lat) && Math.abs(lat) > 0.01) ? lat : null,
+      lng: (lng !== null && !isNaN(lng) && Math.abs(lng) > 0.01) ? lng : null,
+      city: city || null,
       created_at: new Date().toISOString()
     };
     if (_sb && currentUser && currentUser.id !== 'beta-user') {
@@ -6779,6 +7370,9 @@ async function toggleFavorite(titleEncoded, activityId, website, photoUrl) {
       activity_title: favData.titre,
       website: favData.website,
       photo_url: favData.photo_url,
+      lat: favData.lat,
+      lng: favData.lng,
+      city: favData.city,
       saved_at: favData.created_at
     });
   }
@@ -6828,16 +7422,14 @@ async function saveNote() {
 
 // ── Build already-done context for AI prompt ──
 function getSeenTitles24h(location) {
-  // Récupérer TOUS les titres déjà vus sur CE navigateur dans les 24h
-  // Peu importe la ville ou les critères — jamais revoir la même activité
   try {
-    const seenData = localLoad('seen_activities');
+    const uid = currentUser?.id || 'guest';
+    const key = 'seen_activities_' + uid;
+    const seenData = localLoad(key);
     if (!seenData) return [];
-    // Purger les entrées > 24h
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     const fresh = (seenData.entries || []).filter(e => e.ts > cutoff);
-    const titles = fresh.map(e => e.title);
-    return titles;
+    return fresh.map(e => e.title);
   } catch(e) { return []; }
 }
 
@@ -7126,7 +7718,15 @@ document.addEventListener('click', function(e) {
   const action = btn.dataset.action;
   const encodedTitle = btn.dataset.encodedTitle;
   if (action === 'fav') {
-    toggleFavorite(encodedTitle, btn.dataset.favId, btn.dataset.website||'', btn.dataset.photo||'');
+    toggleFavorite(
+      encodedTitle,
+      btn.dataset.favId,
+      btn.dataset.website||'',
+      btn.dataset.photo||'',
+      parseFloat(btn.dataset.lat)||null,
+      parseFloat(btn.dataset.lng)||null,
+      btn.dataset.city ? decodeURIComponent(btn.dataset.city) : null
+    );
   } else if (action === 'note') {
     openNote(encodedTitle, btn.dataset.noteId);
   } else if (action === 'done') {
@@ -7183,23 +7783,21 @@ window.addEventListener('load', () => {
 
 function checkOnThisDayNotification() {
   try {
-    const notes = localLoad('notes') || [];
+    const allNotes = localLoad('notes') || [];
     const now = new Date();
-    const match = notes.find(n => {
-      if (!n.done || !n.created_at) return false;
+    const match = allNotes.find(n => {
+      if (!n.done || !n.created_at || (n.activity_id||'').startsWith('program_')) return false;
       const d = new Date(n.created_at);
       return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() !== now.getFullYear();
     });
     if (!match) return;
     const years = now.getFullYear() - new Date(match.created_at).getFullYear();
-    // Afficher une bannière discrète en haut
     const banner = document.createElement('div');
     banner.id = 'on-this-day-banner';
-    banner.onclick = () => { banner.remove(); openAccountPanel(); setTimeout(() => switchAccountTab('memories'), 300); };
-    banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:linear-gradient(135deg,#C4714A,#D4855C);color:#fff;border-radius:14px;padding:12px 20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(196,113,74,0.4);display:flex;align-items:center;gap:10px;white-space:nowrap;max-width:90vw;animation:slideUp 0.4s ease';
-    banner.innerHTML = `<span style="font-size:20px">🎉</span><div><div style="font-weight:700">Ce jour il y a ${years} an${years>1?'s':''}</div><div style="font-size:11px;opacity:0.9">${(match.activity_title||'').substring(0,35)}</div></div><span style="margin-left:8px;opacity:0.7">→</span>`;
+    banner.onclick = () => { banner.remove(); const ap = document.getElementById('account-panel'); if(ap) ap.classList.add('open'); setTimeout(() => switchAccountTab('memories'), 300); };
+    banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:linear-gradient(135deg,#C4714A,#D4855C);color:#fff;border-radius:14px;padding:12px 20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(196,113,74,0.4);display:flex;align-items:center;gap:10px;white-space:nowrap;max-width:90vw';
+    banner.innerHTML = '<span style="font-size:20px">🎉</span><div><div style="font-weight:700">Ce jour il y a ' + years + ' an' + (years>1?'s':'') + '</div><div style="font-size:11px;opacity:0.9">' + (match.activity_title||'').substring(0,35) + '</div></div><span style="margin-left:8px;opacity:0.7">→</span>';
     document.body.appendChild(banner);
-    // Auto-disparaît après 6s
     setTimeout(() => { if (banner.parentNode) { banner.style.opacity='0'; banner.style.transition='opacity 0.4s'; setTimeout(() => banner.remove(), 400); }}, 6000);
   } catch(e) {}
 }
