@@ -3121,6 +3121,12 @@ function getPhotoTheme(type, titre) {
   if (t.includes('soirée') || t.includes('nuit')) return 'bar';
   if (t.includes('club') || t.includes('discothèque')) return 'bar';
   if (t.includes('rooftop')) return 'bar';
+  // Détections supplémentaires valables pour TOUS les types
+  if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie') || t.includes('vide-dressing') || t.includes('vide dressing')) return 'brocante';
+  if (t.includes('bourse') || t.includes('collection') || t.includes('chineurs') || t.includes('pokemon') || t.includes('kidsbazar')) return 'bourse';
+  if (t.includes('vetement') || t.includes('vêtement') || t.includes('friperie') || t.includes('habit') || t.includes('fring')) return 'vetement';
+  if (t.includes('foraine') || t.includes('manège') || t.includes('barbe à papa')) return 'fete_foraine';
+  if (t.includes('marché') || t.includes('market')) return 'marche';
   const typeMap = {'Nature':'nature','Culture':'museum','Sport':'randonnee','Gastronomie':'restaurant','Bien-être':'spa','Divertissement':'escape','Nocturne':'bar','Nightlife':'bar','Food':'restaurant','Wellness':'spa','Entertainment':'escape'};
   return typeMap[type] || 'default';
 }
