@@ -3126,6 +3126,7 @@ function getPhotoTheme(type, titre) {
   if (t.includes('bourse') || t.includes('collection') || t.includes('chineurs') || t.includes('pokemon') || t.includes('kidsbazar')) return 'bourse';
   if (t.includes('vetement') || t.includes('vêtement') || t.includes('friperie') || t.includes('habit') || t.includes('fring')) return 'vetement';
   if (t.includes('foraine') || t.includes('manège') || t.includes('barbe à papa')) return 'fete_foraine';
+  if (t.includes('concert') || t.includes('festival') || t.includes('musique') || t.includes('francofolie') || t.includes('rock') || t.includes('jazz') || t.includes('rap') || t.includes('electro')) return 'concert';
   if (t.includes('marché') || t.includes('market')) return 'marche';
   const typeMap = {'Nature':'nature','Culture':'museum','Sport':'randonnee','Gastronomie':'restaurant','Bien-être':'spa','Divertissement':'escape','Nocturne':'bar','Nightlife':'bar','Food':'restaurant','Wellness':'spa','Entertainment':'escape'};
   return typeMap[type] || 'default';
