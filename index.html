@@ -4407,6 +4407,7 @@ async function runSearch(fromMap) {
             if (_seenNow2.size > 0) {
               all = all.filter(a => {
                 if (!a.titre) return true;
+                if (a.ephemere || a.nocturne) return true;
                 const tLow = a.titre.toLowerCase().trim();
                 if (_seenNow2.has(tLow)) return false;
                 return true;
@@ -4547,9 +4548,9 @@ async function runSearch(fromMap) {
       const beforeCount = activities.length;
       activities = activities.filter(a => {
         if (!a.titre) return true;
+        // Ne jamais filtrer les éphémères/nocturnes — ce sont des événements fixes uniques
+        if (a.ephemere || a.nocturne) return true;
         const tLow = a.titre.toLowerCase().trim();
-        // Bloquer uniquement si titre EXACTEMENT identique
-        // "Brocante de Hayange" ≠ "Brocante de Metz" → deux événements différents, OK
         if (_seenNow.has(tLow)) return false;
         return true;
       });
