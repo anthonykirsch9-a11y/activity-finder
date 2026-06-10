@@ -15,7 +15,7 @@
 <meta property="og:description" content="Découvre 6 activités personnalisées pour ton week-end, adaptées à ton groupe, ta météo et ton budget.">
 <meta property="og:url" content="https://weekio.app">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary"> 
+<meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Weekio — Ton assistant week-end personnel">
 <meta name="twitter:description" content="Découvre 6 activités personnalisées pour ton week-end.">
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTMwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzQTdBMzYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMUE0QTE4Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cGF0aCBkPSJNNjAgOCBDMzggOCAxOCAyNiAxOCA1MCBDMTggNzggNjAgMTE4IDYwIDExOCBDNjAgMTE4IDEwMiA3OCAxMDIgNTAgQzEwMiAyNiA4MiA4IDYwIDhaIiBmaWxsPSJ3aGl0ZSIgdHJhbnNmb3JtPSJzY2FsZSgxLjA4KSB0cmFuc2xhdGUoLTUsLTUpIi8+CiAgPHBhdGggZD0iTTYwIDggQzM4IDggMTggMjYgMTggNTAgQzE4IDc4IDYwIDExOCA2MCAxMTggQzYwIDExOCAxMDIgNzggMTAyIDUwIEMxMDIgMjYgODIgOCA2MCA4WiIgZmlsbD0idXJsKCNnKSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI4IiByeD0iMTQiIHJ5PSI4IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMikiIHRyYW5zZm9ybT0icm90YXRlKC0zMCA0NCAyOCkiLz4KICA8Y2lyY2xlIGN4PSI2MCIgY3k9IjQ5IiByPSIyNiIgZmlsbD0id2hpdGUiLz4KICA8cGF0aCBkPSJNNDAgNDAgTDQ5IDYyIEw2MCA0NiBMNzEgNjIgTDgwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxQTRBMTgiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg==">
@@ -4312,6 +4312,8 @@ async function runSearch(fromMap) {
 
         // ── Pas de cache — chaque recherche doit être unique pour ce navigateur ──
         _ck = _mkCacheKey(location, group, budget, moodsForSearch, radius, onlyMode);
+        // Si on a déjà vu des activités en session, invalider le cache pour forcer de nouveaux résultats
+        if (_sessionSeenTitles.size > 0) _ck = _ck + '_' + Date.now();
 
         // Appel Claude via Supabase Edge Function — mode streaming
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
