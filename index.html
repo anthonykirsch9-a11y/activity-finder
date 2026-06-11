@@ -4418,6 +4418,22 @@ function checkNotifBar() {
   // Rien à faire ici
 }
 
+// Tester la notification immédiatement (pour debug)
+async function testNotifNow() {
+  if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') {
+    alert('Active d'abord les notifications !');
+    return;
+  }
+  const sw = await navigator.serviceWorker.ready;
+  const city = document.getElementById('location')?.value?.trim() || 
+    (() => { try { return JSON.parse(localStorage.getItem('af_searches')||'[]')[0]?.location || 'Paris'; } catch(e) { return 'Paris'; } })();
+  if (sw.active) {
+    sw.active.postMessage({ type: 'TEST_NOTIF', city });
+    const msgs = {fr:'🔔 Notification test envoyée !',en:'🔔 Test notification sent!',es:'🔔 ¡Notificación de prueba enviada!',de:'🔔 Testbenachrichtigung gesendet!',it:'🔔 Notifica di prova inviata!',pt:'🔔 Notificação de teste enviada!'};
+    alert(msgs[lang] || msgs.fr);
+  }
+}
+
 
 
 // ══════════════════════════════════════════════════════════════
@@ -6295,6 +6311,7 @@ async function renderAccountStats() {
         <span style="font-size:18px">🔔</span>
         <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">${{fr:'Idées week-end chaque vendredi à 17h',en:'Weekend ideas every Friday at 5pm',es:'Ideas de fin de semana cada viernes a las 17h',de:'Wochenend-Ideen jeden Freitag um 17 Uhr',it:'Idee weekend ogni venerdì alle 17',pt:'Ideias de fim de semana toda sexta às 17h'}[lang]||'Idées week-end chaque vendredi à 17h'}</div>
         <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">${{fr:'Activer',en:'Enable',es:'Activar',de:'Aktivieren',it:'Attiva',pt:'Ativar'}[lang]||'Activer'}</button>
+        ${Notification.permission === 'granted' ? `<button onclick="testNotifNow()" style="background:transparent;color:var(--primary);border:1px solid var(--primary);border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;margin-left:6px">${{fr:'Tester',en:'Test',es:'Probar',de:'Testen',it:'Testa',pt:'Testar'}[lang]||'Test'}</button>` : ''}
       </div>`
     : (('Notification' in window && Notification.permission === 'granted')
       ? `<div style="font-size:12px;color:var(--primary);text-align:center;padding:4px 0;margin-bottom:10px">🔔 Notifications activées — vendredi 17h ✓</div>`
@@ -8365,6 +8382,13 @@ window.addEventListener('load', () => {
 
   // Listener SW → pré-remplir ville depuis notif vendredi
   if ('serviceWorker' in navigator) {
+    // Enregistrer le Service Worker (sw.js doit être à la racine du repo)
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      console.log('[SW] Enregistré:', reg.scope);
+    }).catch(err => {
+      console.warn('[SW] Échec enregistrement:', err);
+    });
+
     navigator.serviceWorker.addEventListener('message', e => {
       if (e.data?.type === 'NOTIF_CLICK' && e.data.city) {
         const locInput = document.getElementById('location');
