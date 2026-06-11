@@ -2768,10 +2768,13 @@ async function fetchCities(q) {
     // Photon (komoot) — plus fiable que Nominatim, pas de blocage GitHub Pages
     const langMap = { fr:'fr', en:'en', es:'es', de:'de', it:'it', pt:'pt' };
     const l = langMap[lang] || 'fr';
-    const r = await fetch(
+    let r = await fetch(
       'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + l
     );
-    // Komoot retourne 400 pour certaines langues mais les résultats sont quand même valides
+    // Si 400 (langue non supportée), retry en anglais
+    if (!r.ok) {
+      r = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=en');
+    }
     const data = await r.json();
     return (data.features || [])
       .filter(f => ['city','town','village','municipality'].includes(f.properties?.type))
