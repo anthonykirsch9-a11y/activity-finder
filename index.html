@@ -8413,5 +8413,43 @@ function checkOnThisDayNotification() {
 
 <!-- Input upload avatar -->
 <input type="file" accept="image/*" id="avatar-upload-input" style="display:none" onchange="handleAvatarUpload(this)">
+
+<!-- Footer légal -->
+<div id="legal-footer" style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e8e4df;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  font-family: sans-serif;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+">
+  <span>© 2026 Weekio — Anthony Kirsch</span>
+  <span style="color:#ddd">|</span>
+  <a href="legal.html" target="_blank" style="color:#5a8c49;text-decoration:none;">Mentions légales</a>
+  <span style="color:#ddd">|</span>
+  <a href="legal.html#cgu" target="_blank" style="color:#5a8c49;text-decoration:none;">CGU</a>
+  <span style="color:#ddd">|</span>
+  <a href="legal.html#confidentialite" target="_blank" style="color:#5a8c49;text-decoration:none;">Confidentialité</a>
+  <span style="color:#ddd">|</span>
+  <a href="legal.html#cookies" target="_blank" style="color:#5a8c49;text-decoration:none;">Cookies</a>
+  <span style="color:#ddd">|</span>
+  <a href="mailto:contact@weekio.app" style="color:#5a8c49;text-decoration:none;">contact@weekio.app</a>
+</div>
+
+<!-- Espace pour éviter que le footer masque le contenu -->
+<div style="height:40px"></div>
+
 </body>
 </html>
