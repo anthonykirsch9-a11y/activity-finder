@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#5C7A5A">
-<title>Weekio — Ton assistant week-end personnel</title> 
+<title>Weekio — Ton assistant week-end personnel</title>
 <meta name="description" content="Weekio suggère 6 activités parfaitement adaptées à ton groupe, ta météo et ton budget. Sorties, restaurants, escape games, nature... Découvre ton week-end idéal.">
 <meta name="keywords" content="weekio, activités week-end, sortie week-end, que faire ce week-end, idées sorties, activités famille, activités couple, week-end france">
 <meta name="robots" content="index, follow">
@@ -7743,10 +7743,25 @@ async function signOut() {
 async function confirmDeleteAccount() {
   if (!confirm(apt().deleteConfirm)) return;
   if (_sb && currentUser) {
-    await _sb.from('notes').delete().eq('user_id', currentUser.id);
-    await _sb.from('searches').delete().eq('user_id', currentUser.id);
-    await _sb.from('profiles').delete().eq('id', currentUser.id);
-    await _sb.auth.signOut();
+    try {
+      // Supprimer toutes les données utilisateur
+      await _sb.from('favorites').delete().eq('user_id', currentUser.id);
+      await _sb.from('notes').delete().eq('user_id', currentUser.id);
+      await _sb.from('searches').delete().eq('user_id', currentUser.id);
+      await _sb.from('programmes').delete().eq('user_id', currentUser.id);
+      await _sb.from('profiles').delete().eq('id', currentUser.id);
+      // Déconnexion
+      await _sb.auth.signOut();
+      // Effacer le localStorage
+      Object.keys(localStorage).filter(k => k.startsWith('weekio')).forEach(k => localStorage.removeItem(k));
+      // Confirmer à l'utilisateur
+      const msgs = {fr:'Compte supprimé. À bientôt !', en:'Account deleted. Goodbye!', es:'Cuenta eliminada. ¡Hasta pronto!', de:'Konto gelöscht. Auf Wiedersehen!', it:'Account eliminato. Arrivederci!', pt:'Conta eliminada. Até logo!'};
+      alert(msgs[lang] || msgs.fr);
+      location.reload();
+    } catch(e) {
+      console.error('Delete account error:', e);
+      alert('Une erreur est survenue. Contactez contact@weekio.app pour supprimer votre compte.');
+    }
   }
   closeAccountPanel();
 }
