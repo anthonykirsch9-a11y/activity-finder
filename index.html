@@ -2807,7 +2807,7 @@ const mapDd = document.getElementById('map-city-dropdown');
 async function fetchCities(q) {
   try {
     // Photon (komoot) — plus fiable que Nominatim, pas de blocage GitHub Pages
-    const langMap = { fr:'fr', en:'en', es:'fr', de:'de', it:'it', pt:'fr' }; // komoot ne supporte pas es/pt
+    const langMap = { fr:'fr', en:'en', es:'en', de:'de', it:'it', pt:'en' }; // komoot ne supporte pas es/pt → fallback 'en' (neutre)
     const l = langMap[lang] || 'fr';
     const r = await fetch(
       'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + l
@@ -4353,7 +4353,6 @@ function buildActivityCard(a, idx, location) {
         </a>
         ${((['Culture','Divertissement','Sport','Nature','Visite','Musée','Monument','Spectacle'].includes(a.type)) && (VIATOR_DEST_MAP[(location||'').toLowerCase().split(',')[0].trim()] !== undefined)) ? `<a class="rc-viator-btn viator-btn-pending"
           href="${getViatorDestUrl((location||''), 'P00305178', '42383')}"
-          onclick="this.href=getViatorDestUrl('${(location||'').replace(/'/g,"\\'")}','P00305178','42383')"
           data-viator-title="${(a.titre||'').replace(/"/g,'').replace(/[–—]/g,'-').substring(0,80)}"
           data-viator-city="${(location||'').split(',')[0].trim().substring(0,40)}"
           target="_blank" rel="noopener">
@@ -5226,7 +5225,6 @@ function renderResults(activities, location, radius, budget, group, ages) {
           </a>` : ''}
           ${((['Culture','Divertissement','Sport','Nature','Visite','Musée','Monument','Spectacle'].includes(a.type)) && (VIATOR_DEST_MAP[(location||'').toLowerCase().split(',')[0].trim()] !== undefined)) ? `<a class="rc-viator-btn viator-btn-pending"
             href="${getViatorDestUrl((location||''), 'P00305178', '42383')}"
-            onclick="this.href=getViatorDestUrl('${(location||'').replace(/'/g,"\\'")}','P00305178','42383')"
           onclick="this.href=getViatorDestUrl('${(location||'').replace(/'/g,"\\'")}','P00305178','42383')"
             data-viator-title="${(a.titre||'').replace(/"/g,'').replace(/[–—]/g,'-').substring(0,80)}"
             data-viator-city="${(location||'').split(',')[0].trim().substring(0,40)}"
