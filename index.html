@@ -6311,7 +6311,7 @@ async function renderAccountStats() {
         <span style="font-size:18px">🔔</span>
         <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">${{fr:'Idées week-end chaque vendredi à 17h',en:'Weekend ideas every Friday at 5pm',es:'Ideas de fin de semana cada viernes a las 17h',de:'Wochenend-Ideen jeden Freitag um 17 Uhr',it:'Idee weekend ogni venerdì alle 17',pt:'Ideias de fim de semana toda sexta às 17h'}[lang]||'Idées week-end chaque vendredi à 17h'}</div>
         <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">${{fr:'Activer',en:'Enable',es:'Activar',de:'Aktivieren',it:'Attiva',pt:'Ativar'}[lang]||'Activer'}</button>
-        ${Notification.permission === 'granted' ? `<button onclick="testNotifNow()" style="background:transparent;color:var(--primary);border:1px solid var(--primary);border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;margin-left:6px">${{fr:'Tester',en:'Test',es:'Probar',de:'Testen',it:'Testa',pt:'Testar'}[lang]||'Test'}</button>` : ''}
+
       </div>`
     : (('Notification' in window && Notification.permission === 'granted')
       ? `<div style="font-size:12px;color:var(--primary);text-align:center;padding:4px 0;margin-bottom:10px">🔔 Notifications activées — vendredi 17h ✓</div>`
