@@ -8119,8 +8119,8 @@ function hideBetaScreen() {
 }
 
 function initBetaGate() {
-  let passed = false;
-  try { passed = localStorage.getItem(BETA_STORAGE_KEY) === '1'; } catch(e) {}
+  let passed = true; // Beta gate désactivé — app ouverte à tous
+  // try { passed = localStorage.getItem(BETA_STORAGE_KEY) === '1'; } catch(e) {}
   if (passed) {
     userPlan = 'pro';
     if (!currentUser) {
