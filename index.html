@@ -1897,10 +1897,9 @@ function getViatorDestUrl(city, pid, mcid) {
   // Nettoyer : lowercase, trim, prendre avant la virgule, supprimer le · et ce qui suit
   const raw = (city||'').toLowerCase().trim().split(',')[0].split('·')[0].trim();
   const dest = VIATOR_DEST_MAP[raw];
-  const langPrefix = { fr:'fr', es:'es', de:'de', it:'it', pt:'pt' }[lang] || '';
-  const base = langPrefix ? 'https://www.viator.com/' + langPrefix + '/' : 'https://www.viator.com/';
   const params = '?pid=' + pid + '&mcid=' + mcid + '&medium=link&campaign=weekio';
-  if (dest) return base + dest + params;
+  // Pas de préfixe langue — Viator détecte la langue du navigateur automatiquement
+  if (dest) return 'https://www.viator.com/' + dest + params;
   return 'https://www.viator.com' + params;
 }
 
@@ -2772,7 +2771,7 @@ async function fetchCities(q) {
     const r = await fetch(
       'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + l
     );
-    if (!r.ok) throw new Error('photon fail');
+    // Komoot retourne 400 pour certaines langues mais les résultats sont quand même valides
     const data = await r.json();
     return (data.features || [])
       .filter(f => ['city','town','village','municipality'].includes(f.properties?.type))
