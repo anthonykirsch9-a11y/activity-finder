@@ -4043,7 +4043,7 @@ async function fetchCoupDeCoeur(lat, lng, excludeTitles) {
     if (topPlace.photos && topPlace.photos[0]) {
       const photoName = topPlace.photos[0].name;
       if (photoName) {
-        result.photo = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+        result.photo = SUPABASE_URL + '/functions/v1/places?photo=' + encodeURIComponent(photoName);
       }
     }
 
@@ -5106,7 +5106,7 @@ function loadPhotosForResults(activities) {
     if (gPlace && gPlace.photos && gPlace.photos.length > 0) {
       const photoName = gPlace.photos[0].name;
       if (photoName) {
-        const photoUrlG = 'https://places.googleapis.com/v1/' + photoName + '/media?maxWidthPx=800&key=AIzaSyA0JgN-LPsqAq2UekX1j7Q0Es8lGkK4RjE';
+        const photoUrlG = SUPABASE_URL + '/functions/v1/places?photo=' + encodeURIComponent(photoName);
         img.src = photoUrlG;
         img.onerror = () => { img.onerror = null; loadPexelsPhoto(img, img.dataset.type, img.dataset.titre); };
       } else {
