@@ -4421,7 +4421,7 @@ function checkNotifBar() {
 // Tester la notification immédiatement (pour debug)
 async function testNotifNow() {
   if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') {
-    alert('Active d'abord les notifications !');
+    alert("Active d'abord les notifications !");
     return;
   }
   const sw = await navigator.serviceWorker.ready;
