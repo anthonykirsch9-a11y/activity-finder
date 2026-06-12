@@ -1684,213 +1684,38 @@ const VIATOR_CITIES = ['Londres','London','Paris','Rome','Roma','Barcelone','Bar
 
 // Map ville → URL destination Viator (format /CityName/dXXX-ttd)
 const VIATOR_DEST_MAP = {
-  // ── EUROPE ──
-  'london':           'London/d737-ttd',
-  'londres':          'London/d737-ttd',
-  'paris':            'Paris/d479-ttd',
-  'rome':             'Rome/d511-ttd',
-  'roma':             'Rome/d511-ttd',
-  'barcelona':        'Barcelona/d562-ttd',
-  'barcelone':        'Barcelona/d562-ttd',
-  'amsterdam':        'Amsterdam/d525-ttd',
-  'berlin':           'Berlin/d488-ttd',
-  'madrid':           'Madrid/d566-ttd',
-  'brussels':         'Brussels/d521-ttd',
-  'bruxelles':        'Brussels/d521-ttd',
-  'vienna':           'Vienna/d454-ttd',
-  'vienne':           'Vienna/d454-ttd',
-  'wien':             'Vienna/d454-ttd',
-  'prague':           'Prague/d638-ttd',
-  'lisbon':           'Lisbon/d548-ttd',
-  'lisbonne':         'Lisbon/d548-ttd',
-  'lisboa':           'Lisbon/d548-ttd',
-  'dublin':           'Dublin/d503-ttd',
-  'edinburgh':        'Edinburgh/d272-ttd',
-  'edimbourg':        'Edinburgh/d272-ttd',
-  'florence':         'Florence/d519-ttd',
-  'firenze':          'Florence/d519-ttd',
-  'venice':           'Venice/d524-ttd',
-  'venise':           'Venice/d524-ttd',
-  'venezia':          'Venice/d524-ttd',
-  'strasbourg':       'Strasbourg/d5502-ttd',
-  'lyon':             'Lyon/d829-ttd',
-  'marseille':        'Marseille/d485-ttd',
-  'nice':             'Nice/d478-ttd',
-  'bruges':           'Bruges/d4836-ttd',
-  'brugge':           'Bruges/d4836-ttd',
-  'cologne':          'Cologne/d5482-ttd',
-  'köln':             'Cologne/d5482-ttd',
-  'koln':             'Cologne/d5482-ttd',
-  'munich':           'Munich/d489-ttd',
-  'münchen':          'Munich/d489-ttd',
-  'antwerp':          'Antwerp/d458-ttd',
-  'anvers':           'Antwerp/d458-ttd',
-  'seville':          'Seville/d556-ttd',
-  'séville':          'Seville/d556-ttd',
-  'sevilla':          'Seville/d556-ttd',
-  'granada':          'Granada/d772-ttd',
-  'malaga':           'Malaga/d956-ttd',
-  'málaga':           'Malaga/d956-ttd',
-  'valencia':         'Valencia/d811-ttd',
-  'bilbao':           'Bilbao/d813-ttd',
-  'milan':            'Milan/d509-ttd',
-  'milano':           'Milan/d509-ttd',
-  'naples':           'Naples/d510-ttd',
-  'napoli':           'Naples/d510-ttd',
-  'athens':           'Athens/d496-ttd',
-  'athènes':          'Athens/d496-ttd',
-  'atenas':           'Athens/d496-ttd',
-  'santorini':        'Santorini/d4415-ttd',
-  'mykonos':          'Mykonos/d4416-ttd',
-  'crete':            'Crete/d4415-ttd',
-  'crète':            'Crete/d4415-ttd',
-  'istanbul':         'Istanbul/d585-ttd',
-  'stockholm':        'Stockholm/d675-ttd',
-  'oslo':             'Oslo/d673-ttd',
-  'copenhagen':       'Copenhagen/d671-ttd',
-  'copenhague':       'Copenhagen/d671-ttd',
-  'københavn':        'Copenhagen/d671-ttd',
-  'helsinki':         'Helsinki/d672-ttd',
-  'warsaw':           'Warsaw/d639-ttd',
-  'varsovie':         'Warsaw/d639-ttd',
-  'warszawa':         'Warsaw/d639-ttd',
-  'krakow':           'Krakow/d5359-ttd',
-  'cracovie':         'Krakow/d5359-ttd',
-  'kraków':           'Krakow/d5359-ttd',
-  'budapest':         'Budapest/d499-ttd',
-  'dubrovnik':        'Dubrovnik/d4686-ttd',
-  'split':            'Split/d4687-ttd',
-  'zagreb':           'Zagreb/d35506-ttd',
-  'porto':            'Porto/d5467-ttd',
-  'bordeaux':         'Bordeaux/d706-ttd',
-  'toulouse':         'Toulouse/d828-ttd',
-  'montpellier':      'Montpellier/d830-ttd',
-  'nantes':           'Nantes/d831-ttd',
-  'lille':            'Lille/d832-ttd',
-  'versailles':       'Versailles/d479-ttd',
-  'zurich':           'Zurich/d577-ttd',
-  'zürich':           'Zurich/d577-ttd',
-  'geneva':           'Geneva/d578-ttd',
-  'genève':           'Geneva/d578-ttd',
-  'genf':             'Geneva/d578-ttd',
-  'interlaken':       'Interlaken/d581-ttd',
-  'zermatt':          'Zermatt/d583-ttd',
-  'lucerne':          'Lucerne/d580-ttd',
-  'luzern':           'Lucerne/d580-ttd',
-  'luxembourg':       'Luxembourg-City/d35421-ttd',
-  'reykjavik':        'Reykjavik/d4413-ttd',
-  'riga':             'Riga/d35407-ttd',
-  'tallinn':          'Tallinn/d35408-ttd',
-  'vilnius':          'Vilnius/d35409-ttd',
-  'bratislava':       'Bratislava/d35415-ttd',
-  'malta':            'Malta/d4414-ttd',
-  'palma':            'Palma-de-Mallorca/d5551-ttd',
-  'mallorca':         'Palma-de-Mallorca/d5551-ttd',
-  'ibiza':            'Ibiza/d5552-ttd',
-  'tenerife':         'Tenerife/d4132-ttd',
-  'algarve':          'Algarve/d5553-ttd',
-  // ── AMÉRIQUES ──
-  'new york':         'New-York-City/d5560-ttd',
-  'new york city':    'New-York-City/d5560-ttd',
-  'nyc':              'New-York-City/d5560-ttd',
-  'nueva york':       'New-York-City/d5560-ttd',
-  'los angeles':      'Los-Angeles/d645-ttd',
-  'miami':            'Miami/d646-ttd',
-  'chicago':          'Chicago/d647-ttd',
-  'san francisco':    'San-Francisco/d651-ttd',
-  'las vegas':        'Las-Vegas/d684-ttd',
-  'washington':       'Washington-DC/d648-ttd',
-  'washington dc':    'Washington-DC/d648-ttd',
-  'boston':           'Boston/d649-ttd',
-  'orlando':          'Orlando/d650-ttd',
-  'new orleans':      'New-Orleans/d652-ttd',
-  'hawaii':           'Hawaii/d4149-ttd',
-  'honolulu':         'Honolulu/d4150-ttd',
-  'cancun':           'Cancun/d631-ttd',
-  'cancún':           'Cancun/d631-ttd',
-  'mexico city':      'Mexico-City/d634-ttd',
-  'ciudad de mexico': 'Mexico-City/d634-ttd',
-  'playa del carmen': 'Playa-del-Carmen/d5136-ttd',
-  'tulum':            'Tulum/d35671-ttd',
-  'rio de janeiro':   'Rio-de-Janeiro/d314-ttd',
-  'rio':              'Rio-de-Janeiro/d314-ttd',
-  'buenos aires':     'Buenos-Aires/d317-ttd',
-  'lima':             'Lima/d316-ttd',
-  'cusco':            'Cusco/d4148-ttd',
-  'cartagena':        'Cartagena/d4685-ttd',
-  'medellin':         'Medellin/d35672-ttd',
-  'medellín':         'Medellin/d35672-ttd',
-  'santiago':         'Santiago/d318-ttd',
-  'havana':           'Havana/d35674-ttd',
-  'la havane':        'Havana/d35674-ttd',
-  'habana':           'Havana/d35674-ttd',
-  'la habana':        'Havana/d35674-ttd',
-  'quebec':           'Quebec-City/d35675-ttd',
-  'québec':           'Quebec-City/d35675-ttd',
-  'montreal':         'Montreal/d35676-ttd',
-  'montréal':         'Montreal/d35676-ttd',
-  'toronto':          'Toronto/d35677-ttd',
-  'vancouver':        'Vancouver/d35678-ttd',
-  'banff':            'Banff/d35679-ttd',
-  // ── ASIE ──
-  'tokyo':            'Tokyo/d334-ttd',
-  'osaka':            'Osaka/d332-ttd',
-  'kyoto':            'Kyoto/d333-ttd',
-  'hiroshima':        'Hiroshima/d335-ttd',
-  'beijing':          'Beijing/d339-ttd',
-  'pékin':            'Beijing/d339-ttd',
-  'pekin':            'Beijing/d339-ttd',
-  'pekín':            'Beijing/d339-ttd',
-  'shanghai':         'Shanghai/d338-ttd',
-  'hong kong':        'Hong-Kong/d343-ttd',
-  'singapore':        'Singapore/d343-ttd',
-  'singapour':        'Singapore/d343-ttd',
-  'singapur':         'Singapore/d343-ttd',
-  'bali':             'Bali/d348-ttd',
-  'bangkok':          'Bangkok/d350-ttd',
-  'chiang mai':       'Chiang-Mai/d351-ttd',
-  'phuket':           'Phuket/d352-ttd',
-  'hanoi':            'Hanoi/d353-ttd',
-  'hanoï':            'Hanoi/d353-ttd',
-  'ho chi minh':      'Ho-Chi-Minh-City/d354-ttd',
-  'saigon':           'Ho-Chi-Minh-City/d354-ttd',
-  'siem reap':        'Siem-Reap/d356-ttd',
-  'seoul':            'Seoul/d973-ttd',
-  'séoul':            'Seoul/d973-ttd',
-  'busan':            'Busan/d974-ttd',
-  'taipei':           'Taipei/d347-ttd',
-  'mumbai':           'Mumbai/d804-ttd',
-  'delhi':            'Delhi/d803-ttd',
-  'new delhi':        'Delhi/d803-ttd',
-  'agra':             'Agra/d805-ttd',
-  'jaipur':           'Jaipur/d806-ttd',
-  'goa':              'Goa/d807-ttd',
-  'dubai':            'Dubai/d35682-ttd',
-  'doha':             'Doha/d35683-ttd',
-  'tel aviv':         'Tel-Aviv/d35685-ttd',
-  'jerusalem':        'Jerusalem/d35686-ttd',
-  'jérusalem':        'Jerusalem/d35686-ttd',
-  'petra':            'Petra/d35688-ttd',
-  // ── AFRIQUE ──
-  'marrakech':        'Marrakech/d35689-ttd',
-  'marrakesh':        'Marrakech/d35689-ttd',
-  'casablanca':       'Casablanca/d35690-ttd',
-  'cairo':            'Cairo/d35692-ttd',
-  'le caire':         'Cairo/d35692-ttd',
-  'el cairo':         'Cairo/d35692-ttd',
-  'luxor':            'Luxor/d35693-ttd',
-  'louxor':           'Luxor/d35693-ttd',
-  'cape town':        'Cape-Town/d35694-ttd',
-  'le cap':           'Cape-Town/d35694-ttd',
-  'nairobi':          'Nairobi/d35696-ttd',
-  'zanzibar':         'Zanzibar/d35697-ttd',
-  // ── OCÉANIE ──
-  'sydney':           'Sydney/d357-ttd',
-  'melbourne':        'Melbourne/d358-ttd',
-  'brisbane':         'Brisbane/d359-ttd',
-  'cairns':           'Cairns/d360-ttd',
-  'auckland':         'Auckland/d362-ttd',
-  'queenstown':       'Queenstown/d363-ttd',
+  'london':      'London/d737-ttd',
+  'londres':     'London/d737-ttd',
+  'paris':       'Paris/d479-ttd',
+  'rome':        'Rome/d511-ttd',
+  'roma':        'Rome/d511-ttd',
+  'barcelona':   'Barcelona/d562-ttd',
+  'barcelone':   'Barcelona/d562-ttd',
+  'amsterdam':   'Amsterdam/d525-ttd',
+  'berlin':      'Berlin/d488-ttd',
+  'madrid':      'Madrid/d566-ttd',
+  'brussels':    'Brussels/d521-ttd',
+  'bruxelles':   'Brussels/d521-ttd',
+  'vienna':      'Vienna/d454-ttd',
+  'vienne':      'Vienna/d454-ttd',
+  'prague':      'Prague/d638-ttd',
+  'lisbon':      'Lisbon/d548-ttd',
+  'lisbonne':    'Lisbon/d548-ttd',
+  'dublin':      'Dublin/d503-ttd',
+  'edinburgh':   'Edinburgh/d272-ttd',
+  'edimbourg':   'Edinburgh/d272-ttd',
+  'florence':    'Florence/d519-ttd',
+  'venice':      'Venice/d524-ttd',
+  'venise':      'Venice/d524-ttd',
+  'strasbourg':  'Strasbourg/d5466-ttd',
+  'lyon':        'Lyon/d5462-ttd',
+  'marseille':   'Marseille/d5463-ttd',
+  'nice':        'Nice/d5464-ttd',
+  'bruges':      'Bruges/d5335-ttd',
+  'cologne':     'Cologne/d5482-ttd',
+  'munich':      'Munich/d489-ttd',
+  'antwerp':     'Antwerp/d5336-ttd',
+  'anvers':      'Antwerp/d5336-ttd',
 };
 
 function getViatorDestUrl(city, pid, mcid) {
@@ -2764,7 +2589,7 @@ const mapDd = document.getElementById('map-city-dropdown');
 async function fetchCities(q) {
   try {
     // Photon (komoot) — plus fiable que Nominatim, pas de blocage GitHub Pages
-    const langMap = { fr:'fr', en:'en', es:'es', de:'de', it:'it', pt:'pt' };
+    const langMap = { fr:'fr', en:'en', es:'fr', de:'de', it:'it', pt:'fr' }; // komoot ne supporte pas es/pt
     const l = langMap[lang] || 'fr';
     const r = await fetch(
       'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + l
@@ -4308,7 +4133,7 @@ function buildActivityCard(a, idx, location) {
         <a class="rc-gmaps" href="https://wa.me/?text=${encodeURIComponent((a.titre||'') + ' — ' + (a.description||'').substring(0,80) + '… 📍 ' + (location||'') + '\n\nVia Weekio 🟢 https://weekio.app')}" target="_blank" rel="noopener" style="background:#25D366;color:#fff;border-color:#25D366;padding:9px 12px">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>${{fr:'Partager',en:'Share',es:'Compartir',de:'Teilen',it:'Condividi',pt:'Partilhar'}[lang]||'Partager'}
         </a>
-        ${((location||'') && VIATOR_DEST_MAP[(location||'').toLowerCase().split(',')[0].split('·')[0].trim()]) ? `<a class="rc-viator-btn viator-btn-pending"
+        ${((['Culture','Divertissement','Sport','Nature'].includes(a.type)) && (location||'').match(/london|londres|paris|rome|barcelona|barcelone|amsterdam|berlin|madrid|bruxelles|strasbourg|lyon|marseille|nice|vienna|vienne|prague|lisbonne|lisbon|dublin|florence|venise|venice|bruges|cologne|munich/i) || (a.titre||'').match(/tower|bridge|museum|musée|louvre|eiffel|palace|château|castle|cathedral|cathédrale|abbey|galerie|gallery|monument|national|royal|historic|imperial/i)) ? `<a class="rc-viator-btn viator-btn-pending"
           href="${getViatorDestUrl((location||''), 'P00305178', '42383')}"
           data-viator-title="${(a.titre||'').replace(/"/g,'').replace(/[–—]/g,'-').substring(0,80)}"
           data-viator-city="${(location||'').split(',')[0].trim().substring(0,40)}"
@@ -4416,22 +4241,6 @@ async function scheduleWeekendNotif() {
 function checkNotifBar() {
   // Notif désormais proposée uniquement dans le panneau Pro (onglet Stats)
   // Rien à faire ici
-}
-
-// Tester la notification immédiatement (pour debug)
-async function testNotifNow() {
-  if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') {
-    alert("Active d'abord les notifications !");
-    return;
-  }
-  const sw = await navigator.serviceWorker.ready;
-  const city = document.getElementById('location')?.value?.trim() || 
-    (() => { try { return JSON.parse(localStorage.getItem('af_searches')||'[]')[0]?.location || 'Paris'; } catch(e) { return 'Paris'; } })();
-  if (sw.active) {
-    sw.active.postMessage({ type: 'TEST_NOTIF', city });
-    const msgs = {fr:'🔔 Notification test envoyée !',en:'🔔 Test notification sent!',es:'🔔 ¡Notificación de prueba enviada!',de:'🔔 Testbenachrichtigung gesendet!',it:'🔔 Notifica di prova inviata!',pt:'🔔 Notificação de teste enviada!'};
-    alert(msgs[lang] || msgs.fr);
-  }
 }
 
 
@@ -5196,7 +5005,7 @@ function renderResults(activities, location, radius, budget, group, ages) {
           ${websiteUrl ? `<a class="rc-gmaps" href="${websiteUrl}" target="_blank" rel="noopener" style="background:var(--primary-light);color:var(--primary);border-color:var(--primary)">
             🌐 ${t.seeOfficialSite||'Site'}
           </a>` : ''}
-          ${((location||'') && VIATOR_DEST_MAP[(location||'').toLowerCase().split(',')[0].split('·')[0].trim()]) ? `<a class="rc-viator-btn viator-btn-pending"
+          ${((['Culture','Divertissement','Sport','Nature'].includes(a.type)) && (location||'').match(/london|londres|paris|rome|barcelona|barcelone|amsterdam|berlin|madrid|bruxelles|strasbourg|lyon|marseille|nice|vienna|vienne|prague|lisbonne|lisbon|dublin|florence|venise|venice|bruges|cologne|munich/i) || (a.titre||'').match(/tower|bridge|museum|musée|louvre|eiffel|palace|château|castle|cathedral|cathédrale|abbey|galerie|gallery|monument|national|royal|historic|imperial/i)) ? `<a class="rc-viator-btn viator-btn-pending"
             href="${getViatorDestUrl((location||''), 'P00305178', '42383')}"
             data-viator-title="${(a.titre||'').replace(/"/g,'').replace(/[–—]/g,'-').substring(0,80)}"
             data-viator-city="${(location||'').split(',')[0].trim().substring(0,40)}"
@@ -6311,7 +6120,6 @@ async function renderAccountStats() {
         <span style="font-size:18px">🔔</span>
         <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">${{fr:'Idées week-end chaque vendredi à 17h',en:'Weekend ideas every Friday at 5pm',es:'Ideas de fin de semana cada viernes a las 17h',de:'Wochenend-Ideen jeden Freitag um 17 Uhr',it:'Idee weekend ogni venerdì alle 17',pt:'Ideias de fim de semana toda sexta às 17h'}[lang]||'Idées week-end chaque vendredi à 17h'}</div>
         <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">${{fr:'Activer',en:'Enable',es:'Activar',de:'Aktivieren',it:'Attiva',pt:'Ativar'}[lang]||'Activer'}</button>
-
       </div>`
     : (('Notification' in window && Notification.permission === 'granted')
       ? `<div style="font-size:12px;color:var(--primary);text-align:center;padding:4px 0;margin-bottom:10px">🔔 Notifications activées — vendredi 17h ✓</div>`
@@ -7760,25 +7568,10 @@ async function signOut() {
 async function confirmDeleteAccount() {
   if (!confirm(apt().deleteConfirm)) return;
   if (_sb && currentUser) {
-    try {
-      // Supprimer toutes les données utilisateur
-      await _sb.from('favorites').delete().eq('user_id', currentUser.id);
-      await _sb.from('notes').delete().eq('user_id', currentUser.id);
-      await _sb.from('searches').delete().eq('user_id', currentUser.id);
-      await _sb.from('programmes').delete().eq('user_id', currentUser.id);
-      await _sb.from('profiles').delete().eq('id', currentUser.id);
-      // Déconnexion
-      await _sb.auth.signOut();
-      // Effacer le localStorage
-      Object.keys(localStorage).filter(k => k.startsWith('weekio')).forEach(k => localStorage.removeItem(k));
-      // Confirmer à l'utilisateur
-      const msgs = {fr:'Compte supprimé. À bientôt !', en:'Account deleted. Goodbye!', es:'Cuenta eliminada. ¡Hasta pronto!', de:'Konto gelöscht. Auf Wiedersehen!', it:'Account eliminato. Arrivederci!', pt:'Conta eliminada. Até logo!'};
-      alert(msgs[lang] || msgs.fr);
-      location.reload();
-    } catch(e) {
-      console.error('Delete account error:', e);
-      alert('Une erreur est survenue. Contactez contact@weekio.app pour supprimer votre compte.');
-    }
+    await _sb.from('notes').delete().eq('user_id', currentUser.id);
+    await _sb.from('searches').delete().eq('user_id', currentUser.id);
+    await _sb.from('profiles').delete().eq('id', currentUser.id);
+    await _sb.auth.signOut();
   }
   closeAccountPanel();
 }
@@ -8382,13 +8175,6 @@ window.addEventListener('load', () => {
 
   // Listener SW → pré-remplir ville depuis notif vendredi
   if ('serviceWorker' in navigator) {
-    // Enregistrer le Service Worker (sw.js doit être à la racine du repo)
-    navigator.serviceWorker.register('/sw.js').then(reg => {
-      console.log('[SW] Enregistré:', reg.scope);
-    }).catch(err => {
-      console.warn('[SW] Échec enregistrement:', err);
-    });
-
     navigator.serviceWorker.addEventListener('message', e => {
       if (e.data?.type === 'NOTIF_CLICK' && e.data.city) {
         const locInput = document.getElementById('location');
@@ -8452,43 +8238,5 @@ function checkOnThisDayNotification() {
 
 <!-- Input upload avatar -->
 <input type="file" accept="image/*" id="avatar-upload-input" style="display:none" onchange="handleAvatarUpload(this)">
-
-<!-- Footer légal -->
-<div id="legal-footer" style="
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #e8e4df;
-  padding: 8px 16px;
-  text-align: center;
-  font-size: 11px;
-  color: #999;
-  font-family: sans-serif;
-  z-index: 999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-">
-  <span>© 2026 Weekio — Anthony Kirsch</span>
-  <span style="color:#ddd">|</span>
-  <a href="legal.html" target="_blank" style="color:#5a8c49;text-decoration:none;">Mentions légales</a>
-  <span style="color:#ddd">|</span>
-  <a href="legal.html#cgu" target="_blank" style="color:#5a8c49;text-decoration:none;">CGU</a>
-  <span style="color:#ddd">|</span>
-  <a href="legal.html#confidentialite" target="_blank" style="color:#5a8c49;text-decoration:none;">Confidentialité</a>
-  <span style="color:#ddd">|</span>
-  <a href="legal.html#cookies" target="_blank" style="color:#5a8c49;text-decoration:none;">Cookies</a>
-  <span style="color:#ddd">|</span>
-  <a href="mailto:contact@weekio.app" style="color:#5a8c49;text-decoration:none;">contact@weekio.app</a>
-</div>
-
-<!-- Espace pour éviter que le footer masque le contenu -->
-<div style="height:40px"></div>
-
 </body>
 </html>
