@@ -4972,8 +4972,21 @@ async function runSearch(fromMap) {
     }
     if (!jsonMatch) throw new Error('Pas de JSON dans la reponse');
 
-    let activities = JSON.parse(jsonMatch[0]).slice(0, 6);
+    // Parsing robuste : JSON.parse strict d'abord, sinon parser objet par objet
+    let activities = null;
+    try {
+      activities = JSON.parse(jsonMatch[0]);
+    } catch(parseErr) {
+      console.warn('JSON.parse strict a échoué, tentative parsing robuste:', parseErr.message);
+      activities = _tryParseActivities(text);
+      if (!activities) {
+        // Dernier recours : parser tout le contenu brut
+        const fullContent = _claudeData.content.map(i => i.text || '').join('');
+        activities = _tryParseActivities(fullContent);
+      }
+    }
     if (!Array.isArray(activities) || !activities.length) throw new Error('Tableau vide');
+    activities = activities.slice(0, 6);
 
     // Stocker dans le cache Claude (2h)
     _setCache(_ck, activities);
