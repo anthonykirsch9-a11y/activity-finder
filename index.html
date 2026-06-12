@@ -7398,7 +7398,19 @@ async function renderAccountActivities() {
     html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🗓 Mes programmes</div>';
     savedPrograms.forEach(function(p) {
       var dateStr = new Date(p.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric'});
-      var stepsList = (p.note||'').split(' → ');
+      var _noteRaw = p.note || '';
+      var _previewText = _noteRaw;
+      // Si c'est du JSON (nouveau format), extraire les titres des étapes
+      if (_noteRaw.trim().startsWith('{')) {
+        try {
+          var _prog = JSON.parse(_noteRaw);
+          var _days = (_prog.program && typeof _prog.program === 'object') ? Object.values(_prog.program) : [];
+          var _allSteps = [];
+          _days.forEach(function(day) { if (Array.isArray(day)) day.forEach(function(s) { if (s.titre || s.title) _allSteps.push(s.titre || s.title); }); });
+          _previewText = _allSteps.slice(0,3).join(' → ') + (_allSteps.length > 3 ? '…' : '');
+        } catch(e) { _previewText = ''; }
+      }
+      var stepsList = _previewText.split(' → ');
       var preview = stepsList.slice(0,3).join(' → ') + (stepsList.length > 3 ? '…' : '');
       var aid = p.activity_id;
       html += '<div class="activity-item" style="border-left:3px solid var(--primary);padding-left:10px">';
