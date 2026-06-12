@@ -2,8 +2,6 @@
 <html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9632447671058481" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3471,15 +3469,7 @@ function getPhotoTheme(type, titre) {
     if (t.includes('musée') || t.includes('expo') || t.includes('galerie')) return 'museum';
     if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
     if (t.includes('escape') || t.includes('laser') || t.includes('jeu')) return 'escape';
-    if (t.includes('color run') || t.includes('course') || t.includes('run') || t.includes('trail') || t.includes('marathon')) return 'escalade';
-    if (t.includes('chasse') || t.includes('trésor') || t.includes('enquête') || t.includes('mystère') || t.includes('détective')) return 'escape';
-    if (t.includes('château') || t.includes('abbaye') || t.includes('fort') || t.includes('patrimoine') || t.includes('archéo') || t.includes('historique') || t.includes('médiév')) return 'chateau';
-    if (t.includes('pétanque') || t.includes('sport') || t.includes('tournoi') || t.includes('compétition')) return 'escalade';
-    if (t.includes('jardin') || t.includes('parc') || t.includes('nature') || t.includes('balade')) return 'nature';
-    if (t.includes('photo') || t.includes('illustration') || t.includes('aquarelle') || t.includes('dessin') || t.includes('créatif') || t.includes('atelier')) return 'artisanat';
-    if (t.includes('cuisine') || t.includes('gastronomie') || t.includes('repas') || t.includes('pique-nique')) return 'food';
-    if (t.includes('cirque') || t.includes('magie') || t.includes('clown')) return 'theatre';
-    return 'fete'; // fallback éphémère générique = fête (plus adapté que marché)
+    return 'marche'; // fallback éphémère générique = marché
   }
   if (t.includes('randonnée') || t.includes('randonn') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
   if (t.includes('vélo') || t.includes('vtt') || t.includes('cycl')) return 'velo';
@@ -4218,13 +4208,7 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     ${weatherBanner}
     <div class="results-header">${t.resultsTitle(activities.length)}</div>
     <div class="rc-grid" id="rc-grid-progressive"></div>
-    <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>
-    ${onlyMode === 'ephem' ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin:.5rem 0 1.5rem;text-align:center">
-      <div style="font-size:22px;margin-bottom:.3rem">🎉</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:.3rem">${{'fr':'Voilà tous les événements éphémères du week-end près de toi !','en':"That\'s all the ephemeral events this weekend near you!",'es':'¡Estos son todos los eventos del fin de semana cerca de ti!','de':'Das sind alle kurzfristigen Events dieses Wochenendes!','it':'Ecco tutti gli eventi effimeri del weekend vicino a te!','pt':'Estes são todos os eventos do fim de semana perto de ti!'}[lang]||'Voilà tous les événements éphémères du week-end !'}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:.8rem">${{'fr':'Envie de plus d\'idées ? Essaie avec d\'autres critères.','en':'Want more ideas? Try with different criteria.','es':'¿Quieres más ideas? Prueba con otros criterios.','de':'Mehr Ideen? Versuche andere Kriterien.','it':'Vuoi più idee? Prova con altri criteri.','pt':'Quer mais ideias? Tenta com outros critérios.'}[lang]||'Envie de plus d\'idées ?'}</div>
-      <button onclick="onlyMode=\'\';document.getElementById(\'only-ephem-btn\')?.classList.remove(\'active\');runSearch()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">${{'fr':'🔍 Voir toutes les activités','en':'🔍 See all activities','es':'🔍 Ver todas las actividades','de':'🔍 Alle Aktivitäten','it':'🔍 Vedi tutte le attività','pt':'🔍 Ver tudo'}[lang]||'🔍 Voir toutes les activités'}</button>
-    </div>` : ''}`;
+    <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
 
   // Ajouter cartes une par une avec délai 600ms
   // Réinjecter la carte CDC si elle existait
@@ -4509,14 +4493,6 @@ function _renderStreamCards(activities, fromIdx, location) {
     grid = document.getElementById('rc-grid-progressive');
   }
   if (!grid) return;
-
-  // Appliquer filtre anti-doublon dans le streaming aussi
-  const _seenStream = new Set([..._sessionSeenTitles, ...getSeenTitles24h('')]);
-  activities = activities.filter((a, idx) => {
-    if (idx < fromIdx) return true; // garder les déjà rendues
-    if (!a.titre || a.ephemere || a.nocturne) return true;
-    return !_seenStream.has(a.titre.toLowerCase().trim());
-  });
 
   // Ajouter uniquement les nouvelles cartes
   for (let i = fromIdx; i < activities.length; i++) {
@@ -4982,6 +4958,7 @@ async function runSearch(fromMap) {
     // Stocker dans le cache Claude (2h)
     _setCache(_ck, activities);
     await incrementSearchCount();
+    await saveSearch(location, group, budget, activities);
 
     // ── FILTRE ANTI-DOUBLON CÔTÉ CLIENT (garantie 100%) ──
     // Récupérer tous les titres déjà vus (session + localStorage)
@@ -5000,26 +4977,6 @@ async function runSearch(fromMap) {
         console.log('🚫 Doublons exacts filtrés:', beforeCount - activities.length);
       }
     }
-
-    // ── FILTRE ACTIVITÉS DÉJÀ FAITES (Pro) — correspondance exacte uniquement ──
-    if (currentUser && userPlan === 'pro' && alreadyDoneIds.size > 0) {
-      const beforeDone = activities.length;
-      activities = activities.filter(a => {
-        if (!a.titre) return true;
-        const fId = (a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase();
-        if (alreadyDoneIds.has(fId)) {
-          console.log('🚫 Activité déjà faite filtrée:', a.titre);
-          return false;
-        }
-        return true;
-      });
-      if (activities.length < beforeDone) {
-        console.log('✅ Activités déjà faites filtrées:', beforeDone - activities.length);
-      }
-    }
-
-    // Sauvegarder APRÈS filtrage — ordre important pour éviter les doublons
-    await saveSearch(location, group, budget, activities);
 
     // Sauvegarder en mémoire session immédiatement
     activities.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
@@ -8160,7 +8117,8 @@ function hideBetaScreen() {
 }
 
 function initBetaGate() {
-  let passed = true; // Beta gate désactivé
+  let passed = false;
+  try { passed = localStorage.getItem(BETA_STORAGE_KEY) === '1'; } catch(e) {}
   if (passed) {
     userPlan = 'pro';
     if (!currentUser) {
