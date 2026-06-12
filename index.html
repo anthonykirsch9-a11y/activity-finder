@@ -2,6 +2,8 @@
 <html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9632447671058481" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -930,6 +932,46 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
 /* Tabs */
 .view-tab.active { font-weight: 700 !important; }
 
+.rc-viator-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, #589442, #3d6b2e);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: 'DM Sans', sans-serif;
+  border: none;
+}
+.rc-viator-btn:hover { opacity: 0.85; }
+.rc-viator-btn.viator-btn-pending {
+  background: linear-gradient(135deg, #7aaa64, #5a8c49);
+  opacity: 0.75;
+  position: relative;
+  overflow: hidden;
+}
+.rc-viator-btn.viator-btn-pending::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  animation: viator-shimmer 1.4s infinite;
+}
+@keyframes viator-shimmer {
+  0%   { left: -60%; }
+  100% { left: 120%; }
+}
+.rc-viator-btn.viator-btn-ready {
+  background: linear-gradient(135deg, #589442, #3d6b2e);
+  opacity: 1;
+}
 .rc-pro-action-btn {
   width: 38px; height: 38px; border-radius: 10px;
   border: 1.5px solid var(--border); background: var(--bg);
@@ -1518,45 +1560,45 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
       <div class="wp-cover-photo" id="wp-cover-photo"></div>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
         <div>
-          <div class="wp-hero-title">🗓 Mon programme</div>
-          <div class="wp-hero-sub" id="wp-subtitle">Basé sur tes favoris · Personnalise et génère</div>
+          <div class="wp-hero-title" id="wp-modal-title">🗓 Mon programme</div>
+          <div class="wp-hero-sub" id="wp-subtitle">Basé sur tes favoris</div>
         </div>
         <button onclick="closeWeekendProgram()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0">×</button>
       </div>
 
       <!-- Ambiance -->
-      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Ambiance</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)" id="wp-lbl-ambiance">Ambiance</div>
       <div class="wp-ambiance-row" id="wp-ambiance-row">
-        <button class="wp-ambiance-btn active" data-ambiance="equilibre" onclick="selectWpAmbiance(this)">⚖️ Équilibré</button>
-        <button class="wp-ambiance-btn" data-ambiance="tranquille" onclick="selectWpAmbiance(this)">🌿 Tranquille</button>
-        <button class="wp-ambiance-btn" data-ambiance="sportif" onclick="selectWpAmbiance(this)">⚡ Sportif</button>
-        <button class="wp-ambiance-btn" data-ambiance="culturel" onclick="selectWpAmbiance(this)">🏛️ Culturel</button>
-        <button class="wp-ambiance-btn" data-ambiance="festif" onclick="selectWpAmbiance(this)">🎉 Festif</button>
+        <button class="wp-ambiance-btn active" data-ambiance="equilibre" id="wp-amb-equilibre" onclick="selectWpAmbiance(this)">⚖️ Équilibré</button>
+        <button class="wp-ambiance-btn" data-ambiance="tranquille" id="wp-amb-tranquille" onclick="selectWpAmbiance(this)">🌿 Tranquille</button>
+        <button class="wp-ambiance-btn" data-ambiance="sportif" id="wp-amb-sportif" onclick="selectWpAmbiance(this)">⚡ Sportif</button>
+        <button class="wp-ambiance-btn" data-ambiance="culturel" id="wp-amb-culturel" onclick="selectWpAmbiance(this)">🏛️ Culturel</button>
+        <button class="wp-ambiance-btn" data-ambiance="festif" id="wp-amb-festif" onclick="selectWpAmbiance(this)">🎉 Festif</button>
       </div>
 
       <!-- Région des favoris -->
-      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Favoris de quelle zone ?</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)" id="wp-lbl-zone">Favoris de quelle zone ?</div>
       <select class="wp-region-select" id="wp-region-select">
-        <option value="all">🌍 Tous mes favoris</option>
+        <option value="all" id="wp-opt-all">🌍 Tous mes favoris</option>
       </select>
 
       <!-- Dates -->
-      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)">Dates</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;text-shadow:0 1px 3px rgba(0,0,0,0.8)" id="wp-lbl-dates">Dates</div>
       <div class="wp-date-row">
         <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:rgba(255,255,255,0.5)">Du</label>
+          <label id="wp-lbl-du" style="font-size:10px;color:rgba(255,255,255,0.5)">Du</label>
           <input type="date" id="wp-date-from" class="wp-date-input" style="width:130px;color-scheme:dark">
         </div>
         <div style="color:rgba(255,255,255,0.4);font-size:14px;margin-top:16px">→</div>
         <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:rgba(255,255,255,0.5)">Au</label>
+          <label id="wp-lbl-au" style="font-size:10px;color:rgba(255,255,255,0.5)">Au</label>
           <input type="date" id="wp-date-to" class="wp-date-input" style="width:130px;color-scheme:dark">
         </div>
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-        <button class="wp-dur-btn" onclick="setWpDateShortcut('today')">Auj.</button>
-        <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')">Demain</button>
-        <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')">Ce week-end</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('today')" id="wp-btn-today">Auj.</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('tomorrow')" id="wp-btn-tomorrow">Demain</button>
+        <button class="wp-dur-btn" onclick="setWpDateShortcut('weekend')" id="wp-btn-weekend">Ce week-end</button>
       </div>
 
       <!-- Contraintes -->
@@ -1564,14 +1606,14 @@ input, select, textarea, button { font-size: 16px !important; touch-action: mani
         placeholder="Contraintes (ex: rien le dimanche matin, budget serré le samedi, pas de voiture…)"></textarea>
 
       <!-- Bouton générer -->
-      <button onclick="generateWeekendProgram()" class="wp-generate-btn" style="margin-top:12px">
+      <button onclick="generateWeekendProgram()" class="wp-generate-btn" id="wp-btn-generate" style="margin-top:12px">
         ✨ Générer mon programme
       </button>
     </div>
     <div class="weekend-program-body" id="weekend-program-body">
       <div style="text-align:center;padding:30px 20px">
         <div style="font-size:40px;margin-bottom:10px">🗓</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6">Choisis une date en haut<br>puis clique <strong>Générer</strong></div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6" id="wp-hint-dates">Choisis une date en haut<br>puis clique <strong>Générer</strong></div>
       </div>
     </div>
   </div>
@@ -1636,8 +1678,348 @@ const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 const STRIPE_PUB_KEY   = 'COLLE_TON_STRIPE_PUBLISHABLE_KEY_ICI';
 const STRIPE_PRICE_ID  = 'COLLE_TON_STRIPE_PRICE_ID_ICI';
 const FREE_LIMIT       = 3;
+const VIATOR_PID = 'P00305178';
+const VIATOR_MCID = '42383';
+const VIATOR_API_KEY = 'cdb9e96a-3302-4cea-b26b-dc7e2cc6a18e';
+const VIATOR_TYPES = ['Culture','Divertissement','Sport','Nature','Entertainment','Cultural','Leisure'];
+const VIATOR_CITIES = ['Londres','London','Paris','Rome','Roma','Barcelone','Barcelona','Amsterdam','Berlin','Madrid','Bruxelles','Brussels','Vienne','Vienna','Prague','Lisbonne','Lisbon','Dublin','Édimbourg','Edinburgh','Florence','Venise','Venice','Strasbourg','Lyon','Marseille','Nice','Bruges','Anvers','Antwerp','Cologne','Munich'];
+
+// Map ville → URL destination Viator (format /CityName/dXXX-ttd)
+const VIATOR_DEST_MAP = {
+  // ── EUROPE ──
+  'london':           'London/d737-ttd',
+  'londres':          'London/d737-ttd',
+  'paris':            'Paris/d479-ttd',
+  'rome':             'Rome/d511-ttd',
+  'roma':             'Rome/d511-ttd',
+  'barcelona':        'Barcelona/d562-ttd',
+  'barcelone':        'Barcelona/d562-ttd',
+  'amsterdam':        'Amsterdam/d525-ttd',
+  'berlin':           'Berlin/d488-ttd',
+  'madrid':           'Madrid/d566-ttd',
+  'brussels':         'Brussels/d521-ttd',
+  'bruxelles':        'Brussels/d521-ttd',
+  'vienna':           'Vienna/d454-ttd',
+  'vienne':           'Vienna/d454-ttd',
+  'wien':             'Vienna/d454-ttd',
+  'prague':           'Prague/d638-ttd',
+  'lisbon':           'Lisbon/d548-ttd',
+  'lisbonne':         'Lisbon/d548-ttd',
+  'lisboa':           'Lisbon/d548-ttd',
+  'dublin':           'Dublin/d503-ttd',
+  'edinburgh':        'Edinburgh/d272-ttd',
+  'edimbourg':        'Edinburgh/d272-ttd',
+  'florence':         'Florence/d519-ttd',
+  'firenze':          'Florence/d519-ttd',
+  'venice':           'Venice/d524-ttd',
+  'venise':           'Venice/d524-ttd',
+  'venezia':          'Venice/d524-ttd',
+  'strasbourg':       'Strasbourg/d5502-ttd',
+  'lyon':             'Lyon/d829-ttd',
+  'marseille':        'Marseille/d485-ttd',
+  'nice':             'Nice/d478-ttd',
+  'bruges':           'Bruges/d4836-ttd',
+  'brugge':           'Bruges/d4836-ttd',
+  'cologne':          'Cologne/d5482-ttd',
+  'köln':             'Cologne/d5482-ttd',
+  'koln':             'Cologne/d5482-ttd',
+  'munich':           'Munich/d489-ttd',
+  'münchen':          'Munich/d489-ttd',
+  'antwerp':          'Antwerp/d458-ttd',
+  'anvers':           'Antwerp/d458-ttd',
+  'seville':          'Seville/d556-ttd',
+  'séville':          'Seville/d556-ttd',
+  'sevilla':          'Seville/d556-ttd',
+  'granada':          'Granada/d772-ttd',
+  'malaga':           'Malaga/d956-ttd',
+  'málaga':           'Malaga/d956-ttd',
+  'valencia':         'Valencia/d811-ttd',
+  'bilbao':           'Bilbao/d813-ttd',
+  'milan':            'Milan/d509-ttd',
+  'milano':           'Milan/d509-ttd',
+  'naples':           'Naples/d510-ttd',
+  'napoli':           'Naples/d510-ttd',
+  'athens':           'Athens/d496-ttd',
+  'athènes':          'Athens/d496-ttd',
+  'atenas':           'Athens/d496-ttd',
+  'santorini':        'Santorini/d4415-ttd',
+  'mykonos':          'Mykonos/d4416-ttd',
+  'crete':            'Crete/d4415-ttd',
+  'crète':            'Crete/d4415-ttd',
+  'istanbul':         'Istanbul/d585-ttd',
+  'stockholm':        'Stockholm/d675-ttd',
+  'oslo':             'Oslo/d673-ttd',
+  'copenhagen':       'Copenhagen/d671-ttd',
+  'copenhague':       'Copenhagen/d671-ttd',
+  'københavn':        'Copenhagen/d671-ttd',
+  'helsinki':         'Helsinki/d672-ttd',
+  'warsaw':           'Warsaw/d639-ttd',
+  'varsovie':         'Warsaw/d639-ttd',
+  'warszawa':         'Warsaw/d639-ttd',
+  'krakow':           'Krakow/d5359-ttd',
+  'cracovie':         'Krakow/d5359-ttd',
+  'kraków':           'Krakow/d5359-ttd',
+  'budapest':         'Budapest/d499-ttd',
+  'dubrovnik':        'Dubrovnik/d4686-ttd',
+  'split':            'Split/d4687-ttd',
+  'zagreb':           'Zagreb/d35506-ttd',
+  'porto':            'Porto/d5467-ttd',
+  'bordeaux':         'Bordeaux/d706-ttd',
+  'toulouse':         'Toulouse/d828-ttd',
+  'montpellier':      'Montpellier/d830-ttd',
+  'nantes':           'Nantes/d831-ttd',
+  'lille':            'Lille/d832-ttd',
+  'versailles':       'Versailles/d479-ttd',
+  'zurich':           'Zurich/d577-ttd',
+  'zürich':           'Zurich/d577-ttd',
+  'geneva':           'Geneva/d578-ttd',
+  'genève':           'Geneva/d578-ttd',
+  'genf':             'Geneva/d578-ttd',
+  'interlaken':       'Interlaken/d581-ttd',
+  'zermatt':          'Zermatt/d583-ttd',
+  'lucerne':          'Lucerne/d580-ttd',
+  'luzern':           'Lucerne/d580-ttd',
+  'luxembourg':       'Luxembourg-City/d35421-ttd',
+  'reykjavik':        'Reykjavik/d4413-ttd',
+  'riga':             'Riga/d35407-ttd',
+  'tallinn':          'Tallinn/d35408-ttd',
+  'vilnius':          'Vilnius/d35409-ttd',
+  'bratislava':       'Bratislava/d35415-ttd',
+  'malta':            'Malta/d4414-ttd',
+  'palma':            'Palma-de-Mallorca/d5551-ttd',
+  'mallorca':         'Palma-de-Mallorca/d5551-ttd',
+  'ibiza':            'Ibiza/d5552-ttd',
+  'tenerife':         'Tenerife/d4132-ttd',
+  'algarve':          'Algarve/d5553-ttd',
+  // ── AMÉRIQUES ──
+  'new york':         'New-York-City/d5560-ttd',
+  'new york city':    'New-York-City/d5560-ttd',
+  'nyc':              'New-York-City/d5560-ttd',
+  'nueva york':       'New-York-City/d5560-ttd',
+  'los angeles':      'Los-Angeles/d645-ttd',
+  'miami':            'Miami/d646-ttd',
+  'chicago':          'Chicago/d647-ttd',
+  'san francisco':    'San-Francisco/d651-ttd',
+  'las vegas':        'Las-Vegas/d684-ttd',
+  'washington':       'Washington-DC/d648-ttd',
+  'washington dc':    'Washington-DC/d648-ttd',
+  'boston':           'Boston/d649-ttd',
+  'orlando':          'Orlando/d650-ttd',
+  'new orleans':      'New-Orleans/d652-ttd',
+  'hawaii':           'Hawaii/d4149-ttd',
+  'honolulu':         'Honolulu/d4150-ttd',
+  'cancun':           'Cancun/d631-ttd',
+  'cancún':           'Cancun/d631-ttd',
+  'mexico city':      'Mexico-City/d634-ttd',
+  'ciudad de mexico': 'Mexico-City/d634-ttd',
+  'playa del carmen': 'Playa-del-Carmen/d5136-ttd',
+  'tulum':            'Tulum/d35671-ttd',
+  'rio de janeiro':   'Rio-de-Janeiro/d314-ttd',
+  'rio':              'Rio-de-Janeiro/d314-ttd',
+  'buenos aires':     'Buenos-Aires/d317-ttd',
+  'lima':             'Lima/d316-ttd',
+  'cusco':            'Cusco/d4148-ttd',
+  'cartagena':        'Cartagena/d4685-ttd',
+  'medellin':         'Medellin/d35672-ttd',
+  'medellín':         'Medellin/d35672-ttd',
+  'santiago':         'Santiago/d318-ttd',
+  'havana':           'Havana/d35674-ttd',
+  'la havane':        'Havana/d35674-ttd',
+  'habana':           'Havana/d35674-ttd',
+  'la habana':        'Havana/d35674-ttd',
+  'quebec':           'Quebec-City/d35675-ttd',
+  'québec':           'Quebec-City/d35675-ttd',
+  'montreal':         'Montreal/d35676-ttd',
+  'montréal':         'Montreal/d35676-ttd',
+  'toronto':          'Toronto/d35677-ttd',
+  'vancouver':        'Vancouver/d35678-ttd',
+  'banff':            'Banff/d35679-ttd',
+  // ── ASIE ──
+  'tokyo':            'Tokyo/d334-ttd',
+  'osaka':            'Osaka/d332-ttd',
+  'kyoto':            'Kyoto/d333-ttd',
+  'hiroshima':        'Hiroshima/d335-ttd',
+  'beijing':          'Beijing/d339-ttd',
+  'pékin':            'Beijing/d339-ttd',
+  'pekin':            'Beijing/d339-ttd',
+  'pekín':            'Beijing/d339-ttd',
+  'shanghai':         'Shanghai/d338-ttd',
+  'hong kong':        'Hong-Kong/d343-ttd',
+  'singapore':        'Singapore/d343-ttd',
+  'singapour':        'Singapore/d343-ttd',
+  'singapur':         'Singapore/d343-ttd',
+  'bali':             'Bali/d348-ttd',
+  'bangkok':          'Bangkok/d350-ttd',
+  'chiang mai':       'Chiang-Mai/d351-ttd',
+  'phuket':           'Phuket/d352-ttd',
+  'hanoi':            'Hanoi/d353-ttd',
+  'hanoï':            'Hanoi/d353-ttd',
+  'ho chi minh':      'Ho-Chi-Minh-City/d354-ttd',
+  'saigon':           'Ho-Chi-Minh-City/d354-ttd',
+  'siem reap':        'Siem-Reap/d356-ttd',
+  'seoul':            'Seoul/d973-ttd',
+  'séoul':            'Seoul/d973-ttd',
+  'busan':            'Busan/d974-ttd',
+  'taipei':           'Taipei/d347-ttd',
+  'mumbai':           'Mumbai/d804-ttd',
+  'delhi':            'Delhi/d803-ttd',
+  'new delhi':        'Delhi/d803-ttd',
+  'agra':             'Agra/d805-ttd',
+  'jaipur':           'Jaipur/d806-ttd',
+  'goa':              'Goa/d807-ttd',
+  'dubai':            'Dubai/d35682-ttd',
+  'doha':             'Doha/d35683-ttd',
+  'tel aviv':         'Tel-Aviv/d35685-ttd',
+  'jerusalem':        'Jerusalem/d35686-ttd',
+  'jérusalem':        'Jerusalem/d35686-ttd',
+  'petra':            'Petra/d35688-ttd',
+  // ── AFRIQUE ──
+  'marrakech':        'Marrakech/d35689-ttd',
+  'marrakesh':        'Marrakech/d35689-ttd',
+  'casablanca':       'Casablanca/d35690-ttd',
+  'cairo':            'Cairo/d35692-ttd',
+  'le caire':         'Cairo/d35692-ttd',
+  'el cairo':         'Cairo/d35692-ttd',
+  'luxor':            'Luxor/d35693-ttd',
+  'louxor':           'Luxor/d35693-ttd',
+  'cape town':        'Cape-Town/d35694-ttd',
+  'le cap':           'Cape-Town/d35694-ttd',
+  'nairobi':          'Nairobi/d35696-ttd',
+  'zanzibar':         'Zanzibar/d35697-ttd',
+  // ── OCÉANIE ──
+  'sydney':           'Sydney/d357-ttd',
+  'melbourne':        'Melbourne/d358-ttd',
+  'brisbane':         'Brisbane/d359-ttd',
+  'cairns':           'Cairns/d360-ttd',
+  'auckland':         'Auckland/d362-ttd',
+  'queenstown':       'Queenstown/d363-ttd',
+};
+
+function getViatorDestUrl(city, pid, mcid) {
+  const key = (city||'').toLowerCase().trim().split(',')[0].trim();
+  const dest = VIATOR_DEST_MAP[key];
+  if (dest) return 'https://www.viator.com/' + dest + '?pid=' + pid + '&mcid=' + mcid + '&medium=link&campaign=weekio';
+  // Fallback: page d'accueil Viator avec les params affiliés
+  return 'https://www.viator.com?pid=' + pid + '&mcid=' + mcid + '&medium=link&campaign=weekio';
+}
+
 const PEXELS_KEY       = 'OjOWZuQpato1V2fXEnpR4jIWnH4qsUmgxMImacQcY4vj0ZJNAAnPsolg';
 const _pexelsCache     = {};
+
+// ══════════════════════════════════════════════════════════════
+// VIATOR API — enrichissement des boutons après rendu des cartes
+// Stratégie : appel direct → fallback Supabase proxy si CORS
+// ══════════════════════════════════════════════════════════════
+const _viatorCache = {};
+
+async function _viatorFetchDirect(title, city) {
+  const resp = await fetch('https://api.viator.com/partner/search/freetext', {
+    method: 'POST',
+    headers: {
+      'Accept-Language': 'fr-FR',
+      'Accept': 'application/json;version=2.0',
+      'exp-api-key': VIATOR_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      searchTerm: title + ' ' + city,
+      searchTypes: [{ searchType: 'PRODUCTS', pagination: { offset: 0, limit: 3 } }],
+      currency: 'EUR'
+    })
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  return await resp.json();
+}
+
+async function _viatorFetchProxy(title, city) {
+  const resp = await fetch(SUPABASE_URL + '/functions/v1/viator-proxy', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + SUPABASE_ANON
+    },
+    body: JSON.stringify({ title, city })
+  });
+  if (!resp.ok) throw new Error('Proxy HTTP ' + resp.status);
+  return await resp.json();
+}
+
+async function getViatorProductUrl(title, city) {
+  const cacheKey = (title + '|' + city).toLowerCase().substring(0, 80);
+  if (_viatorCache[cacheKey]) return _viatorCache[cacheKey];
+
+  let data = null;
+  try {
+    data = await _viatorFetchDirect(title, city);
+  } catch(e) {
+    console.warn('[Viator] Direct call failed, trying proxy:', e.message);
+    try {
+      data = await _viatorFetchProxy(title, city);
+    } catch(e2) {
+      console.warn('[Viator] Proxy also failed:', e2.message);
+      return null;
+    }
+  }
+
+  let productUrl = null;
+  try {
+    const results = (data && data.products && data.products.results)
+      || (data && data.data && data.data.products && data.data.products.results)
+      || [];
+    if (results.length > 0) {
+      const product = results[0];
+      if (product.productUrl) {
+        productUrl = product.productUrl;
+      } else if (product.webURL) {
+        productUrl = product.webURL;
+      } else if (product.productCode) {
+        productUrl = 'https://www.viator.com/tours/' + product.productCode;
+      }
+      if (productUrl && productUrl.indexOf('pid=') === -1) {
+        const sep = productUrl.indexOf('?') !== -1 ? '&' : '?';
+        productUrl += sep + 'pid=' + VIATOR_PID + '&mcid=' + VIATOR_MCID + '&medium=link&campaign=weekio';
+      }
+      console.log('[Viator] Found product:', product.title || '?', '→', productUrl);
+    } else {
+      console.log('[Viator] No results for:', title, city);
+    }
+  } catch(e) {
+    console.warn('[Viator] Parse error:', e.message);
+  }
+
+  _viatorCache[cacheKey] = productUrl;
+  return productUrl;
+}
+
+async function enrichViatorButtons() {
+  const buttons = document.querySelectorAll('a.viator-btn-pending');
+  if (!buttons.length) return;
+  console.log('[Viator] Enriching ' + buttons.length + ' button(s)...');
+
+  const batchSize = 3;
+  const arr = Array.from(buttons);
+  for (let i = 0; i < arr.length; i += batchSize) {
+    const batch = arr.slice(i, i + batchSize);
+    await Promise.all(batch.map(async function(btn) {
+      const title = btn.dataset.viatorTitle || '';
+      const city  = btn.dataset.viatorCity  || '';
+      if (!title) return;
+      try {
+        const url = await getViatorProductUrl(title, city);
+        if (url) {
+          btn.href = url;
+          btn.classList.remove('viator-btn-pending');
+          btn.classList.add('viator-btn-ready');
+          console.log('[Viator] OK "' + title + '" → ' + url);
+        }
+      } catch(e) {
+        console.warn('[Viator] enrichViatorButtons error:', e);
+      }
+    }));
+    if (i + batchSize < arr.length) await new Promise(function(r){ setTimeout(r, 300); });
+  }
+}
+
 
 // ══════════════════════════════════════════════════════════════
 // CACHE RÉSULTATS CLAUDE — localStorage 2h, évite appels répétés
@@ -2384,7 +2766,7 @@ const mapDd = document.getElementById('map-city-dropdown');
 async function fetchCities(q) {
   try {
     // Photon (komoot) — plus fiable que Nominatim, pas de blocage GitHub Pages
-    const langMap = { fr:'fr', en:'en', es:'fr', de:'de', it:'it', pt:'fr' }; // komoot ne supporte pas es/pt
+    const langMap = { fr:'fr', en:'en', es:'es', de:'de', it:'it', pt:'pt' };
     const l = langMap[lang] || 'fr';
     const r = await fetch(
       'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&lang=' + l
@@ -2994,7 +3376,7 @@ const PEXELS_DIRECT = {
   'moto':          'https://images.pexels.com/photos/2519374/pexels-photo-2519374.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'voiture':       'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   // Activités fixes
-  'chateau':       'https://images.pexels.com/photos/532826/pexels-photo-532826.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
+  'chateau':       'https://images.pexels.com/photos/161901/pexels-photo-161901.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'museum':        'https://images.pexels.com/photos/1674049/pexels-photo-1674049.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'randonnee':     'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
   'velo':          'https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=600&h=280&fit=crop',
@@ -3089,7 +3471,15 @@ function getPhotoTheme(type, titre) {
     if (t.includes('musée') || t.includes('expo') || t.includes('galerie')) return 'museum';
     if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
     if (t.includes('escape') || t.includes('laser') || t.includes('jeu')) return 'escape';
-    return 'marche'; // fallback éphémère générique = marché
+    if (t.includes('color run') || t.includes('course') || t.includes('run') || t.includes('trail') || t.includes('marathon')) return 'escalade';
+    if (t.includes('chasse') || t.includes('trésor') || t.includes('enquête') || t.includes('mystère') || t.includes('détective')) return 'escape';
+    if (t.includes('château') || t.includes('abbaye') || t.includes('fort') || t.includes('patrimoine') || t.includes('archéo') || t.includes('historique') || t.includes('médiév')) return 'chateau';
+    if (t.includes('pétanque') || t.includes('sport') || t.includes('tournoi') || t.includes('compétition')) return 'escalade';
+    if (t.includes('jardin') || t.includes('parc') || t.includes('nature') || t.includes('balade')) return 'nature';
+    if (t.includes('photo') || t.includes('illustration') || t.includes('aquarelle') || t.includes('dessin') || t.includes('créatif') || t.includes('atelier')) return 'artisanat';
+    if (t.includes('cuisine') || t.includes('gastronomie') || t.includes('repas') || t.includes('pique-nique')) return 'food';
+    if (t.includes('cirque') || t.includes('magie') || t.includes('clown')) return 'theatre';
+    return 'fete'; // fallback éphémère générique = fête (plus adapté que marché)
   }
   if (t.includes('randonnée') || t.includes('randonn') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
   if (t.includes('vélo') || t.includes('vtt') || t.includes('cycl')) return 'velo';
@@ -3121,6 +3511,13 @@ function getPhotoTheme(type, titre) {
   if (t.includes('soirée') || t.includes('nuit')) return 'bar';
   if (t.includes('club') || t.includes('discothèque')) return 'bar';
   if (t.includes('rooftop')) return 'bar';
+  // Détections supplémentaires valables pour TOUS les types
+  if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie') || t.includes('vide-dressing') || t.includes('vide dressing')) return 'brocante';
+  if (t.includes('bourse') || t.includes('collection') || t.includes('chineurs') || t.includes('pokemon') || t.includes('kidsbazar')) return 'bourse';
+  if (t.includes('vetement') || t.includes('vêtement') || t.includes('friperie') || t.includes('habit') || t.includes('fring')) return 'vetement';
+  if (t.includes('foraine') || t.includes('manège') || t.includes('barbe à papa')) return 'fete_foraine';
+  if (t.includes('concert') || t.includes('festival') || t.includes('musique') || t.includes('francofolie') || t.includes('rock') || t.includes('jazz') || t.includes('rap') || t.includes('electro')) return 'concert';
+  if (t.includes('marché') || t.includes('market')) return 'marche';
   const typeMap = {'Nature':'nature','Culture':'museum','Sport':'randonnee','Gastronomie':'restaurant','Bien-être':'spa','Divertissement':'escape','Nocturne':'bar','Nightlife':'bar','Food':'restaurant','Wellness':'spa','Entertainment':'escape'};
   return typeMap[type] || 'default';
 }
@@ -3318,9 +3715,7 @@ function applyProfile() {
     document.querySelectorAll('#group-type .pill').forEach(p => {
       p.classList.toggle('selected', p.dataset.val === profile.group);
     });
-    persons = [];
-    personCounter = 0;
-    syncAgesUI();
+    // Ne pas réinitialiser persons ici — les âges seront chargés juste après
   }
 
   // Budget
@@ -3342,14 +3737,22 @@ function applyProfile() {
     });
   }
 
-  // Âges — on ajoute les personnes puis on remplit les champs
+  // Âges — reset propre puis restauration
   if (profile.ages && profile.ages.length) {
+    persons = [];
+    personCounter = 0;
+    syncAgesUI();
     while (persons.length < profile.ages.length) addPerson();
     setTimeout(() => {
       document.querySelectorAll('.age-input').forEach((inp, i) => {
         if (profile.ages[i] !== undefined) inp.value = profile.ages[i];
       });
-    }, 200);
+    }, 300);
+  } else if (profile.group) {
+    // Pas d'âges sauvegardés — juste syncAgesUI pour le groupe
+    persons = [];
+    personCounter = 0;
+    syncAgesUI();
   }
 
   // Bouton save visible
@@ -3815,7 +4218,13 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     ${weatherBanner}
     <div class="results-header">${t.resultsTitle(activities.length)}</div>
     <div class="rc-grid" id="rc-grid-progressive"></div>
-    <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
+    <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>
+    ${onlyMode === 'ephem' ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin:.5rem 0 1.5rem;text-align:center">
+      <div style="font-size:22px;margin-bottom:.3rem">🎉</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:.3rem">${{'fr':'Voilà tous les événements éphémères du week-end près de toi !','en':"That\'s all the ephemeral events this weekend near you!",'es':'¡Estos son todos los eventos del fin de semana cerca de ti!','de':'Das sind alle kurzfristigen Events dieses Wochenendes!','it':'Ecco tutti gli eventi effimeri del weekend vicino a te!','pt':'Estes são todos os eventos do fim de semana perto de ti!'}[lang]||'Voilà tous les événements éphémères du week-end !'}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:.8rem">${{'fr':'Envie de plus d\'idées ? Essaie avec d\'autres critères.','en':'Want more ideas? Try with different criteria.','es':'¿Quieres más ideas? Prueba con otros criterios.','de':'Mehr Ideen? Versuche andere Kriterien.','it':'Vuoi più idee? Prova con altri criteri.','pt':'Quer mais ideias? Tenta com outros critérios.'}[lang]||'Envie de plus d\'idées ?'}</div>
+      <button onclick="onlyMode=\'\';document.getElementById(\'only-ephem-btn\')?.classList.remove(\'active\');runSearch()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">${{'fr':'🔍 Voir toutes les activités','en':'🔍 See all activities','es':'🔍 Ver todas las actividades','de':'🔍 Alle Aktivitäten','it':'🔍 Vedi tutte le attività','pt':'🔍 Ver tudo'}[lang]||'🔍 Voir toutes les activités'}</button>
+    </div>` : ''}`;
 
   // Ajouter cartes une par une avec délai 600ms
   // Réinjecter la carte CDC si elle existait
@@ -3850,6 +4259,8 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
       }
     }, idx * 600);
   });
+  // Enrichir les boutons Viator après que toutes les cartes sont rendues
+  setTimeout(() => enrichViatorButtons(), activities.length * 600 + 200);
 }
 
 
@@ -3913,6 +4324,14 @@ function buildActivityCard(a, idx, location) {
         <a class="rc-gmaps" href="https://wa.me/?text=${encodeURIComponent((a.titre||'') + ' — ' + (a.description||'').substring(0,80) + '… 📍 ' + (location||'') + '\n\nVia Weekio 🟢 https://weekio.app')}" target="_blank" rel="noopener" style="background:#25D366;color:#fff;border-color:#25D366;padding:9px 12px">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>${{fr:'Partager',en:'Share',es:'Compartir',de:'Teilen',it:'Condividi',pt:'Partilhar'}[lang]||'Partager'}
         </a>
+        ${((location||'') && VIATOR_DEST_MAP[(location||'').toLowerCase().split(',')[0].split('·')[0].trim()]) ? `<a class="rc-viator-btn viator-btn-pending"
+          href="${getViatorDestUrl((location||''), 'P00305178', '42383')}"
+          data-viator-title="${(a.titre||'').replace(/"/g,'').replace(/[–—]/g,'-').substring(0,80)}"
+          data-viator-city="${(location||'').split(',')[0].trim().substring(0,40)}"
+          target="_blank" rel="noopener">
+          🎟 ${{fr:'Réserver',en:'Book',es:'Reservar',de:'Buchen',it:'Prenota',pt:'Reservar'}[lang]||'Réserver'}
+        </a>` : ''}
+        
         <button class="rc-pro-action-btn ${isFav?'active':''}"
           data-action="fav" data-fav-id="${favId}" data-encoded-title="${encodeURIComponent(a.titre||'')}"
           data-website="${websiteUrl||''}" data-photo="${photoUrl(a.type,a.titre)||''}"
@@ -4013,6 +4432,22 @@ async function scheduleWeekendNotif() {
 function checkNotifBar() {
   // Notif désormais proposée uniquement dans le panneau Pro (onglet Stats)
   // Rien à faire ici
+}
+
+// Tester la notification immédiatement (pour debug)
+async function testNotifNow() {
+  if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') {
+    alert("Active d'abord les notifications !");
+    return;
+  }
+  const sw = await navigator.serviceWorker.ready;
+  const city = document.getElementById('location')?.value?.trim() || 
+    (() => { try { return JSON.parse(localStorage.getItem('af_searches')||'[]')[0]?.location || 'Paris'; } catch(e) { return 'Paris'; } })();
+  if (sw.active) {
+    sw.active.postMessage({ type: 'TEST_NOTIF', city });
+    const msgs = {fr:'🔔 Notification test envoyée !',en:'🔔 Test notification sent!',es:'🔔 ¡Notificación de prueba enviada!',de:'🔔 Testbenachrichtigung gesendet!',it:'🔔 Notifica di prova inviata!',pt:'🔔 Notificação de teste enviada!'};
+    alert(msgs[lang] || msgs.fr);
+  }
 }
 
 
@@ -4312,6 +4747,8 @@ async function runSearch(fromMap) {
 
         // ── Pas de cache — chaque recherche doit être unique pour ce navigateur ──
         _ck = _mkCacheKey(location, group, budget, moodsForSearch, radius, onlyMode);
+        // Si on a déjà vu des activités en session, invalider le cache pour forcer de nouveaux résultats
+        if (_sessionSeenTitles.size > 0) _ck = _ck + '_' + Date.now();
 
         // Appel Claude via Supabase Edge Function — mode streaming
         const EDGE_URL = SUPABASE_URL + '/functions/v1/search';
@@ -4405,6 +4842,7 @@ async function runSearch(fromMap) {
             if (_seenNow2.size > 0) {
               all = all.filter(a => {
                 if (!a.titre) return true;
+                if (a.ephemere || a.nocturne) return true;
                 const tLow = a.titre.toLowerCase().trim();
                 if (_seenNow2.has(tLow)) return false;
                 return true;
@@ -4536,7 +4974,6 @@ async function runSearch(fromMap) {
     // Stocker dans le cache Claude (2h)
     _setCache(_ck, activities);
     await incrementSearchCount();
-    await saveSearch(location, group, budget, activities);
 
     // ── FILTRE ANTI-DOUBLON CÔTÉ CLIENT (garantie 100%) ──
     // Récupérer tous les titres déjà vus (session + localStorage)
@@ -4545,9 +4982,9 @@ async function runSearch(fromMap) {
       const beforeCount = activities.length;
       activities = activities.filter(a => {
         if (!a.titre) return true;
+        // Ne jamais filtrer les éphémères/nocturnes — ce sont des événements fixes uniques
+        if (a.ephemere || a.nocturne) return true;
         const tLow = a.titre.toLowerCase().trim();
-        // Bloquer uniquement si titre EXACTEMENT identique
-        // "Brocante de Hayange" ≠ "Brocante de Metz" → deux événements différents, OK
         if (_seenNow.has(tLow)) return false;
         return true;
       });
@@ -4555,6 +4992,26 @@ async function runSearch(fromMap) {
         console.log('🚫 Doublons exacts filtrés:', beforeCount - activities.length);
       }
     }
+
+    // ── FILTRE ACTIVITÉS DÉJÀ FAITES (Pro) — correspondance exacte uniquement ──
+    if (currentUser && userPlan === 'pro' && alreadyDoneIds.size > 0) {
+      const beforeDone = activities.length;
+      activities = activities.filter(a => {
+        if (!a.titre) return true;
+        const fId = (a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+        if (alreadyDoneIds.has(fId)) {
+          console.log('🚫 Activité déjà faite filtrée:', a.titre);
+          return false;
+        }
+        return true;
+      });
+      if (activities.length < beforeDone) {
+        console.log('✅ Activités déjà faites filtrées:', beforeDone - activities.length);
+      }
+    }
+
+    // Sauvegarder APRÈS filtrage — ordre important pour éviter les doublons
+    await saveSearch(location, group, budget, activities);
 
     // Sauvegarder en mémoire session immédiatement
     activities.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
@@ -4774,6 +5231,13 @@ function renderResults(activities, location, radius, budget, group, ages) {
           ${websiteUrl ? `<a class="rc-gmaps" href="${websiteUrl}" target="_blank" rel="noopener" style="background:var(--primary-light);color:var(--primary);border-color:var(--primary)">
             🌐 ${t.seeOfficialSite||'Site'}
           </a>` : ''}
+          ${((location||'') && VIATOR_DEST_MAP[(location||'').toLowerCase().split(',')[0].split('·')[0].trim()]) ? `<a class="rc-viator-btn viator-btn-pending"
+            href="${getViatorDestUrl((location||''), 'P00305178', '42383')}"
+            data-viator-title="${(a.titre||'').replace(/"/g,'').replace(/[–—]/g,'-').substring(0,80)}"
+            data-viator-city="${(location||'').split(',')[0].trim().substring(0,40)}"
+            target="_blank" rel="noopener">
+            🎟 ${{fr:'Réserver',en:'Book',es:'Reservar',de:'Buchen',it:'Prenota',pt:'Reservar'}[lang]||'Réserver'}
+          </a>` : ''}
           <!-- Favoris et note — Pro uniquement -->
           ${userPlan === 'pro' ? `
           <button class="rc-pro-action-btn ${isFav?'active':''}"
@@ -4818,6 +5282,8 @@ function renderResults(activities, location, radius, budget, group, ages) {
     <div class="rc-grid">${cards}</div>
     
     <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
+  // Enrichir les boutons Viator après rendu
+  setTimeout(() => enrichViatorButtons(), 100);
 }
 
 // ── Init Supabase (désactivé si clés non configurées) ──
@@ -5347,6 +5813,27 @@ const AP_TRANSLATIONS = {
     onlyEphem:'🗓 Uniquement éphémères',
     onlyNight:'🌙 Uniquement nocturnes',
     or:'ou', memoriesBtn:'✨ Mes Mémoires', timeAgo:['Aujourd\'hui','Il y a 1 jour','Il y a {n} jours','Il y a 1 semaine','Il y a {n} semaines','Il y a {n} mois','Il y a 1 an 🎉','Il y a {n} ans 🎉'], betaCode:'Code d\'accès bêta', betaPlaceholder:'Code invitation…',
+      storyBtn:'▶ Voir en mode story',
+      souvenirs:'📸 Mes souvenirs',
+      flashbackLabel:'Flashback du',
+      programTitle:'🗓 Mon programme',
+      programSubtitle:'Basé sur tes favoris · Personnalise et génère',
+      programAmbiance:'Ambiance',
+      programZone:'Favoris de quelle zone ?',
+      programDates:'Dates',
+      programConstraints:'Contraintes (ex: rien le dimanche matin, budget serré…)',
+      programGenerate:'✨ Générer mon programme',
+      programRegen:'🔄 Régénérer',
+      programShare:'📤 Partager',
+      programSave:'💾 Sauvegarder',
+      programBudget:'💰 Budget estimé / personne',
+      programHotel:'Où dormir à',
+      programHotelSub:'Comparer les hôtels sur Booking.com',
+      myPrograms:'🗓 Mes programmes',
+      albumSouvenirs:'📸 Album Souvenirs',
+      storyCount:'souvenir',
+      ambianceLabels:{equilibre:'⚖️ Équilibré',tranquille:'🌿 Tranquille',sportif:'⚡ Sportif',culturel:'🏛️ Culturel',festif:'🎉 Festif'},hintDates:'Choisis une date en haut<br>puis clique <strong>Générer</strong>',favsWord:'favori',
+      dayLabels:{lundi:'Lundi',mardi:'Mardi',mercredi:'Mercredi',jeudi:'Jeudi',vendredi:'Vendredi',samedi:'Samedi',dimanche:'Dimanche',journee:'Journée'},stepsFree:'🆓 Gratuit',stepsLabel:'étapes',
     badgeFree:'Gratuit', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connecté', avatarTitle:'Choisis ton avatar', avatarUpload:'Utiliser ma propre photo', avatarSave:'Valider',
     proTitle:'Weekio Pro', proPrice:'2,99 €', proPerMonth:'/mois',
@@ -5380,6 +5867,27 @@ const AP_TRANSLATIONS = {
     programError:'Generation error. Please try again!',
     onlyEphem:'🗓 Ephemeral only', onlyNight:'🌙 Nightlife only',
     or:'or', memoriesBtn:'✨ My Memories', timeAgo:['Today','1 day ago','{n} days ago','1 week ago','{n} weeks ago','{n} months ago','1 year ago 🎉','{n} years ago 🎉'], betaCode:'Beta access code', betaPlaceholder:'Invitation code…',
+      storyBtn:'▶ View as story',
+      souvenirs:'📸 My memories',
+      flashbackLabel:'Flashback from',
+      programTitle:'🗓 My programme',
+      programSubtitle:'Based on your favorites · Customize and generate',
+      programAmbiance:'Vibe',
+      programZone:'Favorites from which zone?',
+      programDates:'Dates',
+      programConstraints:'Constraints (e.g. nothing Sunday morning…)',
+      programGenerate:'✨ Generate my programme',
+      programRegen:'🔄 Regenerate',
+      programShare:'📤 Share',
+      programSave:'💾 Save',
+      programBudget:'💰 Estimated budget / person',
+      programHotel:'Where to sleep in',
+      programHotelSub:'Compare hotels on Booking.com',
+      myPrograms:'🗓 My programmes',
+      albumSouvenirs:'📸 Memory Album',
+      storyCount:'memory',
+      ambianceLabels:{equilibre:'⚖️ Balanced',tranquille:'🌿 Quiet',sportif:'⚡ Active',culturel:'🏛️ Cultural',festif:'🎉 Festive'},hintDates:'Choose a date above<br>then click <strong>Generate</strong>',favsWord:'favorite',
+      dayLabels:{lundi:'Monday',mardi:'Tuesday',mercredi:'Wednesday',jeudi:'Thursday',vendredi:'Friday',samedi:'Saturday',dimanche:'Sunday',journee:'Day'},stepsFree:'🆓 Free',stepsLabel:'steps',
     badgeFree:'Free', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Not connected', avatarTitle:'Choose your avatar', avatarUpload:'Use my own photo', avatarSave:'Save',
     proTitle:'Weekio Pro', proPrice:'€2.99', proPerMonth:'/month',
@@ -5413,6 +5921,27 @@ const AP_TRANSLATIONS = {
     programError:'Error de generación. ¡Inténtalo de nuevo!',
     onlyEphem:'🗓 Solo efímeros', onlyNight:'🌙 Solo nocturno',
     or:'o', memoriesBtn:'✨ Mis Recuerdos', timeAgo:['Hoy','Hace 1 día','Hace {n} días','Hace 1 semana','Hace {n} semanas','Hace {n} meses','Hace 1 año 🎉','Hace {n} años 🎉'], betaCode:'Código de acceso beta', betaPlaceholder:'Código de invitación…',
+      storyBtn:'▶ Ver como historia',
+      souvenirs:'📸 Mis recuerdos',
+      flashbackLabel:'Recuerdo del',
+      programTitle:'🗓 Mi programa',
+      programSubtitle:'Basado en tus favoritos · Personaliza y genera',
+      programAmbiance:'Ambiente',
+      programZone:'¿Favoritos de qué zona?',
+      programDates:'Fechas',
+      programConstraints:'Restricciones (ej: nada el domingo por la mañana…)',
+      programGenerate:'✨ Generar mi programa',
+      programRegen:'🔄 Regenerar',
+      programShare:'📤 Compartir',
+      programSave:'💾 Guardar',
+      programBudget:'💰 Presupuesto estimado / persona',
+      programHotel:'Dónde dormir en',
+      programHotelSub:'Comparar hoteles en Booking.com',
+      myPrograms:'🗓 Mis programas',
+      albumSouvenirs:'📸 Álbum de recuerdos',
+      storyCount:'recuerdo',
+      ambianceLabels:{equilibre:'⚖️ Equilibrado',tranquille:'🌿 Tranquilo',sportif:'⚡ Deportivo',culturel:'🏛️ Cultural',festif:'🎉 Festivo'},hintDates:'Elige una fecha arriba<br>luego haz clic en <strong>Generar</strong>',favsWord:'favorito',
+      dayLabels:{lundi:'Lunes',mardi:'Martes',mercredi:'Miércoles',jeudi:'Jueves',vendredi:'Viernes',samedi:'Sábado',dimanche:'Domingo',journee:'Día'},stepsFree:'🆓 Gratis',stepsLabel:'pasos',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'No conectado', avatarTitle:'Elige tu avatar', avatarUpload:'Usar mi propia foto', avatarSave:'Guardar',
     proTitle:'Weekio Pro', proPrice:'2,99 €', proPerMonth:'/mes',
@@ -5446,6 +5975,27 @@ const AP_TRANSLATIONS = {
     programError:'Fehler bei der Erstellung. Bitte erneut versuchen!',
     onlyEphem:'🗓 Nur kurzfristige Events', onlyNight:'🌙 Nur Nachtleben',
     or:'oder', memoriesBtn:'✨ Meine Erinnerungen', timeAgo:['Heute','Vor 1 Tag','Vor {n} Tagen','Vor 1 Woche','Vor {n} Wochen','Vor {n} Monaten','Vor 1 Jahr 🎉','Vor {n} Jahren 🎉'], betaCode:'Beta-Zugangscode', betaPlaceholder:'Einladungscode…',
+      storyBtn:'▶ Als Story ansehen',
+      souvenirs:'📸 Meine Erinnerungen',
+      flashbackLabel:'Erinnerung vom',
+      programTitle:'🗓 Mein Programm',
+      programSubtitle:'Basierend auf deinen Favoriten · Anpassen und generieren',
+      programAmbiance:'Stimmung',
+      programZone:'Favoriten aus welcher Zone?',
+      programDates:'Datum',
+      programConstraints:'Einschränkungen (z.B. nichts Sonntagmorgen…)',
+      programGenerate:'✨ Mein Programm generieren',
+      programRegen:'🔄 Neu generieren',
+      programShare:'📤 Teilen',
+      programSave:'💾 Speichern',
+      programBudget:'💰 Geschätztes Budget / Person',
+      programHotel:'Wo schlafen in',
+      programHotelSub:'Hotels auf Booking.com vergleichen',
+      myPrograms:'🗓 Meine Programme',
+      albumSouvenirs:'📸 Erinnerungsalbum',
+      storyCount:'Erinnerung',
+      ambianceLabels:{equilibre:'⚖️ Ausgewogen',tranquille:'🌿 Ruhig',sportif:'⚡ Sportlich',culturel:'🏛️ Kulturell',festif:'🎉 Festlich'},hintDates:'Wähle ein Datum oben<br>dann klicke auf <strong>Generieren</strong>',favsWord:'Favorit',
+      dayLabels:{lundi:'Montag',mardi:'Dienstag',mercredi:'Mittwoch',jeudi:'Donnerstag',vendredi:'Freitag',samedi:'Samstag',dimanche:'Sonntag',journee:'Tag'},stepsFree:'🆓 Kostenlos',stepsLabel:'Schritte',
     badgeFree:'Kostenlos', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Nicht angemeldet', avatarTitle:'Wähle deinen Avatar', avatarUpload:'Eigenes Foto verwenden', avatarSave:'Speichern',
     proTitle:'Weekio Pro', proPrice:'2,99 €', proPerMonth:'/Monat',
@@ -5479,6 +6029,27 @@ const AP_TRANSLATIONS = {
     programError:'Errore di generazione. Riprova!',
     onlyEphem:'🗓 Solo effimeri', onlyNight:'🌙 Solo vita notturna',
     or:'o', memoriesBtn:'✨ I miei ricordi', timeAgo:['Oggi','1 giorno fa','{n} giorni fa','1 settimana fa','{n} settimane fa','{n} mesi fa','1 anno fa 🎉','{n} anni fa 🎉'], betaCode:'Codice accesso beta', betaPlaceholder:'Codice invito…',
+      storyBtn:'▶ Guarda come storia',
+      souvenirs:'📸 I miei ricordi',
+      flashbackLabel:'Ricordo del',
+      programTitle:'🗓 Il mio programma',
+      programSubtitle:'Basato sui tuoi preferiti · Personalizza e genera',
+      programAmbiance:'Atmosfera',
+      programZone:'Preferiti da quale zona?',
+      programDates:'Date',
+      programConstraints:'Vincoli (es. niente domenica mattina…)',
+      programGenerate:'✨ Genera il mio programma',
+      programRegen:'🔄 Rigenera',
+      programShare:'📤 Condividi',
+      programSave:'💾 Salva',
+      programBudget:'💰 Budget stimato / persona',
+      programHotel:'Dove dormire a',
+      programHotelSub:'Confronta hotel su Booking.com',
+      myPrograms:'🗓 I miei programmi',
+      albumSouvenirs:'📸 Album ricordi',
+      storyCount:'ricordo',
+      ambianceLabels:{equilibre:'⚖️ Equilibrato',tranquille:'🌿 Tranquillo',sportif:'⚡ Sportivo',culturel:'🏛️ Culturale',festif:'🎉 Festoso'},hintDates:'Scegli una data sopra<br>poi clicca su <strong>Genera</strong>',favsWord:'preferito',
+      dayLabels:{lundi:'Lunedì',mardi:'Martedì',mercredi:'Mercoledì',jeudi:'Giovedì',vendredi:'Venerdì',samedi:'Sabato',dimanche:'Domenica',journee:'Giorno'},stepsFree:'🆓 Gratuito',stepsLabel:'tappe',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Non connesso', avatarTitle:'Scegli il tuo avatar', avatarUpload:'Usa la mia foto', avatarSave:'Salva',
     proTitle:'Weekio Pro', proPrice:'2,99 €', proPerMonth:'/mese',
@@ -5512,6 +6083,27 @@ const AP_TRANSLATIONS = {
     programError:'Erro de geração. Tenta novamente!',
     onlyEphem:'🗓 Só efémeros', onlyNight:'🌙 Só vida noturna',
     or:'ou', memoriesBtn:'✨ As minhas memórias', timeAgo:['Hoje','Há 1 dia','Há {n} dias','Há 1 semana','Há {n} semanas','Há {n} meses','Há 1 ano 🎉','Há {n} anos 🎉'], betaCode:'Código de acesso beta', betaPlaceholder:'Código de convite…',
+      storyBtn:'▶ Ver como história',
+      souvenirs:'📸 As minhas memórias',
+      flashbackLabel:'Memória de',
+      programTitle:'🗓 O meu programa',
+      programSubtitle:'Baseado nos teus favoritos · Personaliza e gera',
+      programAmbiance:'Ambiente',
+      programZone:'Favoritos de que zona?',
+      programDates:'Datas',
+      programConstraints:'Restrições (ex: nada domingo de manhã…)',
+      programGenerate:'✨ Gerar o meu programa',
+      programRegen:'🔄 Regenerar',
+      programShare:'📤 Partilhar',
+      programSave:'💾 Guardar',
+      programBudget:'💰 Orçamento estimado / pessoa',
+      programHotel:'Onde dormir em',
+      programHotelSub:'Comparar hotéis no Booking.com',
+      myPrograms:'🗓 Os meus programas',
+      albumSouvenirs:'📸 Álbum de memórias',
+      storyCount:'memória',
+      ambianceLabels:{equilibre:'⚖️ Equilibrado',tranquille:'🌿 Tranquilo',sportif:'⚡ Desportivo',culturel:'🏛️ Cultural',festif:'🎉 Festivo'},hintDates:'Escolhe uma data em cima<br>depois clica em <strong>Gerar</strong>',favsWord:'favorito',
+      dayLabels:{lundi:'Segunda',mardi:'Terça',mercredi:'Quarta',jeudi:'Quinta',vendredi:'Sexta',samedi:'Sábado',dimanche:'Domingo',journee:'Dia'},stepsFree:'🆓 Grátis',stepsLabel:'etapas',
     badgeFree:'Gratuito', badgePro:'Pro ✦', badgeBeta:'Beta Pro ✦',
     notConnected:'Não conectado', avatarTitle:'Escolhe o teu avatar', avatarUpload:'Usar a minha foto', avatarSave:'Guardar',
     proTitle:'Weekio Pro', proPrice:'2,99 €', proPerMonth:'/mês',
@@ -5754,6 +6346,7 @@ async function renderAccountStats() {
         <span style="font-size:18px">🔔</span>
         <div style="flex:1;font-size:13px;color:var(--text);font-weight:500">${{fr:'Idées week-end chaque vendredi à 17h',en:'Weekend ideas every Friday at 5pm',es:'Ideas de fin de semana cada viernes a las 17h',de:'Wochenend-Ideen jeden Freitag um 17 Uhr',it:'Idee weekend ogni venerdì alle 17',pt:'Ideias de fim de semana toda sexta às 17h'}[lang]||'Idées week-end chaque vendredi à 17h'}</div>
         <button onclick="requestNotifPermission()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">${{fr:'Activer',en:'Enable',es:'Activar',de:'Aktivieren',it:'Attiva',pt:'Ativar'}[lang]||'Activer'}</button>
+
       </div>`
     : (('Notification' in window && Notification.permission === 'granted')
       ? `<div style="font-size:12px;color:var(--primary);text-align:center;padding:4px 0;margin-bottom:10px">🔔 Notifications activées — vendredi 17h ✓</div>`
@@ -5820,7 +6413,8 @@ function getWpDateLabel() {
   const fromVal = document.getElementById('wp-date-from')?.value || '';
   const toVal = document.getElementById('wp-date-to')?.value || '';
   if (!fromVal) return '';
-  const fmt = s => new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  const _locales = {fr:'fr-FR',en:'en-GB',es:'es-ES',de:'de-DE',it:'it-IT',pt:'pt-PT'};
+  const fmt = s => new Date(s + 'T12:00:00').toLocaleDateString(_locales[lang]||'fr-FR', { weekday:'long', day:'numeric', month:'long' });
   if (toVal && toVal !== fromVal) {
     const diff = Math.round((new Date(toVal) - new Date(fromVal)) / 86400000);
     _programDuration = diff >= 1 ? 'weekend' : 'journee';
@@ -5830,8 +6424,61 @@ function getWpDateLabel() {
   return 'Le ' + fmt(fromVal);
 }
 
+function updateProgramModalLang() {
+  const t = apt();
+  const duLabels = {fr:'Du',en:'From',es:'Del',de:'Von',it:'Dal',pt:'De'};
+  const auLabels = {fr:'Au',en:'To',es:'Al',de:'Bis',it:'Al',pt:'Até'};
+  const todayLabels = {fr:'Auj.',en:'Today',es:'Hoy',de:'Heute',it:'Oggi',pt:'Hoje'};
+  const tomorrowLabels = {fr:'Demain',en:'Tomorrow',es:'Mañana',de:'Morgen',it:'Domani',pt:'Amanhã'};
+  const weekendLabels = {fr:'Ce week-end',en:'This weekend',es:'Este fin de semana',de:'Dieses Wochenende',it:'Questo fine settimana',pt:'Este fim de semana'};
+
+  const el = document.getElementById('wp-modal-title');
+  if (el) el.textContent = t.programTitle || '🗓 Mon programme';
+  const sub = document.getElementById('wp-subtitle');
+  if (sub && !sub.textContent.includes('·')) sub.textContent = t.programSubtitle || 'Basé sur tes favoris';
+  const lbl_amb = document.getElementById('wp-lbl-ambiance');
+  if (lbl_amb) lbl_amb.textContent = t.programAmbiance || 'Ambiance';
+  const lbl_zone = document.getElementById('wp-lbl-zone');
+  if (lbl_zone) lbl_zone.textContent = t.programZone || 'Favoris de quelle zone ?';
+  const lbl_dates = document.getElementById('wp-lbl-dates');
+  if (lbl_dates) lbl_dates.textContent = t.programDates || 'Dates';
+  const lbl_du = document.getElementById('wp-lbl-du');
+  if (lbl_du) lbl_du.textContent = duLabels[lang] || 'Du';
+  const lbl_au = document.getElementById('wp-lbl-au');
+  if (lbl_au) lbl_au.textContent = auLabels[lang] || 'Au';
+  const btn_today = document.getElementById('wp-btn-today');
+  if (btn_today) btn_today.textContent = todayLabels[lang] || 'Auj.';
+  const btn_tomorrow = document.getElementById('wp-btn-tomorrow');
+  if (btn_tomorrow) btn_tomorrow.textContent = tomorrowLabels[lang] || 'Demain';
+  const btn_weekend = document.getElementById('wp-btn-weekend');
+  if (btn_weekend) btn_weekend.textContent = weekendLabels[lang] || 'Ce week-end';
+  const btn_gen = document.getElementById('wp-btn-generate');
+  if (btn_gen) btn_gen.textContent = t.programGenerate || '✨ Générer mon programme';
+  const ph = document.getElementById('wp-constraints');
+  if (ph) ph.placeholder = t.programConstraints || 'Contraintes (ex: rien le dimanche matin…)';
+  // Boutons ambiance
+  const al = t.ambianceLabels || {};
+  ['equilibre','tranquille','sportif','culturel','festif'].forEach(a => {
+    const b = document.getElementById('wp-amb-' + a);
+    if (b && al[a]) b.textContent = al[a];
+  });
+  // "Tous mes favoris" dans le dropdown
+  const optAll = document.getElementById('wp-opt-all');
+  if (optAll) {
+    const allLabel = {fr:'🌍 Tous mes favoris',en:'🌍 All my favorites',es:'🌍 Todos mis favoritos',de:'🌍 Alle Favoriten',it:'🌍 Tutti i preferiti',pt:'🌍 Todos os favoritos'};
+    optAll.textContent = allLabel[lang] || '🌍 Tous mes favoris';
+  }
+  // Hint dates
+  const hintEl = document.getElementById('wp-hint-dates');
+  if (hintEl) hintEl.innerHTML = t.hintDates || 'Choisis une date en haut<br>puis clique <strong>Générer</strong>';
+  const hintEl2 = document.getElementById('wp-hint-dates2');
+  const _hint2 = {fr:'Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong>',en:'Adjust dates above if needed,<br>then click <strong>Generate</strong>',es:'Ajusta las fechas arriba si es necesario,<br>luego haz clic en <strong>Generar</strong>',de:'Passe die Daten oben an,<br>dann klicke auf <strong>Generieren</strong>',it:'Regola le date sopra se necessario,<br>poi clicca su <strong>Genera</strong>',pt:'Ajusta as datas acima se necessário,<br>depois clica em <strong>Gerar</strong>'};
+  if (hintEl2) hintEl2.innerHTML = _hint2[lang] || _hint2.fr;
+}
+
 function openWeekendProgram() {
   populateWpRegions();
+  updateProgramModalLang();
   const modal = document.getElementById('weekend-program-modal');
   const body = document.getElementById('weekend-program-body');
   modal.classList.add('open');
@@ -5845,8 +6492,8 @@ function openWeekendProgram() {
     body.innerHTML = `
       <div style="text-align:center;padding:30px 20px">
         <div style="font-size:40px;margin-bottom:10px">🗓</div>
-        <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:6px">${favs.length} favori${favs.length>1?'s':''}</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6">Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong></div>
+        <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:6px">${favs.length} ${apt().favsWord||'favori'}${favs.length>1?'s':''}</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">${({'fr':'Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong>','en':'Adjust dates above if needed,<br>then click <strong>Generate</strong>','es':'Ajusta las fechas arriba si es necesario,<br>luego haz clic en <strong>Generar</strong>','de':'Passe die Daten oben an,<br>dann klicke auf <strong>Generieren</strong>','it':'Regola le date sopra se necessario,<br>poi clicca su <strong>Genera</strong>','pt':'Ajusta as datas acima se necessário,<br>depois clica em <strong>Gerar</strong>'}[lang]||'Ajuste les dates en haut si besoin,<br>puis clique <strong>Générer</strong>')}</div>
       </div>`;
   }
 }
@@ -5962,13 +6609,15 @@ async function generateWeekendProgram() {
   const prompt = langInstr + dateInstr + constraintInstr + '\nTu es un expert en organisation de sorties. Activités favorites:\n' + favDetails + '\n\nAMBIANCE SOUHAITÉE: ' + ambianceDesc[ambiance] + '\n\n' + durInstr + '\n\nRègles:\n- Respecte STRICTEMENT les contraintes\n- Adapte l\'ordre et le rythme à l\'ambiance choisie\n- Inclus emoji pertinent par activité\n- Note pratique courte et utile (réservation, tenue, horaire à confirmer…)\n- Types possibles: activite, repas, pause, transport\n\nRéponds UNIQUEMENT en JSON valide, structure exacte:\n' + jsonStructure;
 
   // ── Loader animé avec messages changeants ──
-  const loaderMsgs = [
-    '🗺️ Analyse de tes favoris…',
-    '🌤️ Récupération de la météo…',
-    '🧠 L\'IA compose ton itinéraire…',
-    '📍 Optimisation des trajets…',
-    '✨ Finalisation du programme…'
-  ];
+  const _loaderMsgsByLang = {
+    fr:['🗺️ Analyse de tes favoris…','🌤️ Récupération de la météo…','🧠 L\'IA compose ton itinéraire…','📍 Optimisation des trajets…','✨ Finalisation du programme…'],
+    en:['🗺️ Analysing your favorites…','🌤️ Fetching the weather…','🧠 AI is composing your itinerary…','📍 Optimising routes…','✨ Finalising the programme…'],
+    es:['🗺️ Analizando tus favoritos…','🌤️ Obteniendo el tiempo…','🧠 La IA compone tu itinerario…','📍 Optimizando rutas…','✨ Finalizando el programa…'],
+    de:['🗺️ Favoriten werden analysiert…','🌤️ Wetter wird geladen…','🧠 KI erstellt deine Route…','📍 Wege werden optimiert…','✨ Programm wird fertiggestellt…'],
+    it:['🗺️ Analisi dei preferiti…','🌤️ Recupero del meteo…','🧠 L\'IA compone il tuo itinerario…','📍 Ottimizzazione percorsi…','✨ Programma in fase finale…'],
+    pt:['🗺️ A analisar os teus favoritos…','🌤️ A obter o tempo…','🧠 A IA compõe o teu itinerário…','📍 A otimizar rotas…','✨ A finalizar o programa…']
+  };
+  const loaderMsgs = _loaderMsgsByLang[lang] || _loaderMsgsByLang.fr;
   let _loaderIdx = 0;
   body.innerHTML = '<div style="text-align:center;padding:40px 20px" id="wp-loader">'
     + '<div style="font-size:36px;margin-bottom:12px">✨</div>'
@@ -6061,7 +6710,8 @@ function populateWpRegions() {
   if (!sel) return;
   var favs = localLoad('favorites') || [];
   var clusters = clusterFavs(favs);
-  sel.innerHTML = '<option value="all">🌍 Tous mes favoris (' + favs.length + ')</option>';
+  const _allFavsLabel = {fr:'🌍 Tous mes favoris',en:'🌍 All my favorites',es:'🌍 Todos mis favoritos',de:'🌍 Alle Favoriten',it:'🌍 Tutti i preferiti',pt:'🌍 Todos os favoritos'};
+  sel.innerHTML = '<option value="all">' + (_allFavsLabel[lang]||'🌍 Tous mes favoris') + ' (' + favs.length + ')</option>';
   clusters
     .filter(function(c){ return c.name !== 'Autres'; })
     .sort(function(a,b){ return b.items.length - a.items.length; })
@@ -6083,7 +6733,7 @@ function populateWpRegions() {
 
 
 // Photo de couverture par ville pour le programme
-var CITY_COVER_PHOTOS = {
+var WP_COVER_PHOTOS = {
   'Londres':    'https://images.pexels.com/photos/220769/pexels-photo-220769.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
   'Paris':      'https://images.pexels.com/photos/699466/pexels-photo-699466.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
   'Luxembourg': 'https://images.pexels.com/photos/2070485/pexels-photo-2070485.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&fit=crop',
@@ -6100,9 +6750,9 @@ var CITY_COVER_PHOTOS = {
 };
 function getCityPhoto(regionName) {
   if (!regionName) return null;
-  for (var k in CITY_COVER_PHOTOS) {
+  for (var k in WP_COVER_PHOTOS) {
     if (regionName.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(regionName.toLowerCase())) {
-      return CITY_COVER_PHOTOS[k];
+      return WP_COVER_PHOTOS[k];
     }
   }
   return null;
@@ -6114,7 +6764,14 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   const days = dayNames[lang] || dayNames.fr;
   const durMode = dur || _programDuration || 'weekend';
 
-  const ambianceBadge = { equilibre:'⚖️ Équilibré', tranquille:'🌿 Tranquille', sportif:'⚡ Sportif', culturel:'🏛️ Culturel', festif:'🎉 Festif' };
+  const _al = apt().ambianceLabels || {};
+  const ambianceBadge = {
+    equilibre: _al.equilibre || '⚖️ Équilibré',
+    tranquille: _al.tranquille || '🌿 Tranquille',
+    sportif: _al.sportif || '⚡ Sportif',
+    culturel: _al.culturel || '🏛️ Culturel',
+    festif: _al.festif || '🎉 Festif'
+  };
   const badge = ambianceBadge[ambiance] || '✨ Programme';
 
   // Mettre à jour la photo de couverture
@@ -6152,7 +6809,7 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
       h += '<div class="program-step-detail">';
       if (step.duree) h += '<span class="program-step-chip">⏱ ' + step.duree + '</span>';
       if (typeof step.budget === 'number') {
-        h += '<span class="program-step-chip' + (step.budget === 0 ? '' : ' orange') + '">' + (step.budget === 0 ? '🆓 Gratuit' : '💶 ~' + step.budget + '€') + '</span>';
+        h += '<span class="program-step-chip' + (step.budget === 0 ? '' : ' orange') + '">' + (step.budget === 0 ? (apt().stepsFree||'🆓 Gratuit') : '💶 ~' + step.budget + '€') + '</span>';
       }
       if (step.note) h += '<span style="color:var(--muted);font-size:11px">' + step.note + '</span>';
       h += '</div>';
@@ -6172,7 +6829,7 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   const keys = Object.keys(program);
 
   const dayColors = ['#3A5C38','#5C4A38','#3A4A5C','#5C3A5C','#5C5A3A'];
-  const dayFr = {lundi:'Lundi',mardi:'Mardi',mercredi:'Mercredi',jeudi:'Jeudi',vendredi:'Vendredi',samedi:'Samedi',dimanche:'Dimanche',journee:'Journée'};
+  const dayFr = apt().dayLabels || {lundi:'Lundi',mardi:'Mardi',mercredi:'Mercredi',jeudi:'Jeudi',vendredi:'Vendredi',samedi:'Samedi',dimanche:'Dimanche',journee:'Journée'};
   if (durMode === 'journee' && program.journee?.length) {
     html += '<div class="program-day"><div class="program-day-header"><div class="program-day-title">☀️ ' + (dateLabel || 'Journée') + '</div></div>' + renderSteps(program.journee) + '</div>';
   } else {
@@ -6180,7 +6837,7 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
       if (!program[key] || !program[key].length) return;
       var dayLabel = dayFr[key] || key.charAt(0).toUpperCase() + key.slice(1);
       var col = dayColors[idx % dayColors.length];
-      html += '<div class="program-day"><div class="program-day-header" style="background:linear-gradient(90deg,' + col + ',transparent)"><div class="program-day-title">📅 ' + dayLabel + '</div><div class="program-day-meta">' + program[key].length + ' étapes</div></div>' + renderSteps(program[key]) + '</div>';
+      html += '<div class="program-day"><div class="program-day-header" style="background:linear-gradient(90deg,' + col + ',transparent)"><div class="program-day-title">📅 ' + dayLabel + '</div><div class="program-day-meta">' + program[key].length + ' ' + (apt().stepsLabel||'étapes') + '</div></div>' + renderSteps(program[key]) + '</div>';
     });
   }
 
@@ -6193,7 +6850,7 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
   const totalBudget = allSteps.reduce((s, step) => s + (typeof step.budget === 'number' ? step.budget : 0), 0);
   if (totalBudget >= 0 && allSteps.length) {
     html += '<div style="margin:0 20px 4px;padding:12px 16px;background:linear-gradient(135deg,var(--primary-light),var(--bg2));border-radius:14px;display:flex;align-items:center;justify-content:space-between">'
-      + '<div style="font-size:12px;font-weight:700;color:var(--text)">💰 Budget estimé / personne</div>'
+      + '<div style="font-size:12px;font-weight:700;color:var(--text)">' + (apt().programBudget||'💰 Budget estimé / personne') + '</div>'
       + '<div style="font-size:18px;font-weight:800;color:var(--primary)">' + (totalBudget === 0 ? 'Gratuit 🆓' : '~' + totalBudget + ' €') + '</div>'
       + '</div>';
   }
@@ -6250,8 +6907,8 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
       html += '<a href="' + bookingUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;margin:0 20px 12px;padding:14px 16px;background:linear-gradient(135deg,#003580,#0056b3);border-radius:14px;text-decoration:none;color:#fff">'
         + '<span style="font-size:22px">🏨</span>'
         + '<div style="flex:1">'
-        + '<div style="font-size:13px;font-weight:700">Où dormir à ' + regionVal3 + ' ?</div>'
-        + '<div style="font-size:11px;opacity:0.8">Comparer les hôtels sur Booking.com</div>'
+        + '<div style="font-size:13px;font-weight:700">' + (apt().programHotel||'Où dormir à') + ' ' + regionVal3 + ' ?</div>'
+        + '<div style="font-size:11px;opacity:0.8">' + (apt().programHotelSub||'Comparer les hôtels sur Booking.com') + '</div>'
         + '</div>'
         + '<span style="font-size:18px">→</span>'
         + '</a>';
@@ -6260,9 +6917,10 @@ function renderWeekendProgram(program, dur, ambiance, dateLabel, weatherInfo) {
 
   // Actions
   html += '<div class="program-actions">';
-  html += '<button onclick="generateWeekendProgram()" class="wp-regen-btn">🔄 Régénérer</button>';
-  html += '<button onclick="saveWeekendProgram()" class="wp-share-btn">💾 Sauvegarder</button>';
-  html += '<button onclick="shareWeekendProgram()" class="wp-share-btn">📤 Partager</button>';
+  const _t = apt();
+  html += '<button onclick="generateWeekendProgram()" class="wp-regen-btn">' + (_t.programRegen||'🔄 Régénérer') + '</button>';
+  html += '<button onclick="saveWeekendProgram()" class="wp-share-btn">' + (_t.programSave||'💾 Sauvegarder') + '</button>';
+  html += '<button onclick="shareWeekendProgram()" class="wp-share-btn">' + (_t.programShare||'📤 Partager') + '</button>';
   html += '</div>';
 
   body.innerHTML = html;
@@ -6284,15 +6942,37 @@ async function deleteSavedProgram(actId) {
   renderAccountActivities();
 }
 
-function openSavedProgram(actId) {
+async function openSavedProgram(actId) {
   // Rouvrir le modal programme avec le vrai rendu
-  const saved = (localLoad('saved_programs') || {})[actId];
+  let saved = (localLoad('saved_programs') || {})[actId];
+
+  // Si pas en localStorage, récupérer depuis Supabase
+  if ((!saved || !saved.program) && _sb && currentUser) {
+    try {
+      const { data } = await _sb.from('notes')
+        .select('note')
+        .eq('user_id', currentUser.id)
+        .eq('activity_id', actId)
+        .single();
+      if (data && data.note) {
+        try {
+          const parsed = JSON.parse(data.note);
+          if (parsed && parsed.program) {
+            saved = parsed;
+            // Mettre en cache localStorage pour la prochaine fois
+            const savedProgs = localLoad('saved_programs') || {};
+            savedProgs[actId] = saved;
+            localSave('saved_programs', savedProgs);
+          }
+        } catch(e) { /* note n'est pas du JSON — ancien format texte */ }
+      }
+    } catch(e) { console.warn('openSavedProgram Supabase error:', e); }
+  }
+
   if (saved && saved.program) {
-    // Ouvrir le modal
     populateWpRegions();
     const modal = document.getElementById('weekend-program-modal');
     modal.classList.add('open');
-    // Ré-afficher directement le programme
     renderWeekendProgram(saved.program, saved.dur, saved.ambiance, saved.dateLabel, saved.weatherInfo);
   } else {
     // Fallback : ouvrir la mémoire texte
@@ -6320,16 +7000,23 @@ async function saveWeekendProgram() {
   const stepsText = bodyEl ? Array.from(bodyEl.querySelectorAll('.program-step-title')).map(e => e.textContent.trim()).join(' → ') : '';
 
   try {
+    const programJsonStr = JSON.stringify({
+      program: window._lastSavedProgram,
+      dur: window._lastSavedDur,
+      ambiance: window._lastSavedAmbiance,
+      dateLabel: window._lastSavedDateLabel,
+      weatherInfo: window._lastSavedWeather
+    });
     await _sb.from('notes').insert({
       user_id: currentUser.id,
       activity_id: actId,
       activity_title: title,
-      note: stepsText.substring(0, 500),
+      note: programJsonStr.substring(0, 5000), // JSON complet pour ré-affichage
       stars: 0,
       done: false,
       created_at: savedAt
     });
-    // Stocker le JSON complet en localStorage pour ré-affichage
+    // Stocker aussi en localStorage pour accès rapide offline
     const savedProgs = localLoad('saved_programs') || {};
     savedProgs[actId] = { program: window._lastSavedProgram, dur: window._lastSavedDur, ambiance: window._lastSavedAmbiance, dateLabel: window._lastSavedDateLabel, weatherInfo: window._lastSavedWeather };
     localSave('saved_programs', savedProgs);
@@ -6490,7 +7177,7 @@ async function renderMemoriesPane() {
     // Bouton story
     html += '<div style="padding:12px 20px 0">';
     html += '<button onclick="openMemoriesAll()" style="width:100%;padding:11px;background:linear-gradient(135deg,#3A5C38,#5C7A5A);color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">'
-      + '▶ Voir en mode story'
+      + apt().storyBtn||'▶ Voir en mode story'
       + '<span style="font-size:11px;opacity:0.8;font-weight:400"> · ' + items.length + ' souvenir' + (items.length > 1 ? 's' : '') + '</span>'
       + '</button>';
     html += '</div>';
@@ -7137,10 +7824,25 @@ async function signOut() {
 async function confirmDeleteAccount() {
   if (!confirm(apt().deleteConfirm)) return;
   if (_sb && currentUser) {
-    await _sb.from('notes').delete().eq('user_id', currentUser.id);
-    await _sb.from('searches').delete().eq('user_id', currentUser.id);
-    await _sb.from('profiles').delete().eq('id', currentUser.id);
-    await _sb.auth.signOut();
+    try {
+      // Supprimer toutes les données utilisateur
+      await _sb.from('favorites').delete().eq('user_id', currentUser.id);
+      await _sb.from('notes').delete().eq('user_id', currentUser.id);
+      await _sb.from('searches').delete().eq('user_id', currentUser.id);
+      await _sb.from('programmes').delete().eq('user_id', currentUser.id);
+      await _sb.from('profiles').delete().eq('id', currentUser.id);
+      // Déconnexion
+      await _sb.auth.signOut();
+      // Effacer le localStorage
+      Object.keys(localStorage).filter(k => k.startsWith('weekio')).forEach(k => localStorage.removeItem(k));
+      // Confirmer à l'utilisateur
+      const msgs = {fr:'Compte supprimé. À bientôt !', en:'Account deleted. Goodbye!', es:'Cuenta eliminada. ¡Hasta pronto!', de:'Konto gelöscht. Auf Wiedersehen!', it:'Account eliminato. Arrivederci!', pt:'Conta eliminada. Até logo!'};
+      alert(msgs[lang] || msgs.fr);
+      location.reload();
+    } catch(e) {
+      console.error('Delete account error:', e);
+      alert('Une erreur est survenue. Contactez contact@weekio.app pour supprimer votre compte.');
+    }
   }
   closeAccountPanel();
 }
@@ -7479,8 +8181,7 @@ function hideBetaScreen() {
 }
 
 function initBetaGate() {
-  let passed = false;
-  try { passed = localStorage.getItem(BETA_STORAGE_KEY) === '1'; } catch(e) {}
+  let passed = true; // Beta gate désactivé
   if (passed) {
     userPlan = 'pro';
     if (!currentUser) {
@@ -7744,6 +8445,13 @@ window.addEventListener('load', () => {
 
   // Listener SW → pré-remplir ville depuis notif vendredi
   if ('serviceWorker' in navigator) {
+    // Enregistrer le Service Worker (sw.js doit être à la racine du repo)
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      console.log('[SW] Enregistré:', reg.scope);
+    }).catch(err => {
+      console.warn('[SW] Échec enregistrement:', err);
+    });
+
     navigator.serviceWorker.addEventListener('message', e => {
       if (e.data?.type === 'NOTIF_CLICK' && e.data.city) {
         const locInput = document.getElementById('location');
@@ -7807,5 +8515,43 @@ function checkOnThisDayNotification() {
 
 <!-- Input upload avatar -->
 <input type="file" accept="image/*" id="avatar-upload-input" style="display:none" onchange="handleAvatarUpload(this)">
+
+<!-- Footer légal -->
+<div id="legal-footer" style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e8e4df;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  font-family: sans-serif;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+">
+  <span>© 2026 Weekio — Anthony Kirsch</span>
+  <span style="color:#ddd">|</span>
+  <a href="legal.html" target="_blank" style="color:#5a8c49;text-decoration:none;">Mentions légales</a>
+  <span style="color:#ddd">|</span>
+  <a href="legal.html#cgu" target="_blank" style="color:#5a8c49;text-decoration:none;">CGU</a>
+  <span style="color:#ddd">|</span>
+  <a href="legal.html#confidentialite" target="_blank" style="color:#5a8c49;text-decoration:none;">Confidentialité</a>
+  <span style="color:#ddd">|</span>
+  <a href="legal.html#cookies" target="_blank" style="color:#5a8c49;text-decoration:none;">Cookies</a>
+  <span style="color:#ddd">|</span>
+  <a href="mailto:contact@weekio.app" style="color:#5a8c49;text-decoration:none;">contact@weekio.app</a>
+</div>
+
+<!-- Espace pour éviter que le footer masque le contenu -->
+<div style="height:40px"></div>
+
 </body>
 </html>
