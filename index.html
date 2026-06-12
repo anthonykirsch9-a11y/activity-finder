@@ -4717,7 +4717,7 @@ async function runSearch(fromMap) {
     const allSeenSet = new Set([...seenTitles24h.map(t => t.toLowerCase()), ..._sessionSeenTitles]);
     const seenTitles = [...allSeenSet];
     const seenContext = seenTitles.length > 0
-      ? '\n\nEXCLUSION ABSOLUE ET STRICTE — RÈGLE N°1: Les activités suivantes ont été proposées récemment. Il est FORMELLEMENT INTERDIT de les reproposer, de les paraphraser, ou de proposer un lieu similaire (même lieu différent nom, même type d\'activité dans la même ville). Propose des activités 100% différentes en type ET en lieu:\n' + seenTitles.slice(0, 30).map((t,i) => (i+1)+'. '+t).join('\n')
+      ? '\n\nEXCLUSION ABSOLUE ET STRICTE — RÈGLE N°1: Les activités suivantes ont été proposées récemment. Il est FORMELLEMENT INTERDIT de les reproposer, de les paraphraser, ou de proposer un lieu similaire (même lieu différent nom, même type d\'activité dans la même ville). Propose des activités 100% différentes en type ET en lieu:\n' + seenTitles.slice(-50).map((t,i) => (i+1)+'. '+t).join('\n')
       : '';
         // Date du jour — toujours injectée pour éviter les dates passées
         const _today = new Date();
