@@ -4994,6 +4994,23 @@ async function runSearch(fromMap) {
       }
     }
 
+    // ── FILTRE ACTIVITÉS DÉJÀ FAITES (Pro) — correspondance exacte uniquement ──
+    if (currentUser && userPlan === 'pro' && alreadyDoneIds.size > 0) {
+      const beforeDone = activities.length;
+      activities = activities.filter(a => {
+        if (!a.titre) return true;
+        const fId = (a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+        if (alreadyDoneIds.has(fId)) {
+          console.log('🚫 Activité déjà faite filtrée:', a.titre);
+          return false;
+        }
+        return true;
+      });
+      if (activities.length < beforeDone) {
+        console.log('✅ Activités déjà faites filtrées:', beforeDone - activities.length);
+      }
+    }
+
     // Sauvegarder en mémoire session immédiatement
     activities.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
 
