@@ -4717,7 +4717,7 @@ async function runSearch(fromMap) {
     const allSeenSet = new Set([...seenTitles24h.map(t => t.toLowerCase()), ..._sessionSeenTitles]);
     const seenTitles = [...allSeenSet];
     const seenContext = seenTitles.length > 0
-      ? '\n\nEXCLUSION ABSOLUE ET STRICTE — RÈGLE N°1: Les activités suivantes ont été proposées récemment. Il est FORMELLEMENT INTERDIT de les reproposer, de les paraphraser, ou de proposer un lieu similaire (même lieu différent nom, même type d\'activité dans la même ville). Propose des activités 100% différentes en type ET en lieu:\n' + seenTitles.slice(-50).map((t,i) => (i+1)+'. '+t).join('\n')
+      ? '\n\nEXCLUSION ABSOLUE ET STRICTE — RÈGLE N°1: Les LIEUX ET ACTIVITÉS suivants ont été proposés récemment. INTERDICTION FORMELLE de reproposer ces lieux, MÊME avec un titre ou angle différent (ex: si "visite du zoo X" est listé, INTERDIT de proposer "soirée au zoo X" ou toute activité au zoo X). Propose des LIEUX 100% différents:\n' + seenTitles.slice(-50).map((t,i) => (i+1)+'. '+t).join('\n')
       : '';
         // Date du jour — toujours injectée pour éviter les dates passées
         const _today = new Date();
@@ -4984,6 +4984,7 @@ async function runSearch(fromMap) {
     const _seenNow = new Set([..._sessionSeenTitles, ...getSeenTitles24h(location).map(t=>t.toLowerCase())]);
     if (_seenNow.size > 0) {
       const beforeCount = activities.length;
+      const _seenCoords = getSeenCoords24h();
       activities = activities.filter(a => {
         if (!a.titre) return true;
         // Ne jamais filtrer les éphémères/nocturnes
@@ -4996,10 +4997,21 @@ async function runSearch(fromMap) {
           const seen4 = seen.split(/\s+/).slice(0,4).join(' ');
           if (words4 === seen4 && words4.length > 8) return false;
         }
+        // MÊME LIEU GPS (~100m) = même endroit sous un autre titre → bloqué
+        if (a.lat && a.lng) {
+          const aLat = Math.round(a.lat*1000)/1000;
+          const aLng = Math.round(a.lng*1000)/1000;
+          for (const c of _seenCoords) {
+            if (Math.abs(c.lat - aLat) <= 0.002 && Math.abs(c.lng - aLng) <= 0.002) {
+              console.log('🚫 Même lieu GPS filtré:', a.titre);
+              return false;
+            }
+          }
+        }
         return true;
       });
       if (activities.length < beforeCount) {
-        console.log('🚫 Doublons filtrés (exact+4mots):', beforeCount - activities.length);
+        console.log('🚫 Doublons filtrés (titre+lieu):', beforeCount - activities.length);
       }
     }
 
@@ -7929,6 +7941,8 @@ function canSearch() {
 async function saveSearch(location, group, budget, activities) {
   // Extraire les titres proposés
   const titles = Array.isArray(activities) ? activities.map(a => a.titre).filter(Boolean) : [];
+  // Coordonnées GPS des lieux proposés (pour bloquer les mêmes lieux sous d'autres titres)
+  const coords = Array.isArray(activities) ? activities.filter(a => a.lat && a.lng).map(a => ({ lat: Math.round(a.lat*1000)/1000, lng: Math.round(a.lng*1000)/1000 })) : [];
 
   // ── Historique local CE navigateur (24h) — toutes villes ──
   const cutoff24 = Date.now() - 24 * 60 * 60 * 1000;
@@ -7946,6 +7960,14 @@ async function saveSearch(location, group, budget, activities) {
     }
   });
   seenData.entries = seenData.entries.slice(-150);
+  // Stocker les coordonnées des lieux vus
+  seenData.coords = (seenData.coords || []).filter(c => c.ts > cutoff24);
+  coords.forEach(c => {
+    if (!seenData.coords.find(e => e.lat === c.lat && e.lng === c.lng)) {
+      seenData.coords.push({ lat: c.lat, lng: c.lng, ts: now });
+    }
+  });
+  seenData.coords = seenData.coords.slice(-150);
   localSave(_seenKey, seenData);
 
   // ── Sauvegarder aussi dans l'historique global (pour panneau compte) ──
@@ -8151,6 +8173,17 @@ function getSeenTitles24h(location) {
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     const fresh = (seenData.entries || []).filter(e => e.ts > cutoff);
     return fresh.map(e => e.title);
+  } catch(e) { return []; }
+}
+
+function getSeenCoords24h() {
+  try {
+    const uid = currentUser?.id || 'guest';
+    const key = 'seen_activities_' + uid;
+    const seenData = localLoad(key);
+    if (!seenData || !seenData.coords) return [];
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    return (seenData.coords || []).filter(e => e.ts > cutoff);
   } catch(e) { return []; }
 }
 
