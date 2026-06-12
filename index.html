@@ -4510,6 +4510,14 @@ function _renderStreamCards(activities, fromIdx, location) {
   }
   if (!grid) return;
 
+  // Appliquer filtre anti-doublon dans le streaming aussi
+  const _seenStream = new Set([..._sessionSeenTitles, ...getSeenTitles24h('')]);
+  activities = activities.filter((a, idx) => {
+    if (idx < fromIdx) return true; // garder les déjà rendues
+    if (!a.titre || a.ephemere || a.nocturne) return true;
+    return !_seenStream.has(a.titre.toLowerCase().trim());
+  });
+
   // Ajouter uniquement les nouvelles cartes
   for (let i = fromIdx; i < activities.length; i++) {
     const a = activities[i];
@@ -4974,7 +4982,6 @@ async function runSearch(fromMap) {
     // Stocker dans le cache Claude (2h)
     _setCache(_ck, activities);
     await incrementSearchCount();
-    await saveSearch(location, group, budget, activities);
 
     // ── FILTRE ANTI-DOUBLON CÔTÉ CLIENT (garantie 100%) ──
     // Récupérer tous les titres déjà vus (session + localStorage)
@@ -5010,6 +5017,9 @@ async function runSearch(fromMap) {
         console.log('✅ Activités déjà faites filtrées:', beforeDone - activities.length);
       }
     }
+
+    // Sauvegarder APRÈS filtrage — ordre important pour éviter les doublons
+    await saveSearch(location, group, budget, activities);
 
     // Sauvegarder en mémoire session immédiatement
     activities.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
