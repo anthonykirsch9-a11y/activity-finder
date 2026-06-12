@@ -2,6 +2,8 @@
 <html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9632447671058481" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -8117,8 +8119,7 @@ function hideBetaScreen() {
 }
 
 function initBetaGate() {
-  let passed = false;
-  try { passed = localStorage.getItem(BETA_STORAGE_KEY) === '1'; } catch(e) {}
+  let passed = true; // Beta gate désactivé
   if (passed) {
     userPlan = 'pro';
     if (!currentUser) {
