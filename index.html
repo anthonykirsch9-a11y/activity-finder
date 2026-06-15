@@ -5018,6 +5018,23 @@ async function runSearch(fromMap) {
       }
     }
 
+    // ── INJECTION ÉVÉNEMENTS LOCAUX (communauté) — 1 fois sur 10 ──
+    try {
+      const localEvts = (Math.random() < 0.10) ? await getLocalEventsForSearch(location, ephemOn, nightOn, onlyMode) : [];
+      if (localEvts.length > 0) {
+        // Filtrer ceux déjà dans les résultats (éviter doublons)
+        const existingTitles = new Set(activities.map(a => (a.titre||'').toLowerCase()));
+        const newLocalEvts = localEvts.filter(e => !existingTitles.has((e.titre||'').toLowerCase()));
+        if (newLocalEvts.length > 0) {
+          // Insérer aléatoirement dans les résultats (pas toujours en premier)
+          const insertPos = Math.floor(Math.random() * (activities.length + 1));
+          activities.splice(insertPos, 0, ...newLocalEvts);
+          activities = activities.slice(0, 6); // max 6 activités
+          console.log('📍 Événements locaux injectés:', newLocalEvts.map(e=>e.titre));
+        }
+      }
+    } catch(e) { console.warn('Local events injection error:', e); }
+
     // Sauvegarder en mémoire session immédiatement
     activities.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
 
@@ -7722,7 +7739,7 @@ Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}
     }
 
     // Sauvegarder dans Supabase si connecté, sinon localStorage
-    const eventData = { name, type, date, location, desc, user_id: currentUser?.id||'beta', lang, created_at: new Date().toISOString(), status: 'pending' };
+    const eventData = { name, type, date, location, desc, user_id: currentUser?.id||'beta', lang, created_at: new Date().toISOString(), status: 'approved' };
     if (_sb && currentUser?.id !== 'beta-user') {
       await _sb.from('local_events').insert(eventData);
     } else {
@@ -8087,6 +8104,68 @@ async function saveNote() {
 }
 
 // ── Build already-done context for AI prompt ──
+// ── Récupérer les événements locaux approuvés pertinents pour la recherche ──
+async function getLocalEventsForSearch(searchLocation, ephemOn, nightOn, onlyMode) {
+  try {
+    if (!_sb) return [];
+    const today = new Date().toISOString().split('T')[0];
+    // Récupérer les événements approuvés dont la date n'est pas passée
+    const { data } = await _sb.from('local_events')
+      .select('*')
+      .eq('status', 'approved')
+      .gte('date', today)
+      .order('date', { ascending: true })
+      .limit(50);
+    if (!data || !data.length) return [];
+
+    // Filtrer par pertinence géographique — même ville ou région
+    const searchLow = (searchLocation||'').toLowerCase().split(',')[0].trim();
+    const relevant = data.filter(ev => {
+      const evLoc = (ev.location||'').toLowerCase();
+      // Match si la ville de recherche est dans le lieu de l'événement ou vice versa
+      return evLoc.includes(searchLow) || searchLow.includes(evLoc.split(',')[0].trim()) ||
+             evLoc.split(',').some(part => searchLow.includes(part.trim()) || part.trim().includes(searchLow));
+    });
+    if (!relevant.length) return [];
+
+    // Convertir en format activité
+    const typeMap = {
+      'Marche/Randonnée': {type:'Éphémère', nocturne:false, ephemere:true},
+      'Fête de village': {type:'Éphémère', nocturne:false, ephemere:true},
+      'Brocante/Vide-grenier': {type:'Éphémère', nocturne:false, ephemere:true},
+      'Marché': {type:'Éphémère', nocturne:false, ephemere:true},
+      'Événement sportif': {type:'Éphémère', nocturne:false, ephemere:true},
+      'Concert/Spectacle': {type:'Nocturne', nocturne:true, ephemere:true},
+      'Autre': {type:'Éphémère', nocturne:false, ephemere:true}
+    };
+
+    return relevant.slice(0, 2).map(ev => {
+      const tm = typeMap[ev.type] || {type:'Éphémère', nocturne:false, ephemere:true};
+      return {
+        titre: ev.name,
+        type: tm.type,
+        ephemere: tm.ephemere,
+        nocturne: tm.nocturne,
+        cout_estime: '0-10€',
+        budget_niveau: 'low',
+        duree: '1h-3h',
+        distance: 'Centre',
+        description: ev.desc || ('Événement local : ' + ev.name + ' à ' + ev.location + '.'),
+        pourquoi_adapte: 'Événement local signalé par la communauté Weekio.',
+        infos_pratiques: ['📅 ' + new Date(ev.date+'T12:00:00').toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long'}), '📍 ' + ev.location],
+        frequence: ev.date,
+        lat: 0, lng: 0,
+        lieu_certain: true,
+        placeId: null,
+        _isLocalEvent: true
+      };
+    });
+  } catch(e) {
+    console.warn('getLocalEventsForSearch error:', e);
+    return [];
+  }
+}
+
 function getSeenTitles24h(location) {
   try {
     const uid = currentUser?.id || 'guest';
