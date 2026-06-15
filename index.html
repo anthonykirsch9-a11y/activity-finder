@@ -7745,7 +7745,7 @@ Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}
     }
 
     // Sauvegarder dans Supabase si connecté, sinon localStorage
-    const eventData = { name, type, date, date_end: dateEnd, location, desc, user_id: currentUser?.id||'beta', lang, created_at: new Date().toISOString(), status: 'approved' };
+    const eventData = { name, type, date, date_end: dateEnd, location, description: desc, user_id: currentUser?.id||'beta', lang, created_at: new Date().toISOString(), status: 'approved' };
     if (_sb && currentUser?.id !== 'beta-user') {
       await _sb.from('local_events').insert(eventData);
     } else {
@@ -8156,7 +8156,7 @@ async function getLocalEventsForSearch(searchLocation, ephemOn, nightOn, onlyMod
         budget_niveau: 'low',
         duree: '1h-3h',
         distance: 'Centre',
-        description: ev.desc || ('Événement local : ' + ev.name + ' à ' + ev.location + '.'),
+        description: ev.description || ('Événement local : ' + ev.name + ' à ' + ev.location + '.'),
         pourquoi_adapte: 'Événement local signalé par la communauté Weekio.',
         infos_pratiques: ['📅 ' + (ev.date_end && ev.date_end !== ev.date
           ? new Date(ev.date+'T12:00:00').toLocaleDateString('fr-FR', {day:'numeric',month:'long'}) + ' → ' + new Date(ev.date_end+'T12:00:00').toLocaleDateString('fr-FR', {day:'numeric',month:'long'})
