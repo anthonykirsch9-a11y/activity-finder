@@ -2,6 +2,8 @@
 <html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
+  <!-- Google Search Console -->
+  <meta name="google-site-verification" content="1taZnlro8TrbX1ZLRkLA2QYOPLQLtuffTy6nd823V7Y" />
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9632447671058481" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -3471,15 +3473,7 @@ function getPhotoTheme(type, titre) {
     if (t.includes('musée') || t.includes('expo') || t.includes('galerie')) return 'museum';
     if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
     if (t.includes('escape') || t.includes('laser') || t.includes('jeu')) return 'escape';
-    if (t.includes('color run') || t.includes('course') || t.includes('run') || t.includes('trail') || t.includes('marathon')) return 'escalade';
-    if (t.includes('chasse') || t.includes('trésor') || t.includes('enquête') || t.includes('mystère') || t.includes('détective')) return 'escape';
-    if (t.includes('château') || t.includes('abbaye') || t.includes('fort') || t.includes('patrimoine') || t.includes('archéo') || t.includes('historique') || t.includes('médiév')) return 'chateau';
-    if (t.includes('pétanque') || t.includes('sport') || t.includes('tournoi') || t.includes('compétition')) return 'escalade';
-    if (t.includes('jardin') || t.includes('parc') || t.includes('nature') || t.includes('balade')) return 'nature';
-    if (t.includes('photo') || t.includes('illustration') || t.includes('aquarelle') || t.includes('dessin') || t.includes('créatif') || t.includes('atelier')) return 'artisanat';
-    if (t.includes('cuisine') || t.includes('gastronomie') || t.includes('repas') || t.includes('pique-nique')) return 'food';
-    if (t.includes('cirque') || t.includes('magie') || t.includes('clown')) return 'theatre';
-    return 'fete'; // fallback éphémère générique = fête (plus adapté que marché)
+    return 'marche'; // fallback éphémère générique = marché
   }
   if (t.includes('randonnée') || t.includes('randonn') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
   if (t.includes('vélo') || t.includes('vtt') || t.includes('cycl')) return 'velo';
@@ -4218,13 +4212,7 @@ function renderResultsProgressive(activities, location, radius, budget, group, a
     ${weatherBanner}
     <div class="results-header">${t.resultsTitle(activities.length)}</div>
     <div class="rc-grid" id="rc-grid-progressive"></div>
-    <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>
-    ${onlyMode === 'ephem' ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin:.5rem 0 1.5rem;text-align:center">
-      <div style="font-size:22px;margin-bottom:.3rem">🎉</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:.3rem">${{'fr':'Voilà tous les événements éphémères du week-end près de toi !','en':"That\'s all the ephemeral events this weekend near you!",'es':'¡Estos son todos los eventos del fin de semana cerca de ti!','de':'Das sind alle kurzfristigen Events dieses Wochenendes!','it':'Ecco tutti gli eventi effimeri del weekend vicino a te!','pt':'Estes são todos os eventos do fim de semana perto de ti!'}[lang]||'Voilà tous les événements éphémères du week-end !'}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:.8rem">${{'fr':'Envie de plus d\'idées ? Essaie avec d\'autres critères.','en':'Want more ideas? Try with different criteria.','es':'¿Quieres más ideas? Prueba con otros criterios.','de':'Mehr Ideen? Versuche andere Kriterien.','it':'Vuoi più idee? Prova con altri criteri.','pt':'Quer mais ideias? Tenta com outros critérios.'}[lang]||'Envie de plus d\'idées ?'}</div>
-      <button onclick="onlyMode=\'\';document.getElementById(\'only-ephem-btn\')?.classList.remove(\'active\');runSearch()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">${{'fr':'🔍 Voir toutes les activités','en':'🔍 See all activities','es':'🔍 Ver todas las actividades','de':'🔍 Alle Aktivitäten','it':'🔍 Vedi tutte le attività','pt':'🔍 Ver tudo'}[lang]||'🔍 Voir toutes les activités'}</button>
-    </div>` : ''}`;
+    <div style="text-align:center;padding:.2rem 0 1.5rem;font-size:13px;color:var(--muted);">${t.resultsNote}</div>`;
 
   // Ajouter cartes une par une avec délai 600ms
   // Réinjecter la carte CDC si elle existait
@@ -4510,10 +4498,8 @@ function _renderStreamCards(activities, fromIdx, location) {
   }
   if (!grid) return;
 
-  // Limiter à 6 activités max
-  const _maxCards = 6;
   // Ajouter uniquement les nouvelles cartes
-  for (let i = fromIdx; i < Math.min(activities.length, _maxCards); i++) {
+  for (let i = fromIdx; i < activities.length; i++) {
     const a = activities[i];
     const cardHtml = buildActivityCard(a, i, location);
     const div = document.createElement('div');
@@ -4717,7 +4703,7 @@ async function runSearch(fromMap) {
     const allSeenSet = new Set([...seenTitles24h.map(t => t.toLowerCase()), ..._sessionSeenTitles]);
     const seenTitles = [...allSeenSet];
     const seenContext = seenTitles.length > 0
-      ? '\n\nEXCLUSION ABSOLUE ET STRICTE — RÈGLE N°1: Les LIEUX ET ACTIVITÉS suivants ont été proposés récemment. INTERDICTION FORMELLE de reproposer ces lieux, MÊME avec un titre ou angle différent (ex: si "visite du zoo X" est listé, INTERDIT de proposer "soirée au zoo X" ou toute activité au zoo X). Propose des LIEUX 100% différents:\n' + seenTitles.slice(-50).map((t,i) => (i+1)+'. '+t).join('\n')
+      ? '\n\nEXCLUSION ABSOLUE ET STRICTE — RÈGLE N°1: Les activités suivantes ont été proposées récemment. Il est FORMELLEMENT INTERDIT de les reproposer, de les paraphraser, ou de proposer un lieu similaire (même lieu différent nom, même type d\'activité dans la même ville). Propose des activités 100% différentes en type ET en lieu:\n' + seenTitles.slice(0, 30).map((t,i) => (i+1)+'. '+t).join('\n')
       : '';
         // Date du jour — toujours injectée pour éviter les dates passées
         const _today = new Date();
@@ -4852,8 +4838,6 @@ async function runSearch(fromMap) {
             }
             window._lastActivities = all;
             all.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
-            // Sauvegarder dans localStorage (sans await car on est dans un .then)
-            saveSearch(location, group, budget, all);
             setTimeout(() => { if (map) placeActivityMarkers(all); else window._pendingMarkers = all; }, 500);
           }
 
@@ -4972,81 +4956,31 @@ async function runSearch(fromMap) {
     }
     if (!jsonMatch) throw new Error('Pas de JSON dans la reponse');
 
-    // Parsing robuste : JSON.parse strict d'abord, sinon parser objet par objet
-    let activities = null;
-    try {
-      activities = JSON.parse(jsonMatch[0]);
-    } catch(parseErr) {
-      console.warn('JSON.parse strict a échoué, tentative parsing robuste:', parseErr.message);
-      activities = _tryParseActivities(text);
-      if (!activities) {
-        // Dernier recours : parser tout le contenu brut
-        const fullContent = _claudeData.content.map(i => i.text || '').join('');
-        activities = _tryParseActivities(fullContent);
-      }
-    }
+    let activities = JSON.parse(jsonMatch[0]).slice(0, 6);
     if (!Array.isArray(activities) || !activities.length) throw new Error('Tableau vide');
-    activities = activities.slice(0, 6);
 
     // Stocker dans le cache Claude (2h)
     _setCache(_ck, activities);
     await incrementSearchCount();
+    await saveSearch(location, group, budget, activities);
 
     // ── FILTRE ANTI-DOUBLON CÔTÉ CLIENT (garantie 100%) ──
     // Récupérer tous les titres déjà vus (session + localStorage)
     const _seenNow = new Set([..._sessionSeenTitles, ...getSeenTitles24h(location).map(t=>t.toLowerCase())]);
     if (_seenNow.size > 0) {
       const beforeCount = activities.length;
-      const _seenCoords = getSeenCoords24h();
       activities = activities.filter(a => {
         if (!a.titre) return true;
-        // Ne jamais filtrer les éphémères/nocturnes
+        // Ne jamais filtrer les éphémères/nocturnes — ce sont des événements fixes uniques
         if (a.ephemere || a.nocturne) return true;
         const tLow = a.titre.toLowerCase().trim();
-        const words4 = tLow.split(/\s+/).slice(0,4).join(' ');
-        for (const seen of _seenNow) {
-          if (seen === tLow) return false;
-          // Même 4 premiers mots = même activité
-          const seen4 = seen.split(/\s+/).slice(0,4).join(' ');
-          if (words4 === seen4 && words4.length > 8) return false;
-        }
-        // MÊME LIEU GPS (~100m) = même endroit sous un autre titre → bloqué
-        if (a.lat && a.lng) {
-          const aLat = Math.round(a.lat*1000)/1000;
-          const aLng = Math.round(a.lng*1000)/1000;
-          for (const c of _seenCoords) {
-            if (Math.abs(c.lat - aLat) <= 0.002 && Math.abs(c.lng - aLng) <= 0.002) {
-              console.log('🚫 Même lieu GPS filtré:', a.titre);
-              return false;
-            }
-          }
-        }
+        if (_seenNow.has(tLow)) return false;
         return true;
       });
       if (activities.length < beforeCount) {
-        console.log('🚫 Doublons filtrés (titre+lieu):', beforeCount - activities.length);
+        console.log('🚫 Doublons exacts filtrés:', beforeCount - activities.length);
       }
     }
-
-    // ── FILTRE ACTIVITÉS DÉJÀ FAITES (Pro) — correspondance exacte uniquement ──
-    if (currentUser && userPlan === 'pro' && alreadyDoneIds.size > 0) {
-      const beforeDone = activities.length;
-      activities = activities.filter(a => {
-        if (!a.titre) return true;
-        const fId = (a.titre||'').replace(/[^a-z0-9]/gi,'_').toLowerCase();
-        if (alreadyDoneIds.has(fId)) {
-          console.log('🚫 Activité déjà faite filtrée:', a.titre);
-          return false;
-        }
-        return true;
-      });
-      if (activities.length < beforeDone) {
-        console.log('✅ Activités déjà faites filtrées:', beforeDone - activities.length);
-      }
-    }
-
-    // Sauvegarder APRÈS filtrage — ordre important pour éviter les doublons
-    await saveSearch(location, group, budget, activities);
 
     // Sauvegarder en mémoire session immédiatement
     activities.forEach(a => { if (a.titre) _sessionSeenTitles.add(a.titre.toLowerCase()); });
@@ -6977,37 +6911,15 @@ async function deleteSavedProgram(actId) {
   renderAccountActivities();
 }
 
-async function openSavedProgram(actId) {
+function openSavedProgram(actId) {
   // Rouvrir le modal programme avec le vrai rendu
-  let saved = (localLoad('saved_programs') || {})[actId];
-
-  // Si pas en localStorage, récupérer depuis Supabase
-  if ((!saved || !saved.program) && _sb && currentUser) {
-    try {
-      const { data } = await _sb.from('notes')
-        .select('note')
-        .eq('user_id', currentUser.id)
-        .eq('activity_id', actId)
-        .single();
-      if (data && data.note) {
-        try {
-          const parsed = JSON.parse(data.note);
-          if (parsed && parsed.program) {
-            saved = parsed;
-            // Mettre en cache localStorage pour la prochaine fois
-            const savedProgs = localLoad('saved_programs') || {};
-            savedProgs[actId] = saved;
-            localSave('saved_programs', savedProgs);
-          }
-        } catch(e) { /* note n'est pas du JSON — ancien format texte */ }
-      }
-    } catch(e) { console.warn('openSavedProgram Supabase error:', e); }
-  }
-
+  const saved = (localLoad('saved_programs') || {})[actId];
   if (saved && saved.program) {
+    // Ouvrir le modal
     populateWpRegions();
     const modal = document.getElementById('weekend-program-modal');
     modal.classList.add('open');
+    // Ré-afficher directement le programme
     renderWeekendProgram(saved.program, saved.dur, saved.ambiance, saved.dateLabel, saved.weatherInfo);
   } else {
     // Fallback : ouvrir la mémoire texte
@@ -7035,23 +6947,16 @@ async function saveWeekendProgram() {
   const stepsText = bodyEl ? Array.from(bodyEl.querySelectorAll('.program-step-title')).map(e => e.textContent.trim()).join(' → ') : '';
 
   try {
-    const programJsonStr = JSON.stringify({
-      program: window._lastSavedProgram,
-      dur: window._lastSavedDur,
-      ambiance: window._lastSavedAmbiance,
-      dateLabel: window._lastSavedDateLabel,
-      weatherInfo: window._lastSavedWeather
-    });
     await _sb.from('notes').insert({
       user_id: currentUser.id,
       activity_id: actId,
       activity_title: title,
-      note: programJsonStr.substring(0, 5000), // JSON complet pour ré-affichage
+      note: stepsText.substring(0, 500),
       stars: 0,
       done: false,
       created_at: savedAt
     });
-    // Stocker aussi en localStorage pour accès rapide offline
+    // Stocker le JSON complet en localStorage pour ré-affichage
     const savedProgs = localLoad('saved_programs') || {};
     savedProgs[actId] = { program: window._lastSavedProgram, dur: window._lastSavedDur, ambiance: window._lastSavedAmbiance, dateLabel: window._lastSavedDateLabel, weatherInfo: window._lastSavedWeather };
     localSave('saved_programs', savedProgs);
@@ -7433,19 +7338,7 @@ async function renderAccountActivities() {
     html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🗓 Mes programmes</div>';
     savedPrograms.forEach(function(p) {
       var dateStr = new Date(p.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric'});
-      var _noteRaw = p.note || '';
-      var _previewText = _noteRaw;
-      // Si c'est du JSON (nouveau format), extraire les titres des étapes
-      if (_noteRaw.trim().startsWith('{')) {
-        try {
-          var _prog = JSON.parse(_noteRaw);
-          var _days = (_prog.program && typeof _prog.program === 'object') ? Object.values(_prog.program) : [];
-          var _allSteps = [];
-          _days.forEach(function(day) { if (Array.isArray(day)) day.forEach(function(s) { if (s.titre || s.title) _allSteps.push(s.titre || s.title); }); });
-          _previewText = _allSteps.slice(0,3).join(' → ') + (_allSteps.length > 3 ? '…' : '');
-        } catch(e) { _previewText = ''; }
-      }
-      var stepsList = _previewText.split(' → ');
+      var stepsList = (p.note||'').split(' → ');
       var preview = stepsList.slice(0,3).join(' → ') + (stepsList.length > 3 ? '…' : '');
       var aid = p.activity_id;
       html += '<div class="activity-item" style="border-left:3px solid var(--primary);padding-left:10px">';
@@ -7954,8 +7847,6 @@ function canSearch() {
 async function saveSearch(location, group, budget, activities) {
   // Extraire les titres proposés
   const titles = Array.isArray(activities) ? activities.map(a => a.titre).filter(Boolean) : [];
-  // Coordonnées GPS des lieux proposés (pour bloquer les mêmes lieux sous d'autres titres)
-  const coords = Array.isArray(activities) ? activities.filter(a => a.lat && a.lng).map(a => ({ lat: Math.round(a.lat*1000)/1000, lng: Math.round(a.lng*1000)/1000 })) : [];
 
   // ── Historique local CE navigateur (24h) — toutes villes ──
   const cutoff24 = Date.now() - 24 * 60 * 60 * 1000;
@@ -7973,14 +7864,6 @@ async function saveSearch(location, group, budget, activities) {
     }
   });
   seenData.entries = seenData.entries.slice(-150);
-  // Stocker les coordonnées des lieux vus
-  seenData.coords = (seenData.coords || []).filter(c => c.ts > cutoff24);
-  coords.forEach(c => {
-    if (!seenData.coords.find(e => e.lat === c.lat && e.lng === c.lng)) {
-      seenData.coords.push({ lat: c.lat, lng: c.lng, ts: now });
-    }
-  });
-  seenData.coords = seenData.coords.slice(-150);
   localSave(_seenKey, seenData);
 
   // ── Sauvegarder aussi dans l'historique global (pour panneau compte) ──
@@ -8189,17 +8072,6 @@ function getSeenTitles24h(location) {
   } catch(e) { return []; }
 }
 
-function getSeenCoords24h() {
-  try {
-    const uid = currentUser?.id || 'guest';
-    const key = 'seen_activities_' + uid;
-    const seenData = localLoad(key);
-    if (!seenData || !seenData.coords) return [];
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    return (seenData.coords || []).filter(e => e.ts > cutoff);
-  } catch(e) { return []; }
-}
-
 function getAlreadyDoneContext() {
   if (!currentUser || userPlan !== 'pro' || !alreadyDoneIds.size) return '';
   return '\n- Activités déjà faites dans les 12 derniers mois (NE PAS reproposer) : ' +
@@ -8249,7 +8121,8 @@ function hideBetaScreen() {
 }
 
 function initBetaGate() {
-  let passed = true; // Beta gate désactivé
+  let passed = false;
+  try { passed = localStorage.getItem(BETA_STORAGE_KEY) === '1'; } catch(e) {}
   if (passed) {
     userPlan = 'pro';
     if (!currentUser) {
@@ -8620,6 +8493,100 @@ function checkOnThisDayNotification() {
 
 <!-- Espace pour éviter que le footer masque le contenu -->
 <div style="height:40px"></div>
+
+
+<!-- Popup PWA — Ajouter à l'écran d'accueil -->
+<div id="pwa-install-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:2rem 1.5rem 2.5rem;width:100%;max-width:480px;margin:0 auto;position:relative">
+    <!-- Handle -->
+    <div style="width:40px;height:4px;background:#e0dbd5;border-radius:2px;margin:0 auto 1.5rem"></div>
+    <!-- Logo + Titre -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.2rem">
+      <div style="width:52px;height:52px;background:#3d5c35;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px">🗓</div>
+      <div>
+        <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;color:#1a1a1a">Weekio</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:13px;color:#888">Ajoute l'app sur ton téléphone</div>
+      </div>
+    </div>
+    <!-- Contenu iOS -->
+    <div id="pwa-ios-steps" style="display:none">
+      <p style="font-family:'DM Sans',sans-serif;font-size:14px;color:#444;margin-bottom:1rem;line-height:1.6">Pour utiliser Weekio comme une vraie app, ajoute-la à ton écran d'accueil :</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;gap:12px;background:#f5f3f0;border-radius:10px;padding:10px 14px">
+          <div style="width:28px;height:28px;background:#3d5c35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+          <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#333">Ouvre cette page dans <strong>Safari</strong></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:#f5f3f0;border-radius:10px;padding:10px 14px">
+          <div style="width:28px;height:28px;background:#3d5c35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+          <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#333">Appuie sur <strong>Partager</strong> <span style="font-size:15px">⬆️</span> en bas de l'écran</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:#f5f3f0;border-radius:10px;padding:10px 14px">
+          <div style="width:28px;height:28px;background:#3d5c35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0">3</div>
+          <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#333">Sélectionne <strong>« Sur l'écran d'accueil »</strong></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:#f5f3f0;border-radius:10px;padding:10px 14px">
+          <div style="width:28px;height:28px;background:#3d5c35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0">4</div>
+          <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#333">Appuie sur <strong>Ajouter</strong> en haut à droite</span>
+        </div>
+      </div>
+    </div>
+    <!-- Contenu Android -->
+    <div id="pwa-android-steps" style="display:none">
+      <p style="font-family:'DM Sans',sans-serif;font-size:14px;color:#444;margin-bottom:1rem;line-height:1.6">Pour utiliser Weekio comme une vraie app, ajoute-la à ton écran d'accueil :</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;gap:12px;background:#f5f3f0;border-radius:10px;padding:10px 14px">
+          <div style="width:28px;height:28px;background:#3d5c35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+          <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#333">Appuie sur le menu <strong>⋮</strong> en haut à droite</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:#f5f3f0;border-radius:10px;padding:10px 14px">
+          <div style="width:28px;height:28px;background:#3d5c35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+          <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#333">Sélectionne <strong>« Ajouter à l'écran d'accueil »</strong></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:#f5f3f0;border-radius:10px;padding:10px 14px">
+          <div style="width:28px;height:28px;background:#3d5c35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0">3</div>
+          <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#333">Appuie sur <strong>Ajouter</strong> pour confirmer</span>
+        </div>
+      </div>
+    </div>
+    <!-- Boutons -->
+    <button onclick="closePwaPopup()" style="width:100%;background:#3d5c35;color:white;border:none;border-radius:12px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">C'est compris ! 🎉</button>
+    <button onclick="dismissPwaPopup()" style="width:100%;background:transparent;color:#999;border:none;padding:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer">Ne plus afficher</button>
+  </div>
+</div>
+
+<script>
+// ── PWA Install Popup ──
+(function() {
+  const POPUP_KEY = 'weekio_pwa_dismissed';
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid = /android/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  
+  // Afficher seulement sur mobile, pas si déjà installé, pas si déjà refusé
+  if ((isIOS || isAndroid) && !isStandalone) {
+    const dismissed = localStorage.getItem(POPUP_KEY);
+    if (!dismissed) {
+      setTimeout(function() {
+        const popup = document.getElementById('pwa-install-popup');
+        if (!popup) return;
+        popup.style.display = 'flex';
+        // Afficher les bonnes étapes selon l'OS
+        if (isIOS) document.getElementById('pwa-ios-steps').style.display = 'block';
+        else document.getElementById('pwa-android-steps').style.display = 'block';
+      }, 3000); // Apparaît après 3 secondes
+    }
+  }
+
+  window.closePwaPopup = function() {
+    document.getElementById('pwa-install-popup').style.display = 'none';
+  };
+
+  window.dismissPwaPopup = function() {
+    localStorage.setItem('weekio_pwa_dismissed', '1');
+    document.getElementById('pwa-install-popup').style.display = 'none';
+  };
+})();
+</script>
 
 </body>
 </html>
