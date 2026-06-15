@@ -7679,7 +7679,12 @@ function renderAddEventForm() {
       </div>
       <div>
         <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">${t.addEventDate||'Date'} *</label>
-        <input id="ev-date" type="date" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="ev-date" type="date" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none">
+          <span style="font-size:12px;color:var(--muted);flex-shrink:0">${{fr:'au',en:'to',es:'hasta',de:'bis',it:'al',pt:'até'}[lang]||'au'}</span>
+          <input id="ev-date-end" type="date" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none">
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:4px">${{fr:'Si événement sur 1 seul jour, laisser "au" vide',en:'Single day event? Leave "to" empty',es:'Evento de un día? Deja "hasta" vacío',de:'Eintägig? "bis" leer lassen',it:'Un solo giorno? Lascia "al" vuoto',pt:'Evento de um dia? Deixa "até" vazio'}[lang]||'Si événement sur 1 seul jour, laisser "au" vide'}</p>
       </div>
       <div>
         <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">${t.addEventLocation||'Lieu'} *</label>
@@ -7702,6 +7707,7 @@ async function submitLocalEvent() {
   const name = document.getElementById('ev-name')?.value.trim();
   const type = document.getElementById('ev-type')?.value;
   const date = document.getElementById('ev-date')?.value;
+  const dateEnd = document.getElementById('ev-date-end')?.value || date;
   const location = document.getElementById('ev-location')?.value.trim();
   const desc = document.getElementById('ev-desc')?.value.trim();
   const msgEl = document.getElementById('add-event-msg');
@@ -7739,7 +7745,7 @@ Réponds UNIQUEMENT par JSON: {"valid":true/false,"reason":"explication courte"}
     }
 
     // Sauvegarder dans Supabase si connecté, sinon localStorage
-    const eventData = { name, type, date, location, desc, user_id: currentUser?.id||'beta', lang, created_at: new Date().toISOString(), status: 'approved' };
+    const eventData = { name, type, date, date_end: dateEnd, location, desc, user_id: currentUser?.id||'beta', lang, created_at: new Date().toISOString(), status: 'approved' };
     if (_sb && currentUser?.id !== 'beta-user') {
       await _sb.from('local_events').insert(eventData);
     } else {
@@ -8113,7 +8119,7 @@ async function getLocalEventsForSearch(searchLocation, ephemOn, nightOn, onlyMod
     const { data } = await _sb.from('local_events')
       .select('*')
       .eq('status', 'approved')
-      .gte('date', today)
+      .or(`date_end.gte.${today},date_end.is.null,date.gte.${today}`)
       .order('date', { ascending: true })
       .limit(50);
     if (!data || !data.length) return [];
@@ -8152,7 +8158,9 @@ async function getLocalEventsForSearch(searchLocation, ephemOn, nightOn, onlyMod
         distance: 'Centre',
         description: ev.desc || ('Événement local : ' + ev.name + ' à ' + ev.location + '.'),
         pourquoi_adapte: 'Événement local signalé par la communauté Weekio.',
-        infos_pratiques: ['📅 ' + new Date(ev.date+'T12:00:00').toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long'}), '📍 ' + ev.location],
+        infos_pratiques: ['📅 ' + (ev.date_end && ev.date_end !== ev.date
+          ? new Date(ev.date+'T12:00:00').toLocaleDateString('fr-FR', {day:'numeric',month:'long'}) + ' → ' + new Date(ev.date_end+'T12:00:00').toLocaleDateString('fr-FR', {day:'numeric',month:'long'})
+          : new Date(ev.date+'T12:00:00').toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long'})), '📍 ' + ev.location],
         frequence: ev.date,
         lat: 0, lng: 0,
         lieu_certain: true,
