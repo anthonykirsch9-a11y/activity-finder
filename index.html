@@ -3465,29 +3465,51 @@ function makePhotoSvg(theme) {
 function getPhotoTheme(type, titre) {
   const t = (titre || '').toLowerCase();
   if (type === 'Éphémère' || type === 'Ephemeral' || type === 'Nocturne' || type === 'Nightlife' || type === 'Nocturno' || type === 'Notturno' || type === 'Noturno' || type === 'Nachtleben') {
-    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail')) return 'apero';
-    if (t.includes('vin') || t.includes('dégustation') || t.includes('cave')) return 'vin';
-    if (t.includes('moto') || t.includes('harley')) return 'moto';
-    if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer')) return 'voiture';
-    if (t.includes('food') || t.includes('burger') || t.includes('barbecue')) return 'food';
-    if (t.includes('concert') || t.includes('festival') || t.includes('rock') || t.includes('jazz')) return 'concert';
-    if (t.includes('bd') || t.includes('comics') || t.includes('manga')) return 'bd';
-    if (t.includes('parade') || t.includes('carnaval') || t.includes('défilé')) return 'parade';
-    if (t.includes('noël') || t.includes('noel') || t.includes('christmas')) return 'noel';
-    if (t.includes('vetement') || t.includes('vêtement') || t.includes('habit') || t.includes('fring') || t.includes('mode ') || t.includes('textile') || t.includes('dressing')) return 'vetement';
-    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie') || t.includes('vide dressing') || t.includes('vide-dressing')) return 'brocante';
-    if (t.includes('bourse') || t.includes('collection') || t.includes('chineurs') || t.includes('antiquité') || t.includes('pokemon') || t.includes('kidsbazar') || t.includes('kids bazar') || t.includes('swap')) return 'bourse';
-    if (t.includes('foraine') || t.includes('manège') || t.includes('barbe à papa') || t.includes('fête foraine') || t.includes('fair ')) return 'fete_foraine';
-    if (t.includes('fête') || t.includes('fete') || t.includes('saint') || t.includes('patronale') || t.includes('village') || t.includes('feu d') || t.includes('roue') || t.includes('folklore')) return 'fete';
-    if (t.includes('artisan') || t.includes('poterie') || t.includes('céramique') || t.includes('créateur') || t.includes('aquarelle') || t.includes('peinture') || t.includes('atelier')) return 'artisanat';
-    if (t.includes('marché') || t.includes('marche') || t.includes('market')) return 'marche';
-    if (t.includes('bar') || t.includes('pub') || t.includes('soirée') || t.includes('nuit') || t.includes('club') || t.includes('rooftop')) return 'bar';
-    if (t.includes('restaurant') || t.includes('dîner') || t.includes('gastronomie')) return 'restaurant';
-    if (t.includes('spa') || t.includes('bien-être') || t.includes('détente')) return 'spa';
-    if (t.includes('musée') || t.includes('expo') || t.includes('galerie')) return 'museum';
-    if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra')) return 'theatre';
-    if (t.includes('escape') || t.includes('laser') || t.includes('jeu')) return 'escape';
-    return 'marche'; // fallback éphémère générique = marché
+    // 🍹 Apéro / cocktails
+    if (t.includes('apéro') || t.includes('apero') || t.includes('cocktail') || t.includes('aperitivo') || t.includes('aperitif')) return 'apero';
+    // 🍷 Vin / dégustation
+    if (t.includes('vin') || t.includes('dégustation') || t.includes('cave') || t.includes('wine') || t.includes('vino') || t.includes('bodega') || t.includes('wein') || t.includes('weingut') || t.includes('viño') || t.includes('cata')) return 'vin';
+    // 🏍 Moto
+    if (t.includes('moto') || t.includes('harley') || t.includes('motorrad') || t.includes('moto')) return 'moto';
+    // 🚗 Voiture
+    if (t.includes('voiture') || t.includes('auto') || t.includes('oldtimer') || t.includes('coche') || t.includes('vehiculo') || t.includes('vehículo') || t.includes('car show') || t.includes('rallye')) return 'voiture';
+    // 🍔 Food
+    if (t.includes('food') || t.includes('burger') || t.includes('barbecue') || t.includes('comida') || t.includes('gastronomía') || t.includes('cucina') || t.includes('küche') || t.includes('street food')) return 'food';
+    // 🎵 Concert / festival
+    if (t.includes('concert') || t.includes('festival') || t.includes('rock') || t.includes('jazz') || t.includes('concierto') || t.includes('musica') || t.includes('música') || t.includes('concerto') || t.includes('konzert') || t.includes('musik')) return 'concert';
+    // 📚 BD / comics
+    if (t.includes('bd') || t.includes('comics') || t.includes('manga') || t.includes('comic') || t.includes('fumetti') || t.includes('tebeo')) return 'bd';
+    // 🎭 Parade / carnaval
+    if (t.includes('parade') || t.includes('carnaval') || t.includes('défilé') || t.includes('desfile') || t.includes('carneval') || t.includes('karneval') || t.includes('carnival') || t.includes('sfilata')) return 'parade';
+    // 🎄 Noël
+    if (t.includes('noël') || t.includes('noel') || t.includes('christmas') || t.includes('navidad') || t.includes('natale') || t.includes('weihnacht')) return 'noel';
+    // 👗 Vêtements
+    if (t.includes('vetement') || t.includes('vêtement') || t.includes('habit') || t.includes('fring') || t.includes('mode ') || t.includes('textile') || t.includes('dressing') || t.includes('ropa') || t.includes('moda') || t.includes('abbigliamento') || t.includes('kleidung') || t.includes('clothes')) return 'vetement';
+    // 🏷 Brocante / vide-grenier
+    if (t.includes('brocante') || t.includes('vide-grenier') || t.includes('puces') || t.includes('braderie') || t.includes('vide dressing') || t.includes('vide-dressing') || t.includes('rastro') || t.includes('mercadillo') || t.includes('pulgas') || t.includes('mercatino') || t.includes('flohmarkt') || t.includes('flea market') || t.includes('second hand') || t.includes('occasion')) return 'brocante';
+    // 🎯 Bourse / collection
+    if (t.includes('bourse') || t.includes('collection') || t.includes('chineurs') || t.includes('antiquité') || t.includes('pokemon') || t.includes('kidsbazar') || t.includes('kids bazar') || t.includes('swap') || t.includes('colección') || t.includes('antigüedad') || t.includes('antiqu')) return 'bourse';
+    // 🎡 Fête foraine
+    if (t.includes('foraine') || t.includes('manège') || t.includes('barbe à papa') || t.includes('fête foraine') || t.includes('fair ') || t.includes('feria') || t.includes('verbena') || t.includes('funfair') || t.includes('kirmes') || t.includes('luna park') || t.includes('parque de atracciones')) return 'fete_foraine';
+    // 🎉 Fête / village
+    if (t.includes('fête') || t.includes('fete') || t.includes('saint') || t.includes('patronale') || t.includes('village') || t.includes('feu d') || t.includes('roue') || t.includes('folklore') || t.includes('fiesta') || t.includes('festa') || t.includes('volksfest') || t.includes('celebration') || t.includes('romeria') || t.includes('romería') || t.includes('procesión') || t.includes('procesion') || t.includes('sagra')) return 'fete';
+    // 🎨 Artisanat / atelier
+    if (t.includes('artisan') || t.includes('poterie') || t.includes('céramique') || t.includes('créateur') || t.includes('aquarelle') || t.includes('peinture') || t.includes('atelier') || t.includes('artesano') || t.includes('artesanía') || t.includes('ceramica') || t.includes('taller') || t.includes('handwerk') || t.includes('craft') || t.includes('workshop')) return 'artisanat';
+    // 🛒 Marché
+    if (t.includes('marché') || t.includes('marche') || t.includes('market') || t.includes('mercado') || t.includes('mercato') || t.includes('markt') || t.includes('bazar') || t.includes('souk') || t.includes('farmers')) return 'marche';
+    // 🍺 Bar / nuit
+    if (t.includes('bar') || t.includes('pub') || t.includes('soirée') || t.includes('nuit') || t.includes('club') || t.includes('rooftop') || t.includes('taberna') || t.includes('discoteca') || t.includes('night') || t.includes('disco') || t.includes('noche') || t.includes('notte')) return 'bar';
+    // 🍽 Restaurant
+    if (t.includes('restaurant') || t.includes('dîner') || t.includes('gastronomie') || t.includes('restaurante') || t.includes('ristorante') || t.includes('cena') || t.includes('abendessen') || t.includes('dinner')) return 'restaurant';
+    // 💆 Spa / bien-être
+    if (t.includes('spa') || t.includes('bien-être') || t.includes('détente') || t.includes('bienestar') || t.includes('benessere') || t.includes('wellness') || t.includes('relax')) return 'spa';
+    // 🏛 Musée / expo
+    if (t.includes('musée') || t.includes('expo') || t.includes('galerie') || t.includes('museo') || t.includes('museum') || t.includes('ausstellung') || t.includes('galleria') || t.includes('galería') || t.includes('exposición') || t.includes('exhibition')) return 'museum';
+    // 🎭 Théâtre / spectacle
+    if (t.includes('théâtre') || t.includes('spectacle') || t.includes('opéra') || t.includes('teatro') || t.includes('ópera') || t.includes('spettacolo') || t.includes('opera') || t.includes('theater') || t.includes('show')) return 'theatre';
+    // 🎮 Escape / jeu
+    if (t.includes('escape') || t.includes('laser') || t.includes('jeu') || t.includes('juego') || t.includes('gioco') || t.includes('spiel') || t.includes('game')) return 'escape';
+    return 'fete'; // fallback éphémère générique = fête
   }
   if (t.includes('randonnée') || t.includes('randonn') || t.includes('trail') || t.includes('sentier')) return 'randonnee';
   if (t.includes('vélo') || t.includes('vtt') || t.includes('cycl')) return 'velo';
