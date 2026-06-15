@@ -3017,12 +3017,26 @@ function getDateStr() {
     return 'Demain (' + fmt(tom) + ')';
   }
   if (selectedDateMode === 'weekend') {
-    const day = today.getDay();
-    let daysToSat = (6 - day + 7) % 7;
-    if (daysToSat === 0) daysToSat = 7;
-    if (day === 0) daysToSat = 6;
-    const sat = new Date(today); sat.setDate(today.getDate() + daysToSat);
-    const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
+    const day = today.getDay(); // 0=dim, 1=lun, ..., 5=ven, 6=sam
+    let sat, sun;
+    if (day === 6) {
+      // On est samedi → ce week-end = aujourd'hui + demain
+      sat = new Date(today);
+      sun = new Date(today); sun.setDate(today.getDate() + 1);
+    } else if (day === 0) {
+      // On est dimanche → ce week-end = hier (sam) + aujourd'hui
+      sat = new Date(today); sat.setDate(today.getDate() - 1);
+      sun = new Date(today);
+    } else if (day === 5) {
+      // On est vendredi → ce week-end = demain + après-demain
+      sat = new Date(today); sat.setDate(today.getDate() + 1);
+      sun = new Date(today); sun.setDate(today.getDate() + 2);
+    } else {
+      // Lun-Jeu → prochain week-end
+      const daysToSat = 6 - day;
+      sat = new Date(today); sat.setDate(today.getDate() + daysToSat);
+      sun = new Date(sat); sun.setDate(sat.getDate() + 1);
+    }
     return 'Ce week-end (' + fmt(sat) + ' et ' + fmt(sun) + ')';
   }
   if (selectedDateMode === 'custom') {
@@ -7793,7 +7807,7 @@ function openUserMenu() { openAccountPanel(); }
 function openUpgrade() {
   const t = apt();
   // Traduire la modal
-  const featuresIcons = ['✨','♾️','🕐','⭐','🔁','🚫'];
+  const featuresIcons = ['✨','♾️','❤️','⭐','🔁','🗓','📍','🚫'];
   document.getElementById('upgrade-title').textContent = t.proTitle || 'Weekio Pro';
   document.getElementById('upgrade-price').textContent = t.proPrice || '2,99 €';
   document.getElementById('upgrade-period').textContent = t.proPerMonth || '/mois';
